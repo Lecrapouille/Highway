@@ -29,8 +29,8 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Search files
 BUILD = build
-VPATH = $(BUILD) src
-INCLUDES = -Isrc
+VPATH = $(BUILD) src src/Car src/World src/SFML src/Utils
+INCLUDES = -Isrc -Isrc/Car -Isrc/World -Isrc/SFML -Isrc/Utils
 
 # C++14 only because of std::make_unique not present in C++11)
 STANDARD=--std=c++14
@@ -42,17 +42,19 @@ COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
   -Wpointer-arith -Wswitch-enum -pedantic -Wpacked -Wold-style-cast \
   -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion
 
+COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter -Wno-old-style-cast -Wno-sign-conversion
+
 # Compilation
 CXXFLAGS = $(STANDARD) $(COMPIL_FLAGS) `pkg-config --cflags sfml-graphics`
-LDFLAGS = `pkg-config --libs sfml-graphics` -lpthread
-DEFINES = -DDATADIR=\"$(DATADIR)\"
+LDFLAGS = `pkg-config --libs sfml-graphics` -lpthread -ldw
+DEFINES = -DDATADIR=\"$(DATADIR)\" -DBACKWARD_HAS_DW=1
 
 # File dependencies
 DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
-BIN_OBJS = main.o
+OBJS = backward.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o Parking.o Renderer.o Simulation.o main.o
 
 ifeq ($(VERBOSE),1)
 Q :=
@@ -63,9 +65,9 @@ endif
 all: $(TARGET_BIN) $(TARGET_LIB)
 
 # Link the target
-$(TARGET_BIN): $(BIN_OBJS)
+$(TARGET_BIN): $(OBJS)
 	@echo "Linking $@"
-	$(Q)cd $(BUILD) && $(CXX) $(INCLUDES) -o $(TARGET_BIN) $(BIN_OBJS) $(LDFLAGS)
+	$(Q)cd $(BUILD) && $(CXX) $(INCLUDES) -o $(TARGET_BIN) $(OBJS) $(LDFLAGS)
 
 # Create the shared library
 $(TARGET_LIB): $(LIB_OBJS)
@@ -100,7 +102,7 @@ clean:
 	-rm -fr $(BUILD)
 
 # Create the directory before compiling sources
-$(BIN_OBJS): | $(BUILD)
+$(OBJS): | $(BUILD)
 $(BUILD):
 	@mkdir -p $(BUILD)
 
@@ -108,4 +110,4 @@ $(BUILD):
 $(BUILD)/%.d: ;
 .PRECIOUS: $(BUILD)/%.d
 
--include $(patsubst %,$(BUILD)/%.d,$(basename $(BIN_OBJS)))
+-include $(patsubst %,$(BUILD)/%.d,$(basename $(OBJS)))

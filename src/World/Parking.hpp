@@ -25,28 +25,35 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
+#ifndef PARKING_HPP
+#  define PARKING_HPP
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
+#  include "ParkingDimension.hpp"
+#  include <SFML/System/Vector2.hpp>
+#  include <cassert>
 
-// -----------------------------------------------------------------------------
-int main()
+class Car;
+
+class Parking
 {
-    Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-    Simulation simulation(app);
-    simulation.bgColor = sf::Color(255,255,255,255);
+public:
 
-    try
-    {
-        app.push(simulation);
-        app.loop();
-    }
-    catch (std::string const& msg)
-    {
-        std::cerr << "Fatal: " << msg << std::endl;
-        return EXIT_FAILURE;
-    }
+    Parking(ParkingDimension const& d, sf::Vector2f const& position, Car& car);
+    Parking(ParkingDimension const& d, sf::Vector2f const& position);
+    void bind(Car& car);
+    void unbind();
+    bool empty() const;
+    Car& car();
+    sf::Vector2f const& position() const { return m_position; }
 
-    return EXIT_SUCCESS;
-}
+public:
+
+    ParkingDimension const dim;
+
+private:
+
+    Car* m_car = nullptr;
+    sf::Vector2f m_position;
+};
+
+#endif

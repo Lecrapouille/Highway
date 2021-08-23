@@ -25,28 +25,4 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
-
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
-
-// -----------------------------------------------------------------------------
-int main()
-{
-    Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-    Simulation simulation(app);
-    simulation.bgColor = sf::Color(255,255,255,255);
-
-    try
-    {
-        app.push(simulation);
-        app.loop();
-    }
-    catch (std::string const& msg)
-    {
-        std::cerr << "Fatal: " << msg << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}
+#include "CarControl.hpp"

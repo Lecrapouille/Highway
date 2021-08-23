@@ -25,28 +25,17 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
+#ifndef UTILS_HPP
+#  define UTILS_HPP
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
+#  include <cmath>
 
-// -----------------------------------------------------------------------------
-int main()
-{
-    Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-    Simulation simulation(app);
-    simulation.bgColor = sf::Color(255,255,255,255);
+#  define RAD2DEG(r) ((r) * 57.295779513f)
+#  define DEG2RAD(d) ((d) * 0.01745329251994f)
 
-    try
-    {
-        app.push(simulation);
-        app.loop();
-    }
-    catch (std::string const& msg)
-    {
-        std::cerr << "Fatal: " << msg << std::endl;
-        return EXIT_FAILURE;
-    }
+#  define NORM(xa, ya, xb, yb)                                          \
+   sqrtf(((xb) - (xa)) * ((xb) - (xa)) + ((yb) - (ya)) * ((yb) - (ya)))
 
-    return EXIT_SUCCESS;
-}
+#  define ARC_LENGTH(angle, radius) ((angle) * (radius))
+
+#endif

@@ -25,28 +25,23 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
+#ifndef PARKING_DIMENSION_HPP
+#  define PARKING_DIMENSION_HPP
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
+#  include "Utils.hpp"
 
-// -----------------------------------------------------------------------------
-int main()
+struct ParkingDimension
 {
-    Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-    Simulation simulation(app);
-    simulation.bgColor = sf::Color(255,255,255,255);
+    ParkingDimension(float const l, float const w, float const a)
+        : length(l), width(w), angle(DEG2RAD(a))
+    {}
 
-    try
-    {
-        app.push(simulation);
-        app.loop();
-    }
-    catch (std::string const& msg)
-    {
-        std::cerr << "Fatal: " << msg << std::endl;
-        return EXIT_FAILURE;
-    }
+    //! \brief Vehicle length [meter]
+    float length;
+    //! \brief Vehicle width [meter]
+    float width;
+    //! \brief Orientation [rad]
+    float angle;
+};
 
-    return EXIT_SUCCESS;
-}
+#endif

@@ -25,28 +25,47 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
+#include "Parking.hpp"
+#include "Car.hpp"
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
+Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p)
+    : dim(d), m_position(p)
+{}
 
-// -----------------------------------------------------------------------------
-int main()
+Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p, Car& car)
+    : Parking(d, p)
 {
-    Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-    Simulation simulation(app);
-    simulation.bgColor = sf::Color(255,255,255,255);
+    m_car = &car;
+}
 
-    try
-    {
-        app.push(simulation);
-        app.loop();
-    }
-    catch (std::string const& msg)
-    {
-        std::cerr << "Fatal: " << msg << std::endl;
-        return EXIT_FAILURE;
-    }
+void Parking::bind(Car& car)
+{
+    //if (car.bound())
+    //    throw "Car already bound on parking spot";
+    //if (m_car != nullptr)
+    //    throw "Car already bound on parking spot";
 
-    return EXIT_SUCCESS;
+    car.init(m_position, 0.0f, dim.angle, 0.0f);
+    //car.bind();
+    m_car = &car;
+}
+
+void Parking::unbind()
+{
+    if (m_car == nullptr)
+        return ;
+
+    //m_car.bind(false);
+    m_car = nullptr;
+}
+
+bool Parking::empty() const
+{
+    return m_car == nullptr;
+}
+
+Car& Parking::car()
+{
+    assert(m_car != nullptr);
+    return *m_car;
 }
