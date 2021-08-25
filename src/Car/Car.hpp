@@ -56,10 +56,10 @@ public:
 
     float estimate_parking_length() { return 10.0f; }
 
-    bool park(sf::Vector2f const& destination)
+    bool park(Parking const& parking)
     {
-        m_trajectory = std::make_unique<ParallelTrajectory>();
-        return m_trajectory->init(*this, destination);
+        m_trajectory = CarTrajectory::create(int(RAD2DEG(parking.dim.angle)));
+        return m_trajectory->init(*this, parking);
     }
 
     void update(float const dt)

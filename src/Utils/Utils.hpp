@@ -38,4 +38,7 @@
 
 #  define ARC_LENGTH(angle, radius) ((angle) * (radius))
 
+#  define ROTATE(p, a) sf::Vector2f(cosf(a) * p.x - sinf(a) * p.y, \
+                                    sinf(a) * p.x + cosf(a) * p.y)
+
 #endif

@@ -54,7 +54,9 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
-OBJS = backward.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o Parking.o Renderer.o Simulation.o main.o
+OBJS = backward.o CarControl.o CarPhysics.o CarShape.o
+OBJS += CarTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o
+OBJS += Parking.o Renderer.o Simulation.o main.o
 
 ifeq ($(VERBOSE),1)
 Q :=

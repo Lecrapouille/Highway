@@ -28,12 +28,45 @@
 #ifndef RENDERER_HPP
 #  define RENDERER_HPP
 
+#  include "Utils.hpp"
 #  include <SFML/Graphics.hpp>
 
-#  define ZOOM 0.017f
+#  define ZOOM 0.02f
 
 class Car;
 class Parking;
+
+// *****************************************************************************
+//! \brief Arc
+// *****************************************************************************
+class ArcShape: public sf::CircleShape
+{
+public:
+
+    ArcShape(float radius, float start, float end, std::size_t pointCount)
+        : CircleShape(radius, pointCount + 2),
+          m_start(DEG2RAD(start)),
+          m_end(DEG2RAD(end))
+    {}
+
+    virtual sf::Vector2f getPoint(std::size_t index) const override
+    {
+        if ((index == 0) || (index == getPointCount()))
+            return getOrigin();
+
+        float const r = getRadius();
+        float angle = m_start + float(index - 1) * m_end / float(getPointCount() -1);
+        float x = std::cos(angle) * r;
+        float y = std::sin(angle) * r;
+
+        return sf::Vector2f(r + x, r + y);
+    }
+
+private:
+
+    float m_start;
+    float m_end;
+};
 
 // *****************************************************************************
 //! \brief Circle used to draw turning radii
@@ -54,6 +87,27 @@ private:
 private:
 
     sf::CircleShape m_shape;
+};
+
+// *****************************************************************************
+//! \brief Circle used to draw turning radii
+// *****************************************************************************
+class Arc: public sf::Drawable
+{
+public:
+
+    Arc(float x, float y, float r, float start, float end, sf::Color color = sf::Color::Red);
+
+private:
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    {
+        target.draw(m_shape, states);
+    }
+
+private:
+
+    ArcShape m_shape;
 };
 
 // *****************************************************************************
@@ -117,6 +171,7 @@ protected:
 private:
 
     Parking const* m_parking = nullptr;
+    //mutable sf::ConvexShape m_shape;
     mutable sf::RectangleShape m_shape;
 };
 

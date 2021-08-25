@@ -28,12 +28,17 @@
 #ifndef CAR_TRAJECTORY_HPP
 #  define CAR_TRAJECTORY_HPP
 
+#  include "Parking.hpp"
 #  include <SFML/Graphics.hpp> // FIXME deplacer CarTrajectory::draw
 #  include <vector>
 #  include <cassert>
 
 class Car;
 class CarControl;
+
+static const bool USE_KINEMATIC = true;
+static const float VMAX = 1.0f; // [m/s]
+static const float ADES = 1.0f; // [m/s/s]
 
 class References
 {
@@ -105,8 +110,10 @@ public:
 
     virtual ~CarTrajectory() = default;
     void update(CarControl& control, float const dt);
-    virtual bool init(Car& car, sf::Vector2f const& destination) = 0;
+    virtual bool init(Car& car, Parking const& parking) = 0;
     virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
+
+    static std::unique_ptr<CarTrajectory> create(int const angle/*CarTrajectory::Type const type*/);
 
 protected:
 
@@ -128,12 +135,12 @@ class ParallelTrajectory: public CarTrajectory
 {
 public:
 
-    virtual bool init(Car& car, sf::Vector2f const& destination) override;
+    virtual bool init(Car& car, Parking const& parking) override;
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
 
-    bool computePathPlanning(Car const& car, sf::Vector2f const& destination);
+    bool computePathPlanning(Car const& car, Parking const& parking);
     // Max valocity [m/s]
     // Desired acceleration [m/s/s]
     void generateReferenceTrajectory(Car const& car, float const vmax, float const ades);
@@ -151,6 +158,35 @@ private:
     float Xc1, Yc1, Xc2, Yc2, Xt, Yt, Xs, Ys, Xi, Yi, Xf, Yf;
     //! \brief Minimal central angle for making the turn.
     float min_central_angle;
+};
+
+// *************************************************************************
+//! \brief
+// *************************************************************************
+class DiagonalTrajectory: public CarTrajectory
+{
+public:
+
+    virtual bool init(Car& car, Parking const& parking) override;
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+private:
+
+    bool computePathPlanning(Car const& car, Parking const& parking);
+    void generateReferenceTrajectory(Car const& car, float const vmax, float const ades);
+
+private:
+
+    // rayon pour sortir
+    float Rin1;
+    float theta1;
+    float beta1; // angle braquage
+
+    float Rin2;
+    float theta2;
+    float beta2; // angle braquage
+
+    float Xi, Yi, Xdm, Ydm, Xc, Yc, dl;
 };
 
 #endif

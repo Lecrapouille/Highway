@@ -48,18 +48,31 @@ Simulation::Simulation(Application& application)
     m_view.zoom(ZOOM);
     renderer().setView(m_view);
 
-    ParkingDimension const& dim = ParkingDimensions::get("creneau");
+    ParkingDimension const& dim = ParkingDimensions::get("epi.45");
 
-    Parking& parking = addParking(dim, sf::Vector2f(97.5f, 100.0f));
-    addParking(dim, parking.position() + sf::Vector2f(parking.dim.length, 0.0f));
+#if 0
+    // epi.0 epi.90
+    Parking& parking1 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
+    Parking& parking2 = addParking(dim, parking1.position() + ROTATE(sf::Vector2f(parking1.dim.length, 0.0f), parking1.dim.angle));
+    Parking& parking3 = addParking(dim, parking2.position() + ROTATE(sf::Vector2f(parking2.dim.length, 0.0f), parking2.dim.angle));
+#else
+    Parking& parking1 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
+    Parking& parking2 = addParking(dim, parking1.position() + sf::Vector2f(parking1.dim.width + 0.9f, 0.0f));
+    Parking& parking3 = addParking(dim, parking2.position() + sf::Vector2f(parking1.dim.width + 0.9f, 0.0f));
+#endif
 
-    Car& car = addCar("Renault.Twingo", sf::Vector2f(105.0f, 102.0f), 0.0f);
-    //parking.bind(car);
+    // Parallel
+    // Car& car = addCar("Renault.Twingo", sf::Vector2f(105.0f, 102.0f), 0.0f);
+
+    // Diag
+    Car& car = addCar("Renault.Twingo", sf::Vector2f(112.0f, 105.0f), 0.0f);
+
+    //parking1.bind(car);
 
     // Final destination
-    if (!car.park(parking.position()))
+    if (!car.park(parking3))
     {
-       std::cerr << "The car cannot park" << std::endl;
+        std::cerr << "The car cannot park" << std::endl;
     }
 }
 
@@ -77,6 +90,14 @@ Car& Simulation::addCar(const char* model, sf::Vector2f const& position, float c
                         float const speed, float const steering)
 {
     return addCar(CarDimensions::get(model), position, heading, speed, steering);
+}
+
+//------------------------------------------------------------------------------
+Car& Simulation::addCar(const char* model, Parking& parking)
+{
+    Car& car = addCar(CarDimensions::get(model), sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f, 0.0f);
+    parking.bind(car);
+    return car;
 }
 
 //------------------------------------------------------------------------------

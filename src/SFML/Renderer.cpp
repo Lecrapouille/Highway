@@ -31,14 +31,23 @@
 #include "Parking.hpp"
 
 Circle::Circle(float x, float y, float r, sf::Color color)
+    : m_shape(r, 100)
 {
-    m_shape.setRadius(r);
     m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
     m_shape.setPosition(x, y);
     m_shape.setFillColor(sf::Color(255, 255, 255, 0));
     m_shape.setOutlineThickness(ZOOM * 2.0f);
     m_shape.setOutlineColor(color);
-    m_shape.setPointCount(100);
+}
+
+Arc::Arc(float x, float y, float r, float start, float end, sf::Color color)
+    : m_shape(r, start, end, 100)
+{
+    m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
+    m_shape.setPosition(x, y);
+    m_shape.setFillColor(sf::Color(255, 255, 255, 0));
+    m_shape.setOutlineThickness(ZOOM * 2.0f);
+    m_shape.setOutlineColor(color);
 }
 
 Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf::Color color)
@@ -82,14 +91,33 @@ void ParkingDrawable::bind(Parking const& parking)
 {
     m_parking = &parking;
 
-    // FIXME parallelopipde
     m_shape.setSize(sf::Vector2f(parking.dim.length, parking.dim.width));
-    m_shape.setOrigin(0.0f, m_shape.getSize().y / 2);
+    m_shape.setOrigin(0.0f, m_shape.getSize().y / 2.0f);
     m_shape.setPosition(parking.position());
     m_shape.setRotation(RAD2DEG(parking.dim.angle));
     m_shape.setFillColor(sf::Color::White);
     m_shape.setOutlineThickness(ZOOM);
     m_shape.setOutlineColor(sf::Color::Black);
+
+#if 0
+    const float A = parking.dim.angle;
+    const float W = parking.dim.width;
+    const float h = parking.dim.length;
+    const float x = h / tanf(A);
+
+    m_shape.setPointCount(4);
+    m_shape.setPoint(0, sf::Vector2f(0, 0));
+    m_shape.setPoint(1, sf::Vector2f(x, h));
+    m_shape.setPoint(2, sf::Vector2f(x + W, h));
+    m_shape.setPoint(3, sf::Vector2f(W, 0));
+
+    m_shape.setOrigin(W / 2.0f, h / 2.0f);
+    m_shape.setPosition(parking.position());
+    //m_shape.setRotation(RAD2DEG(parking.dim.angle));
+    m_shape.setFillColor(sf::Color::White);
+    m_shape.setOutlineThickness(ZOOM);
+    m_shape.setOutlineColor(sf::Color::Black);
+#endif
 }
 
 void ParkingDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) const

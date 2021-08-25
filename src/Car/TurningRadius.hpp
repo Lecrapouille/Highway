@@ -50,8 +50,6 @@ struct TurningRadius
         const float w = dim.width;
         const float p = dim.front_overhang;
 
-std::cout << "Merde " << e << ", " << w << ", " << p << std::endl;
-
         // Rayon de braquage [m] (turning radius)
         middle = e / sinf(steering);
 
@@ -60,8 +58,6 @@ std::cout << "Merde " << e << ", " << w << ", " << p << std::endl;
 
         // Outer radius [m]
         external = sqrtf((internal + w) * (internal + w) + (e + p) * (e + p));
-
-std::cout << "R: " << middle << ", Ri: " << internal << ", Re: " << external << std::endl;
 
         // Largeur balayee [m]
         bal = external - internal;

@@ -38,6 +38,8 @@ class Parking
 {
 public:
 
+    // TODO enum Type { Parallel, Perpendicular, Diagonal45, Diagonal60, Diagonal75 };
+
     Parking(ParkingDimension const& d, sf::Vector2f const& position, Car& car);
     Parking(ParkingDimension const& d, sf::Vector2f const& position);
     void bind(Car& car);

@@ -47,6 +47,7 @@ public:
         renderer().close();
     }
 
+    Car& addCar(const char* model, Parking& parking);
     Car& addCar(const char* model, sf::Vector2f const& position, float const heading,
                 float const speed = 0.0f, float const steering = 0.0f);
     Car& addCar(CarDimension const& dim, sf::Vector2f const& position, float const heading,

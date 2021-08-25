@@ -45,7 +45,8 @@ void Parking::bind(Car& car)
     //if (m_car != nullptr)
     //    throw "Car already bound on parking spot";
 
-    car.init(m_position, 0.0f, dim.angle, 0.0f);
+    sf::Vector2f const offset(car.dim.back_overhang + car.dim.front_overhang, 0.0f);
+    car.init(m_position + ROTATE(offset, dim.angle), 0.0f, dim.angle, 0.0f);
     //car.bind();
     m_car = &car;
 }
