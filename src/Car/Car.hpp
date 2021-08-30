@@ -35,47 +35,29 @@
 #  include "CarPhysics.hpp"
 #  include "CarTrajectory.hpp"
 #  include <memory>
+#  include <deque>
 
-class Car
+class Trailer
 {
 public:
 
-    Car(CarDimension const& dim_)
-        : dim(dim_), m_kinematic(dim_)
+    Trailer(TrailerDimension const& dim_, CarPhysics& next)
+        : dim(dim_), m_kinematic(dim_, next)
     {}
 
-    Car(const char* model)
-        : Car(CarDimensions::get(model))
-    {}
-
-    inline void init(sf::Vector2f const& position, float const speed,
-                     float const heading, float const steering)
+    /*void attach(CarPhysics& kinematic)
     {
-        m_kinematic.init(position, speed, heading, steering);
+        m_kinematic.attach(kinematic);
+        }*/
+
+    inline void init(float const speed, float const heading)
+    {
+        m_kinematic.init(speed, heading);
     }
 
-    float estimate_parking_length() { return 10.0f; }
-
-    bool park(Parking const& parking)
+    void update(CarControl control, float const dt)
     {
-        m_trajectory = CarTrajectory::create(int(RAD2DEG(parking.dim.angle)));
-        return m_trajectory->init(*this, parking);
-    }
-
-    void update(float const dt)
-    {
-        if (m_trajectory == nullptr)
-            return ;
-
-        m_trajectory->update(m_control, dt);
-        m_control.update(dt);
-        m_kinematic.update(dt, m_control);
-    }
-
-    CarTrajectory const& trajectory() const
-    {
-        assert(m_trajectory != nullptr);
-        return *m_trajectory;
+        m_kinematic.update(control, dt);
     }
 
     inline float acceleration() const
@@ -95,30 +77,155 @@ public:
 
     inline float heading() const
     {
-        return shape().heading();
+        return shape<TrailerShape>().heading();
+    }
+
+    inline std::array<Wheel, 2> const& wheels() const
+    {
+        return shape<TrailerShape>().wheels();
+    }
+
+    inline Wheel const& wheel(TrailerShape::WheelType const i) const
+    {
+        return shape<TrailerShape>().wheel(i);
+    }
+
+    template<class T>
+    inline T const& shape() const
+    {
+        return *reinterpret_cast<const T*>(&m_kinematic.shape());
+    }
+
+    TrailerKinematic /*const*/& kinematic() /*const*/
+    {
+        return m_kinematic;
+    }
+
+public:
+
+    TrailerDimension const dim;
+
+private:
+
+    TrailerKinematic m_kinematic;
+};
+
+
+class Car
+{
+public:
+
+    Car(CarDimension const& dim_)
+        : dim(dim_), m_kinematic(dim_)
+    {}
+
+    Car(const char* model)
+        : Car(CarDimensions::get(model))
+    {}
+
+    void attach(TrailerDimension const& dim, const float heading)
+    {
+        CarPhysics* phys;
+
+        if (m_trailers.empty())
+        {
+            phys = &m_kinematic;
+        }
+        else
+        {
+            phys = &(m_trailers.back()->kinematic());
+        }
+
+        m_trailers.push_back(std::make_unique<Trailer>(dim, *phys));
+        m_trailers.back()->init(speed(), heading);
+    }
+
+    inline void init(sf::Vector2f const& position, float const speed,
+                     float const heading, float const steering)
+    {
+        m_kinematic.init(position, speed, heading, steering);
+        for (auto& it: m_trailers)
+        {
+            it->init(this->speed(), 0.0f); // TODO memorize headings
+        }
+    }
+
+    float estimate_parking_length() { return 10.0f; }
+
+    bool park(Parking const& parking)
+    {
+        m_trajectory = CarTrajectory::create(int(RAD2DEG(parking.dim.angle)));
+        return m_trajectory->init(*this, parking);
+    }
+
+    void update(float const dt)
+    {
+        if (m_trajectory == nullptr)
+            return ;
+
+        m_trajectory->update(m_control, dt);
+        m_control.update(dt);
+        m_kinematic.update(m_control, dt);
+    }
+
+    CarTrajectory const& trajectory() const
+    {
+        assert(m_trajectory != nullptr);
+        return *m_trajectory;
+    }
+
+    bool hasTrajectory() const
+    {
+        return m_trajectory != nullptr;
+    }
+
+    inline float acceleration() const
+    {
+        return m_kinematic.acceleration();
+    }
+
+    inline float speed() const
+    {
+        return m_kinematic.speed();
+    }
+
+    inline sf::Vector2f position() const
+    {
+        return m_kinematic.position();
+    }
+
+    inline float heading() const
+    {
+        return shape<CarShape>().heading();
     }
 
     inline std::array<Wheel, 4> const& wheels() const
     {
-        return shape().wheels();
+        return shape<CarShape>().wheels();
     }
 
-    inline Wheel const& wheel(Wheel::Type const i) const
+    inline Wheel const& wheel(CarShape::WheelType const i) const
     {
-        return shape().wheel(i);
+        return shape<CarShape>().wheel(i);
     }
 
-    inline CarShape const& shape() const
+    template<class T>
+    inline T const& shape() const
     {
-        return m_kinematic.shape();
+        return *reinterpret_cast<const T*>(&m_kinematic.shape());
     }
 
     friend std::ostream& operator<<(std::ostream& os, Car const& car)
     {
         return os << "Car {" << std::endl
                   << car.dim << std::endl
-                  << car.shape() << std::endl
+                  << car.shape<CarShape>() << std::endl
                   << "}";
+    }
+
+    std::deque<std::unique_ptr<Trailer>> const& trailers() const
+    {
+        return m_trailers;
     }
 
 public:
@@ -130,6 +237,7 @@ private:
     CarKinematic m_kinematic;
     CarControl m_control;
     std::unique_ptr<CarTrajectory> m_trajectory = nullptr;
+    std::deque<std::unique_ptr<Trailer>> m_trailers;
 };
 
 #endif

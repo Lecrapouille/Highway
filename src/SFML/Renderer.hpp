@@ -34,6 +34,7 @@
 #  define ZOOM 0.02f
 
 class Car;
+class Trailer;
 class Parking;
 
 // *****************************************************************************
@@ -153,6 +154,30 @@ private:
     mutable sf::RectangleShape m_body_shape;
     //! \brief The front wheel drawn as a rectangle.
     mutable sf::RectangleShape m_wheel_shape;
+};
+
+// *****************************************************************************
+//! \brief
+// *****************************************************************************
+class TrailerDrawable: public sf::Drawable
+{
+public:
+
+    void bind(Trailer const& trailer);
+
+protected:
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final;
+
+private:
+
+    Trailer const* m_trailer = nullptr;
+    //! \brief The body drawn as a rectangle.
+    mutable sf::RectangleShape m_body_shape;
+    //! \brief The front wheel drawn as a rectangle.
+    mutable sf::RectangleShape m_wheel_shape;
+    //! \brief
+    mutable sf::RectangleShape m_truc_shape;
 };
 
 // *****************************************************************************

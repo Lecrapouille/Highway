@@ -64,6 +64,31 @@ private:
     }
 };
 
+class TrailerDimensions
+{
+public:
+
+    static bool add(const char* n, TrailerDimension const& dim)
+    {
+        return dictionary().insert(std::map<std::string, TrailerDimension>::value_type(n, dim)).second;
+    }
+
+    static TrailerDimension get(const char* n)
+    {
+        return dictionary().at(n);
+    }
+
+private:
+
+    static std::map<std::string, TrailerDimension>& dictionary()
+    {
+        static std::map<std::string, TrailerDimension> dico = {
+            { "generic", { 1.646f, 1.646f, 2.5f, 0.494f, 0.2f } },
+        };
+        return dico;
+    }
+};
+
 
 class ParkingDimensions
 {

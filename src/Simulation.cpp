@@ -49,28 +49,32 @@ Simulation::Simulation(Application& application)
     renderer().setView(m_view);
 
     ParkingDimension const& dim = ParkingDimensions::get("epi.45");
-
-#if 0
-    // epi.0 epi.90
-    Parking& parking1 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
-    Parking& parking2 = addParking(dim, parking1.position() + ROTATE(sf::Vector2f(parking1.dim.length, 0.0f), parking1.dim.angle));
-    Parking& parking3 = addParking(dim, parking2.position() + ROTATE(sf::Vector2f(parking2.dim.length, 0.0f), parking2.dim.angle));
-#else
-    Parking& parking1 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
+    Parking& parking0 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
+    Parking& parking1 = addParking(dim, parking0.position() + sf::Vector2f(parking0.dim.width + 0.9f, 0.0f)); // FIXME 0.9
     Parking& parking2 = addParking(dim, parking1.position() + sf::Vector2f(parking1.dim.width + 0.9f, 0.0f));
-    Parking& parking3 = addParking(dim, parking2.position() + sf::Vector2f(parking1.dim.width + 0.9f, 0.0f));
-#endif
+    Parking& parking3 = addParking(dim, parking2.position() + sf::Vector2f(parking2.dim.width + 0.9f, 0.0f));
+    Parking& parking4 = addParking(dim, parking3.position() + sf::Vector2f(parking3.dim.width + 0.9f, 0.0f));
 
-    // Parallel
-    // Car& car = addCar("Renault.Twingo", sf::Vector2f(105.0f, 102.0f), 0.0f);
+    //Parking& road1 = addParking(ParkingDimensions::get("road"), sf::Vector2f(100.0f, 107.5f));
 
-    // Diag
-    Car& car = addCar("Renault.Twingo", sf::Vector2f(112.0f, 105.0f), 0.0f);
+    // Parked cars
+    Car& car0 = addCar("Renault.Twingo", parking0);
+    Car& car1 = addCar("Renault.Twingo", parking2);
+    std::cout << "Car0: " << car0.position().x << ", " << car0.position().y << std::endl;
+    std::cout << "Car1: " << car1.position().x << ", " << car1.position().y << std::endl;
 
-    //parking1.bind(car);
+    // -----
+    const float K = car1.dim.width / 2.0f;
+    const float offset = 0.5f;
+    const float Xc = parking1.position().x + (car0.dim.length + offset) * cosf(parking1.dim.angle) - K * sinf(parking1.dim.angle);
+    const float Yc = parking1.position().y + (car0.dim.length + offset) * sinf(parking1.dim.angle) + K * cosf(parking1.dim.angle);
+    Car& car2 = addCar("Renault.Twingo", sf::Vector2f(Xc, Yc), parking1.dim.angle);
+    parking1.bind(car2);
 
-    // Final destination
-    if (!car.park(parking3))
+    // -----
+    Car& car3 = addCar("Renault.Twingo", sf::Vector2f(106.0f, 106.0f+2.0f), 0.0f);
+    //car3.attach(TrailerDimensions::get("generic"), 0.0f);
+    if (!car3.park(parking1))
     {
         std::cerr << "The car cannot park" << std::endl;
     }
@@ -80,9 +84,9 @@ Simulation::Simulation(Application& application)
 Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position, float const heading,
                         float const speed, float const steering)
 {
-    m_cars.push_back(Car(dim));
-    m_cars.back().init(position, speed, heading, steering);
-    return m_cars.back();
+    m_cars.push_back(std::make_unique<Car>(dim));
+    m_cars.back()->init(position, speed, heading, steering);
+    return *m_cars.back();
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +147,7 @@ void Simulation::update(const float dt)
 {
     for (auto& it: m_cars)
     {
-        it.update(dt);
+        it->update(dt);
     }
 }
 
@@ -153,7 +157,7 @@ void Simulation::draw(const float /*dt*/)
     CarDrawable cd;
     ParkingDrawable pd;
 
-    m_view.setCenter(m_cars[0].position());
+    m_view.setCenter(m_cars[3]->position());
     renderer().setView(m_view);
 
     for (auto const& it: m_parkings)
@@ -164,7 +168,7 @@ void Simulation::draw(const float /*dt*/)
 
     for (auto const& it: m_cars)
     {
-        cd.bind(it);
+        cd.bind(*it);
         renderer().draw(cd);
     }
 }

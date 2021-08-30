@@ -31,6 +31,27 @@
 #  include "Utils.hpp"
 #  include <ostream>
 
+
+struct TrailerDimension
+{
+    TrailerDimension(const float w, const float l, const float l2,
+                     const float bo, const float wr)
+        : width(w), width2(0.1f), length(l), wheelbase(l2),  back_overhang(bo),
+          wheel_radius(wr)
+    {}
+
+    //! \brief Vehicle width [meter]
+    float width, width2;
+    //! \brief Vehicle length [meter]
+    float length, wheelbase;
+    //! \brief Porte a faux arriere [meter]
+    float back_overhang;
+    //! \brief Rayon roue [meter]
+    float wheel_radius;
+    //! \brief Epaisseur roue [meter] (only used for the rendering)
+    float wheel_width = 0.1f;
+};
+
 struct CarDimension
 {
     //--------------------------------------------------------------------------

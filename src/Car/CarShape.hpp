@@ -35,8 +35,6 @@
 
 struct Wheel
 {
-    enum Type { FL, FR, RR, RL };
-
     //! \brief Relative position from
     sf::Vector2f offset;
     //! \brief current position in the world
@@ -55,9 +53,109 @@ struct Wheel
     }
 };
 
-class CarShape
+
+// Position, orientation and wheel positions
+template<long unsigned int N>
+class VehicleShape
 {
 public:
+
+    virtual ~VehicleShape() = default;
+
+    inline float heading() const
+    {
+        return m_heading;
+    }
+
+    inline sf::Vector2f position() const
+    {
+        return m_position;
+    }
+
+    inline std::array<Wheel, N> const& wheels() const
+    {
+        return m_wheels;
+    }
+
+    inline float steering() const
+    {
+        return m_wheels[0].steering;
+    }
+
+    virtual void steering(float const v) = 0;
+
+    friend std::ostream& operator<<(std::ostream& os, VehicleShape const& shape)
+    {
+        os << "  Shape {" << std::endl
+           << "    position=(" << shape.m_position.x << ", " << shape.m_position.y << ")," << std::endl
+           << "    heading=" << RAD2DEG(shape.m_heading) << std::endl;
+
+        auto i = N;
+        while (i--)
+        {
+            os << "    wheel[" << i << "]=" << shape.m_wheels[i] << "," << std::endl;
+        }
+        return os << "  }";
+    }
+
+protected:
+
+    sf::Vector2f m_position;
+    float m_heading;
+    std::array<Wheel, N> m_wheels;
+};
+
+
+
+
+class TrailerShape: public VehicleShape<2>
+{
+public:
+
+    enum WheelType { RR, RL };
+
+    TrailerShape(TrailerDimension const& dim_)
+        : dim(dim_)
+    {
+        // Wheel offset along the Y-axis
+        const float K = dim.width / 2 - dim.wheel_width / 2;
+
+        m_wheels[WheelType::RL].offset = sf::Vector2f(0.0f, K);
+        m_wheels[WheelType::RR].offset = sf::Vector2f(0.0f, -K);
+        m_wheels[WheelType::RL].steering = m_wheels[WheelType::RR].steering = 0.0f;
+        //wheels[FL].speed = m_wheels[FR].speed = NAN;
+        //wheels[RL].speed = m_wheels[RR].speed = NAN;
+    }
+
+    void set(sf::Vector2f const& position, float const heading)
+    {
+        m_heading = heading;
+        m_position = position;
+
+        m_wheels[WheelType::RL].position = position + ROTATE(m_wheels[WheelType::RL].offset, heading);
+        m_wheels[WheelType::RR].position = position + ROTATE(m_wheels[WheelType::RR].offset, heading);
+    }
+
+    inline Wheel const& wheel(WheelType const i) const { return m_wheels[i]; }
+
+    virtual void steering(float const) override
+    {
+        // Do nothing
+    }
+
+public:
+
+    TrailerDimension const dim;
+};
+
+
+
+
+class CarShape: public VehicleShape<4>
+{
+public:
+
+    enum WheelType { FL, FR, RR, RL };
 
     CarShape(CarDimension const& dim_)
         : dim(dim_)
@@ -65,10 +163,10 @@ public:
         // Wheel offset along the Y-axis
         const float K = dim.width / 2 - dim.wheel_width / 2;
 
-        m_wheels[Wheel::Type::FL].offset = sf::Vector2f(dim.wheelbase, K);
-        m_wheels[Wheel::Type::FR].offset = sf::Vector2f(dim.wheelbase, -K);
-        m_wheels[Wheel::Type::RL].offset = sf::Vector2f(0.0f, K);
-        m_wheels[Wheel::Type::RR].offset = sf::Vector2f(0.0f, -K);
+        m_wheels[WheelType::FL].offset = sf::Vector2f(dim.wheelbase, -K);
+        m_wheels[WheelType::FR].offset = sf::Vector2f(dim.wheelbase, K);
+        m_wheels[WheelType::RL].offset = sf::Vector2f(0.0f, -K);
+        m_wheels[WheelType::RR].offset = sf::Vector2f(0.0f, K);
         //wheels[FL].speed = m_wheels[FR].speed = NAN;
         //wheels[RL].speed = m_wheels[RR].speed = NAN;
     }
@@ -78,66 +176,24 @@ public:
         m_heading = heading;
         m_position = position;
 
-        const float COS_YAW = cosf(heading);
-        const float SIN_YAW = sinf(heading);
-        const float FRONT_X = position.x + m_wheels[Wheel::Type::FL].offset.x * COS_YAW;
-        const float FRONT_Y = position.y + m_wheels[Wheel::Type::FL].offset.x * SIN_YAW;
-        const float OFFSET_SIN = m_wheels[Wheel::Type::FL].offset.y * SIN_YAW;
-        const float OFFSET_COS = m_wheels[Wheel::Type::FL].offset.y * COS_YAW;
-
-        m_wheels[Wheel::Type::FL].position.x = FRONT_X - OFFSET_SIN;
-        m_wheels[Wheel::Type::FL].position.y = FRONT_Y + OFFSET_COS;
-        m_wheels[Wheel::Type::FR].position.x = FRONT_X + OFFSET_SIN;
-        m_wheels[Wheel::Type::FR].position.y = FRONT_Y - OFFSET_COS;
-
-        m_wheels[Wheel::Type::RL].position.x = position.x + OFFSET_SIN;
-        m_wheels[Wheel::Type::RL].position.y = position.y - OFFSET_COS;
-        m_wheels[Wheel::Type::RR].position.x = position.x - OFFSET_SIN;
-        m_wheels[Wheel::Type::RR].position.y = position.y + OFFSET_COS;
-
-        m_wheels[Wheel::Type::FL].steering = m_wheels[Wheel::Type::FR].steering = steering;
-        m_wheels[Wheel::Type::RL].steering = m_wheels[Wheel::Type::RR].steering = 0.0f;
+        m_wheels[WheelType::FL].steering = m_wheels[WheelType::FR].steering = steering;
+        m_wheels[WheelType::RL].steering = m_wheels[WheelType::RR].steering = 0.0f;
+        m_wheels[WheelType::FL].position = position + ROTATE(m_wheels[WheelType::FL].offset, heading);
+        m_wheels[WheelType::FR].position = position + ROTATE(m_wheels[WheelType::FR].offset, heading);
+        m_wheels[WheelType::RL].position = position + ROTATE(m_wheels[WheelType::RL].offset, heading);
+        m_wheels[WheelType::RR].position = position + ROTATE(m_wheels[WheelType::RR].offset, heading);
     }
 
-    inline std::array<Wheel, 4> const& wheels() const { return m_wheels; }
-    inline Wheel const& wheel(Wheel::Type const i) const { return m_wheels[i]; }
-    inline float heading() const { return m_heading; }
-    inline float steering() const
-    {
-        return m_wheels[0].steering;
-    }
+    inline Wheel const& wheel(WheelType const i) const { return m_wheels[i]; }
 
-    void steering(float const v)
+    virtual void steering(float const v) override
     {
-        m_wheels[Wheel::Type::FL].steering = m_wheels[Wheel::Type::FR].steering = v;
-    }
-
-    inline sf::Vector2f position() const
-    {
-        return m_position;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, CarShape const& shape)
-    {
-        return os << "  Shape {" << std::endl
-                  << "    position=(" << shape.m_position.x << ", " << shape.m_position.y << ")," << std::endl
-                  << "    heading=" << RAD2DEG(shape.m_heading) << std::endl
-                  << "    wheel[FL]=" << shape.m_wheels[Wheel::Type::FL] << "," << std::endl
-                  << "    wheel[FR]=" << shape.m_wheels[Wheel::Type::FR] << "," << std::endl
-                  << "    wheel[RL]=" << shape.m_wheels[Wheel::Type::RL] << "," << std::endl
-                  << "    wheel[RR]=" << shape.m_wheels[Wheel::Type::RR] << std::endl
-                  << "  }";
+        m_wheels[WheelType::FL].steering = m_wheels[WheelType::FR].steering = v;
     }
 
 public:
 
     CarDimension const dim;
-
-protected:
-
-    std::array<Wheel, 4> m_wheels;
-    sf::Vector2f m_position;
-    float m_heading;
 };
 
 #endif

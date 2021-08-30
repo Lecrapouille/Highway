@@ -91,6 +91,7 @@ void ParkingDrawable::bind(Parking const& parking)
 {
     m_parking = &parking;
 
+#if 1
     m_shape.setSize(sf::Vector2f(parking.dim.length, parking.dim.width));
     m_shape.setOrigin(0.0f, m_shape.getSize().y / 2.0f);
     m_shape.setPosition(parking.position());
@@ -98,11 +99,11 @@ void ParkingDrawable::bind(Parking const& parking)
     m_shape.setFillColor(sf::Color::White);
     m_shape.setOutlineThickness(ZOOM);
     m_shape.setOutlineColor(sf::Color::Black);
+#else
 
-#if 0
     const float A = parking.dim.angle;
-    const float W = parking.dim.width;
-    const float h = parking.dim.length;
+    const float W = parking.dim.width * cosf(A);
+    const float h = parking.dim.length * sinf(A);
     const float x = h / tanf(A);
 
     m_shape.setPointCount(4);
@@ -151,7 +152,7 @@ void CarDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) const
     if (m_car == nullptr)
         return ;
 
-    CarShape const& shape = m_car->shape();
+    CarShape const& shape = m_car->shape<CarShape>();
 
     m_body_shape.setPosition(shape.position());
     m_body_shape.setRotation(RAD2DEG(shape.heading()));
@@ -159,7 +160,7 @@ void CarDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
     for (int i = 0; i < 4; ++i)
     {
-        Wheel const& wheel = shape.wheel(static_cast<Wheel::Type>(i));
+        Wheel const& wheel = shape.wheel(static_cast<CarShape::WheelType>(i));
 
         m_wheel_shape.setPosition(wheel.position);
         m_wheel_shape.setRotation(RAD2DEG(shape.heading() + wheel.steering));
@@ -167,7 +168,67 @@ void CarDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) const
     }
 
     target.draw(Circle(m_car->position().x, m_car->position().y, 2*ZOOM, sf::Color::Black));
+    TrailerDrawable td;
+    for (auto const& it: m_car->trailers())
+    {
+        std::cout << "Dessine trailer" << std::endl;
+        td.bind(*it);
+        target.draw(td, states);
+    }
 
-    // FIXME can segfault
-    m_car->trajectory().draw(target, states);
+    if (m_car->hasTrajectory())
+    {
+        m_car->trajectory().draw(target, states);
+    }
+}
+
+void TrailerDrawable::bind(Trailer const& trailer)
+{
+    m_trailer = &trailer;
+    TrailerDimension const& dim = trailer.dim;
+
+    m_body_shape.setSize(sf::Vector2f(dim.length, dim.width));
+    m_body_shape.setOrigin(dim.back_overhang, m_body_shape.getSize().y / 2); // Origin on the middle of the rear wheels
+    m_body_shape.setFillColor(sf::Color(165, 42, 42));
+    m_body_shape.setOutlineThickness(ZOOM);
+    m_body_shape.setOutlineColor(sf::Color::Blue);
+
+    m_truc_shape.setSize(sf::Vector2f(dim.wheelbase, dim.width2));
+    m_truc_shape.setOrigin(0.0f, m_truc_shape.getSize().y / 2);
+    m_truc_shape.setFillColor(sf::Color::Black);
+    m_truc_shape.setOutlineThickness(ZOOM);
+    m_truc_shape.setOutlineColor(sf::Color::Blue);
+
+    m_wheel_shape.setSize(sf::Vector2f(dim.wheel_radius * 2, dim.wheel_width));
+    m_wheel_shape.setOrigin(m_wheel_shape.getSize().x / 2, m_wheel_shape.getSize().y / 2);
+    m_wheel_shape.setFillColor(sf::Color::Black);
+    m_wheel_shape.setOutlineThickness(ZOOM);
+    m_wheel_shape.setOutlineColor(sf::Color::Yellow);
+}
+
+void TrailerDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    if (m_trailer == nullptr)
+        return ;
+
+    TrailerShape const& shape = m_trailer->shape<TrailerShape>();
+
+    m_body_shape.setPosition(shape.position());
+    m_body_shape.setRotation(RAD2DEG(shape.heading()));
+    target.draw(m_body_shape, states);
+
+    m_truc_shape.setPosition(shape.position());
+    m_truc_shape.setRotation(RAD2DEG(shape.heading()));
+    target.draw(m_truc_shape, states);
+
+    for (int i = 0; i < 2; ++i)
+    {
+        Wheel const& wheel = shape.wheel(static_cast<TrailerShape::WheelType>(i));
+
+        m_wheel_shape.setPosition(wheel.position);
+        m_wheel_shape.setRotation(RAD2DEG(shape.heading() + wheel.steering));
+        target.draw(m_wheel_shape, states);
+    }
+
+    target.draw(Circle(m_trailer->position().x, m_trailer->position().y, 2*ZOOM, sf::Color::Black));
 }

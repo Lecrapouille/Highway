@@ -101,7 +101,7 @@ private:
 
     sf::View m_view;
     std::atomic<bool> m_running{true};
-    std::deque<Car> m_cars;
+    std::deque<std::unique_ptr<Car>> m_cars;
     std::deque<Parking> m_parkings;
 };
 

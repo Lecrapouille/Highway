@@ -31,45 +31,102 @@
 #  include "CarControl.hpp"
 #  include "CarShape.hpp"
 #  include <iostream>
-//#  include <SFML/System/Vector2.hpp>
+#  include <cassert>
 
 class CarPhysics
 {
 public:
 
     virtual ~CarPhysics() = default;
-    virtual void update(float const dt, CarControl const& control) = 0;
+
+    void attach(CarPhysics& next)
+    {
+        m_next = &next;
+        next.m_previous = this;
+    }
+
+    virtual void update(CarControl const& control, float const dt) = 0;
     virtual float acceleration() const = 0;
     virtual float speed() const = 0;
     virtual sf::Vector2f position() const = 0;
+    virtual float heading() const = 0;
+
+    //protected:
+
+    CarPhysics* m_next = nullptr;
+    CarPhysics* m_previous = nullptr;
 };
 
-class CarKinematic: public CarPhysics
+
+
+class TrailerKinematic: public CarPhysics
 {
 public:
 
-    CarKinematic(CarDimension const& dim)
+    TrailerKinematic(TrailerDimension const& dim, CarPhysics& next)
         : m_shape(dim)
-    {}
-
-    void init(sf::Vector2f const& position, float const speed,
-              float const heading, float const steering)
     {
-        m_shape.set(position, heading, steering);
+        attach(next);
+    }
+
+    virtual ~TrailerKinematic() = default;
+
+    void init(float const speed, float const heading)
+    {
+        float x = 0.0f;
+        float y = 0.0f;
+        CarPhysics* vehicle = m_next;
+        assert(vehicle != nullptr);
+
+        //while ((vehicle != nullptr) && (vehicle->m_next == nullptr))
+        {
+            x += cosf(vehicle->heading()) * m_shape.dim.wheelbase;
+            y += sinf(vehicle->heading()) * m_shape.dim.wheelbase;
+            //vehicle = vehicle->m_next;
+        }
+
+        assert(vehicle != nullptr);
+        sf::Vector2f position = vehicle->position() - sf::Vector2f(x, y);
+        m_shape.set(position, heading);
         m_speed = speed;
     }
 
-    virtual void update(float const dt, CarControl const& control) override
+    virtual void update(CarControl const& control, float const dt) override
     {
-        float steering = control.outputs.steering;
+        assert(m_next != nullptr);
         float heading = m_shape.heading();
-        sf::Vector2f position = m_shape.position();
-
+        float next_heading = m_next->heading();
         m_speed = control.outputs.body_speed;
-        heading += dt * m_speed * tanf(steering) / m_shape.dim.wheelbase;
-        position.x += dt * m_speed * cosf(heading);
-        position.y += dt * m_speed * sinf(heading);
-        m_shape.set(position, heading, steering);
+
+        if (m_next->m_next == nullptr)
+        {
+            heading += dt * m_speed * sinf(next_heading - heading) / m_shape.dim.wheelbase;
+        }
+        else
+        {
+            std::cerr << "not yet managed" << std::endl;
+            exit(1);
+        }
+
+        float x = 0.0f;
+        float y = 0.0f;
+        CarPhysics* vehicle = m_next;
+        //while ((vehicle != nullptr) && (vehicle->m_next == nullptr))
+        {
+            x += cosf(vehicle->heading()) * m_shape.dim.wheelbase;
+            y += sinf(vehicle->heading()) * m_shape.dim.wheelbase;
+            //vehicle = vehicle->m_next;
+        }
+
+        assert(vehicle != nullptr);
+        sf::Vector2f position = vehicle->position() - sf::Vector2f(x, y);
+        m_shape.set(position, heading);
+
+        // Update trailers
+        if (m_previous != nullptr)
+        {
+            m_previous->update(control, dt);
+        }
     }
 
     virtual float acceleration() const override
@@ -80,6 +137,81 @@ public:
     virtual float speed() const override
     {
         return m_speed;
+    }
+
+    virtual float heading() const override
+    {
+        return m_shape.heading();
+    }
+
+    virtual sf::Vector2f position() const override
+    {
+        return m_shape.position();
+    }
+
+    TrailerShape const& shape() const
+    {
+        return m_shape;
+    }
+
+private:
+
+    TrailerShape m_shape;
+    float m_speed = 0.0f;
+};
+
+
+
+
+class CarKinematic: public CarPhysics
+{
+public:
+
+    CarKinematic(CarDimension const& dim)
+        : m_shape(dim)
+    {}
+
+    virtual ~CarKinematic() = default;
+
+    void init(sf::Vector2f const& position, float const speed,
+              float const heading, float const steering)
+    {
+        m_shape.set(position, heading, steering);
+        m_speed = speed;
+    }
+
+    virtual void update(CarControl const& control, float const dt) override
+    {
+        float steering = control.outputs.steering;
+        float heading = m_shape.heading();
+        sf::Vector2f position = m_shape.position();
+
+        m_speed = control.outputs.body_speed;
+        heading += dt * m_speed * tanf(steering) / m_shape.dim.wheelbase;
+        position.x += dt * m_speed * cosf(heading);
+        position.y += dt * m_speed * sinf(heading);
+        m_shape.set(position, heading, steering);
+
+        // Update trailers
+        if (m_previous != nullptr)
+        {
+            m_previous->update(control, dt);
+        }
+    }
+
+    virtual float acceleration() const override
+    {
+        return 0.0f;
+    }
+
+    virtual float speed() const override
+    {
+        return m_speed;
+    }
+
+    virtual float heading() const override
+    {
+        return m_shape.heading();
     }
 
     virtual sf::Vector2f position() const override
