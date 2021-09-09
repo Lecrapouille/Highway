@@ -33,8 +33,11 @@
 #  define RAD2DEG(r) ((r) * 57.295779513f)
 #  define DEG2RAD(d) ((d) * 0.01745329251994f)
 
-#  define NORM(xa, ya, xb, yb)                                          \
+#  define DISTANCE(xa, ya, xb, yb)                                          \
    sqrtf(((xb) - (xa)) * ((xb) - (xa)) + ((yb) - (ya)) * ((yb) - (ya)))
+
+#  define SFDISTANCE(a, b)                                          \
+   sqrtf(((b.x) - (a.x)) * ((b.x) - (a.x)) + ((b.y) - (a.y)) * ((b.y) - (a.y)))
 
 #  define ARC_LENGTH(angle, radius) ((angle) * (radius))
 

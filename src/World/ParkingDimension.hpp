@@ -32,8 +32,8 @@
 
 struct ParkingDimension
 {
-    ParkingDimension(float const l, float const w, float const a)
-        : length(l), width(w), angle(DEG2RAD(a))
+    ParkingDimension(float const l, float const w, size_t const a)
+        : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
     {}
 
     //! \brief Vehicle length [meter]
@@ -42,6 +42,8 @@ struct ParkingDimension
     float width;
     //! \brief Orientation [rad]
     float angle;
+    //! \brief Orientation [deg]
+    size_t deg;
 };
 
 #endif

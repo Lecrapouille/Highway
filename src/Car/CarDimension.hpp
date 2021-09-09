@@ -30,7 +30,7 @@
 
 #  include "Utils.hpp"
 #  include <ostream>
-
+#  include <cassert>
 
 struct TrailerDimension
 {
@@ -67,7 +67,10 @@ struct CarDimension
                  const float bo, const float wr, const float /*tc*/)
         : width(w), length(l), wheelbase(wb), back_overhang(bo),
           front_overhang(length - wheelbase - back_overhang), wheel_radius(wr)
-    {}
+    {
+        assert(max_steering_angle > 0.0f);
+        assert(max_steering_angle < DEG2RAD(90.0f));
+    }
 
     friend std::ostream& operator<<(std::ostream& os, CarDimension const& dim)
     {
@@ -95,7 +98,7 @@ struct CarDimension
     //! \brief Epaisseur roue [meter] (only used for the rendering)
     float wheel_width = 0.1f;
     //! \brief Limit of steering angle absolute angle [rad]
-    float max_steering_angle = DEG2RAD(30.0f); // FIXME
+    float max_steering_angle = DEG2RAD(35.0f); // FIXME
 };
 
 #endif

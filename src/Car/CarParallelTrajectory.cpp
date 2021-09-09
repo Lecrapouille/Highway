@@ -35,7 +35,7 @@
 #include <cmath>
 
 //------------------------------------------------------------------------------
-bool ParallelTrajectory::init(Car& car, Parking const& parking)
+bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const entering)
 {
     // More the steering angle is great more the turning radius is short
     TurningRadius radius(car.dim, car.dim.max_steering_angle);
@@ -56,12 +56,12 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking)
     float Lmin = car.dim.back_overhang + sqrtf(Remin * Remin - Rimin * Rimin);
 
     // Has the parking spot has enough length to perform a one-trial maneuver parking ?
-    if (car.estimate_parking_length() >= Lmin)
+    if (entering || car.estimate_parking_length() >= Lmin)
     {
-        if (!computePathPlanning(car, parking))
+        if (!computePathPlanning(car, parking, entering))
             return false;
 
-        generateReferenceTrajectory(car, VMAX, ADES);
+        generateReferenceTrajectory(car, entering, VMAX, ADES);
         return true;
     }
     else
@@ -74,43 +74,52 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking)
 }
 
 //------------------------------------------------------------------------------
-bool ParallelTrajectory::computePathPlanning(Car const& car, Parking const& parking)
+bool ParallelTrajectory::computePathPlanning(Car const& car, Parking const& parking, bool const entering)
 {
     // TODO Missing the case the car is not enough far away
 
-    // Initial car position: current position of the car
-    Xi = car.position().x;
-    Yi = car.position().y;
-
-    // Final destination: the parking slot
-    Xf = parking.position().x;
-    Yf = parking.position().x;
-
-    // C1: center of the ending turn (end position of the 2nd turning maneuver)
-    Xc1 = Xf + car.dim.back_overhang;
-    Yc1 = Yf + Rwmin;
-
-    // C2: center of the starting turn (begining position of the 1st turning
-    // maneuver). Note: the X-coordinate cannot yet be computed.
-    Yc2 = Yi - Rwmin;
-
-    // Tengant intersection of C1 and C2.
-    Yt = (Yc1 + Yc2) / 2.0f;
-    float d = Rwmin * Rwmin - (Yt - Yc1) * (Yt - Yc1);
-    if (d < 0.0f)
+    if (entering)
     {
-        std::cerr << "Car is too far away on Y-axis (greater than its turning radius)"
-                  << std::endl;
-        return false;
+        // Initial car position: current position of the car
+        Xi = car.position().x;
+        Yi = car.position().y;
+
+        // Final destination: the parking slot
+        Xf = parking.position().x;
+        Yf = parking.position().y;
+
+        // C1: center of the ending turn (end position of the 2nd turning maneuver)
+        Xc1 = Xf + car.dim.back_overhang;
+        Yc1 = Yf + Rwmin;
+
+        // C2: center of the starting turn (begining position of the 1st turning
+        // maneuver). Note: the X-coordinate cannot yet be computed.
+        Yc2 = Yi - Rwmin;
+
+        // Tengant intersection of C1 and C2.
+        Yt = (Yc1 + Yc2) / 2.0f;
+        float d = Rwmin * Rwmin - (Yt - Yc1) * (Yt - Yc1);
+        if (d < 0.0f)
+        {
+            std::cerr << "Car is too far away on Y-axis (greater than its turning radius)"
+                      << std::endl;
+            return false;
+        }
+        Xt = Xc1 + sqrtf(d);
+
+        // Position of the car for starting the 1st turn.
+        Xs = 2.0f * Xt - Xc1;
+        Ys = Yi;
+
+        // X position of C1.
+        Xc2 = Xs;
     }
-    Xt = Xc1 + sqrtf(d);
+    else // leaving
+    {
 
-    // Position of the car for starting the 1st turn.
-    Xs = 2.0f * Xt - Xc1;
-    Ys = Yi;
 
-    // X position of C1.
-    Xc2 = Xs;
+
+    }
 
     // Minimal central angle for making the turn = atanf((Xt - Xc1) / (Yc1 - Yt))
     min_central_angle = atan2f(Xt - Xc1, Yc1 - Yt);
@@ -128,8 +137,11 @@ bool ParallelTrajectory::computePathPlanning(Car const& car, Parking const& park
 }
 
 //------------------------------------------------------------------------------
-void ParallelTrajectory::generateReferenceTrajectory(Car const& car, float const VMAX, float const ADES)
+void ParallelTrajectory::generateReferenceTrajectory(Car const& car, bool const entering, float const VMAX, float const ADES)
 {
+    // Duration to turn front wheels to the maximal angle [s]
+    float const DURATION_TO_TURN_WHEELS = 0.0f;
+
     // Clear internal states
     m_speeds.clear();
     m_accelerations.clear();
@@ -142,134 +154,183 @@ void ParallelTrajectory::generateReferenceTrajectory(Car const& car, float const
 
     if (USE_KINEMATIC)
     {
-        // Duration to turn front wheels to the maximal angle [s]
-        float const DURATION_TO_TURN_WHEELS = 0.0f;
+        if (entering)
+        {
+            // Init reference to idle the car.
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
 
-        // Init reference to idle the car.
-        m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
+            // Init car position -> position when starting the 1st turn
+            float t = std::abs(Xi - Xs) / VMAX;
+            m_speeds.add(-VMAX, t);
+            m_steerings.add(0.0f, t);
 
-        // Init car position -> position when starting the 1st turn
-        float t = std::abs(Xi - Xs) / VMAX;
-        m_speeds.add(-VMAX, t);
-        m_steerings.add(0.0f, t);
+            // Pause the car to turn the wheel
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(-car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
 
-        // Pause the car to turn the wheel
-        m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(-car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+            // 1st turn: start position -> P
+            t = ARC_LENGTH(min_central_angle, Rwmin) / VMAX;
+            m_speeds.add(-VMAX, t);
+            m_steerings.add(-car.dim.max_steering_angle, t);
 
-        // 1st turn: start position -> P
-        t = ARC_LENGTH(min_central_angle, Rwmin) / VMAX;
-        m_speeds.add(-VMAX, t);
-        m_steerings.add(-car.dim.max_steering_angle, t);
+            // Pause the car to turn the wheel
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
 
-        // Pause the car to turn the wheel
-        m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+            // 2nd turn: P -> final
+            m_speeds.add(-VMAX, t);
+            m_steerings.add(car.dim.max_steering_angle, t);
 
-        // 2nd turn: P -> final
-        m_speeds.add(-VMAX, t);
-        m_steerings.add(car.dim.max_steering_angle, t);
+            // Pause the car to turn the wheel
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
 
-        // Pause the car to turn the wheel
-        m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
+            // Centering in the parking spot
+            t = std::abs((5.0f/*FIXME PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f) / VMAX;
+            m_speeds.add(VMAX, t);
+            m_steerings.add(0.0f, t);
 
-        // Centering in the parking spot
-        t = std::abs((5.0f/*FIXME PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f) / VMAX;
-        m_speeds.add(VMAX, t);
-        m_steerings.add(0.0f, t);
+            // Init reference to idle the car
+            m_speeds.add(0.0f, 0.0f);
+            m_steerings.add(0.0f, 0.0f);
+        }
+        else // leaving
+        {
+            // Init reference to idle the car.
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
 
-        // Init reference to idle the car
-        m_speeds.add(0.0f, 0.0f);
-        m_steerings.add(0.0f, 0.0f);
+            // Centering in the parking spot
+            float t = std::abs((5.0f/*FIXME PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f) / VMAX;
+            m_speeds.add(VMAX, t);
+            m_steerings.add(0.0f, t);
+
+            // Pause the car to turn the wheel
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
+
+            // 2nd turn: P -> final
+            m_speeds.add(-VMAX, t);
+            m_steerings.add(car.dim.max_steering_angle, t);
+
+            // Pause the car to turn the wheel
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+            // 1st turn: start position -> P
+            t = ARC_LENGTH(min_central_angle, Rwmin) / VMAX;
+            m_speeds.add(-VMAX, t);
+            m_steerings.add(-car.dim.max_steering_angle, t);
+
+            // Pause the car to turn the wheel
+            m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(-car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+            // Init car position -> position when starting the 1st turn
+            t = std::abs(Xi - Xs) / VMAX;
+            m_speeds.add(-VMAX, t);
+            m_steerings.add(0.0f, t);
+
+            // Init reference to idle the car
+            m_speeds.add(0.0f, 0.0f);
+            m_steerings.add(0.0f, 0.0f);
+
+        }
     }
     else
     {
-        // Kinematics equations
-        // http://www.ilectureonline.com/lectures/subject/PHYSICS/1/9/259
-        //   acceleration: a, m_time: t
-        //   velocity: v = v0 + a * t
-        //   position: x = x0 + v0 * t + 0.5 * a * t * t
-        // Initial values:
-        //   x0 = 0 since we deal distances.
-        //   v0 = 0 since to do its maneuver the car has to halt.
-        // Therefore:
-        //   v = a t
-        //   x = a t^2 / 2
-        float const t1 = VMAX / ADES;
-        float const d1 = 0.5f * ADES * t1 * t1;
+        if (entering)
+        {
+            // Kinematics equations
+            // http://www.ilectureonline.com/lectures/subject/PHYSICS/1/9/259
+            //   acceleration: a, m_time: t
+            //   velocity: v = v0 + a * t
+            //   position: x = x0 + v0 * t + 0.5 * a * t * t
+            // Initial values:
+            //   x0 = 0 since we deal distances.
+            //   v0 = 0 since to do its maneuver the car has to halt.
+            // Therefore:
+            //   v = a t
+            //   x = a t^2 / 2
+            float const t1 = VMAX / ADES;
+            float const d1 = 0.5f * ADES * t1 * t1;
 
-        // Arc length for doing a turn and m_time needed at constant velocity Vmax for
-        // doing the turn.
-        float const d2 = ARC_LENGTH(min_central_angle, Rwmin);
-        float const t2 = (d2 - 2.0f * d1) / VMAX;
+            // Arc length for doing a turn and m_time needed at constant velocity Vmax for
+            // doing the turn.
+            float const d2 = ARC_LENGTH(min_central_angle, Rwmin);
+            float const t2 = (d2 - 2.0f * d1) / VMAX;
 
-        // Maneuver Xi => Xs
-        float const di = std::abs(Xi - Xs);
-        float const ti = (di - 2.0f * d1) / VMAX;
+            // Maneuver Xi => Xs
+            float const di = std::abs(Xi - Xs);
+            float const ti = (di - 2.0f * d1) / VMAX;
 
-        // Maneuver for centering the car in the spot
-        float const d3 = std::abs((5.0f/*PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f);
-        float const t3 = d3 / VMAX;
+            // Maneuver for centering the car in the spot
+            float const d3 = std::abs((5.0f/*PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f);
+            float const t3 = d3 / VMAX;
 
-        // Duration to turn front wheels to the maximal angle [s]
-        float const DURATION_TO_TURN_WHEELS = 1.5f;
-        float const AW = car.dim.max_steering_angle / DURATION_TO_TURN_WHEELS; // [rad/s]
+            // Duration to turn front wheels to the maximal angle [s]
+            float const DURATION_TO_TURN_WHEELS = 1.5f;
+            float const AW = car.dim.max_steering_angle / DURATION_TO_TURN_WHEELS; // [rad/s]
 
-        // Init
-        m_accelerations.add(0.0f, 0.0f);
-        m_steerings.add(0.0f, 0.0f);
+            // Init
+            m_accelerations.add(0.0f, 0.0f);
+            m_steerings.add(0.0f, 0.0f);
 
-        // Init car position -> position when starting the 1st turn
-        m_accelerations.add((Xi >= Xs ? -ADES : ADES), t1);
-        m_steerings.add(0.0f, t1);
+            // Init car position -> position when starting the 1st turn
+            m_accelerations.add((Xi >= Xs ? -ADES : ADES), t1);
+            m_steerings.add(0.0f, t1);
 
-        m_accelerations.add(0.0f, ti);
-        m_steerings.add(0.0f, ti);
+            m_accelerations.add(0.0f, ti);
+            m_steerings.add(0.0f, ti);
 
-        m_accelerations.add((Xi >= Xs ? ADES : -ADES), t1);
-        m_steerings.add(0.0f, t1);
+            m_accelerations.add((Xi >= Xs ? ADES : -ADES), t1);
+            m_steerings.add(0.0f, t1);
 
-        // Turn wheel
-        m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(-AW, DURATION_TO_TURN_WHEELS);
+            // Turn wheel
+            m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(-AW, DURATION_TO_TURN_WHEELS);
 
-        // Turn 1
-        m_accelerations.add(-ADES, t1);
-        m_steerings.add(0.0f, t1);
-        m_accelerations.add(0.0f, t2);
-        m_steerings.add(0.0f, t2);
-        m_accelerations.add(ADES, t1);
-        m_steerings.add(0.0f, t1);
+            // Turn 1
+            m_accelerations.add(-ADES, t1);
+            m_steerings.add(0.0f, t1);
+            m_accelerations.add(0.0f, t2);
+            m_steerings.add(0.0f, t2);
+            m_accelerations.add(ADES, t1);
+            m_steerings.add(0.0f, t1);
 
-        // Turn wheel
-        m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(AW, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(AW, DURATION_TO_TURN_WHEELS);
+            // Turn wheel
+            m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(AW, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(AW, DURATION_TO_TURN_WHEELS);
 
-        // Turn 2
-        m_accelerations.add(-ADES, t1);
-        m_steerings.add(0.0f, t1);
-        m_accelerations.add(0.0f, t2);
-        m_steerings.add(0.0f, t2);
-        m_accelerations.add(ADES, t1);
-        m_steerings.add(0.0f, t1);
+            // Turn 2
+            m_accelerations.add(-ADES, t1);
+            m_steerings.add(0.0f, t1);
+            m_accelerations.add(0.0f, t2);
+            m_steerings.add(0.0f, t2);
+            m_accelerations.add(ADES, t1);
+            m_steerings.add(0.0f, t1);
 
-        // Turn wheel
-        m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(-AW, DURATION_TO_TURN_WHEELS);
+            // Turn wheel
+            m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(-AW, DURATION_TO_TURN_WHEELS);
 
-        // Centering in the parking spot
-        m_accelerations.add(ADES, t3);
-        m_steerings.add(0.0f, t3);
-        m_accelerations.add(-ADES, t3);
-        m_steerings.add(0.0f, t3);
+            // Centering in the parking spot
+            m_accelerations.add(ADES, t3);
+            m_steerings.add(0.0f, t3);
+            m_accelerations.add(-ADES, t3);
+            m_steerings.add(0.0f, t3);
 
-        // Final
-        m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
+            // Final
+            m_accelerations.add(0.0f, DURATION_TO_TURN_WHEELS);
+            m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
+        }
+        else // leaving
+        {
+            std::cerr << "TBD" << std::endl;
+        }
     }
 }
 

@@ -108,12 +108,13 @@ class CarTrajectory
 {
 public:
 
-    virtual ~CarTrajectory() = default;
-    void update(CarControl& control, float const dt);
-    virtual bool init(Car& car, Parking const& parking) = 0;
-    virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
+    using Ptr = std::unique_ptr<CarTrajectory>;
+    static CarTrajectory::Ptr create(Parking::Type const type);
 
-    static std::unique_ptr<CarTrajectory> create(int const angle/*CarTrajectory::Type const type*/);
+    virtual ~CarTrajectory() = default;
+    virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;
+    virtual void update(CarControl& control, float const dt);
+    virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
 
 protected:
 
@@ -135,15 +136,15 @@ class ParallelTrajectory: public CarTrajectory
 {
 public:
 
-    virtual bool init(Car& car, Parking const& parking) override;
+    virtual bool init(Car& car, Parking const& parking, bool const entering) override;
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
 
-    bool computePathPlanning(Car const& car, Parking const& parking);
+    bool computePathPlanning(Car const& car, Parking const& parking, bool const entering);
     // Max valocity [m/s]
     // Desired acceleration [m/s/s]
-    void generateReferenceTrajectory(Car const& car, float const vmax, float const ades);
+    void generateReferenceTrajectory(Car const& car, bool const entering, float const vmax, float const ades);
 
 private:
 
@@ -167,13 +168,13 @@ class DiagonalTrajectory: public CarTrajectory
 {
 public:
 
-    virtual bool init(Car& car, Parking const& parking) override;
+    virtual bool init(Car& car, Parking const& parking, bool const entering) override;
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
 
-    bool computePathPlanning(Car const& car, Parking const& parking);
-    void generateReferenceTrajectory(Car const& car, float const vmax, float const ades);
+    bool computePathPlanning(Car const& car, Parking const& parking, bool const entering);
+    void generateReferenceTrajectory(Car const& car, bool const entering, float const vmax, float const ades);
 
 private:
 
@@ -187,6 +188,29 @@ private:
     float beta2; // angle braquage
 
     float Xi, Yi, Xdm, Ydm, Xc, Yc, dl;
+};
+
+// *************************************************************************
+//! \brief
+// *************************************************************************
+class PerpTrajectory: public CarTrajectory
+{
+public:
+
+    virtual bool init(Car& car, Parking const& parking, bool const entering) override;
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+private:
+
+    bool computePathPlanning(Car const& car, Parking const& parking, bool const entering);
+    // Max valocity [m/s]
+    // Desired acceleration [m/s/s]
+    void generateReferenceTrajectory(Car const& car, bool const entering, float const vmax, float const ades);
+
+private:
+
+    float Rmin, Rwmin;
+    float Xi, Yi, Lz, Xe, Ye;
 };
 
 #endif

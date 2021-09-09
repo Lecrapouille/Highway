@@ -30,7 +30,9 @@
 
 #  include "CarDimension.hpp"
 #  include "Utils.hpp"
-#  include <SFML/System/Vector2.hpp>
+//#  include <SFML/System/Vector2.hpp>
+#  include <SFML/Graphics/Rect.hpp>
+#  include <SFML/Graphics/RectangleShape.hpp>
 #  include <array>
 
 struct Wheel
@@ -82,6 +84,16 @@ public:
         return m_wheels[0].steering;
     }
 
+    sf::FloatRect boundinBox() const
+    {
+        return m_obb.getGlobalBounds();
+    }
+
+    bool intersects(VehicleShape<N> const& other) const
+    {
+        return boundinBox().intersects(other.boundinBox());
+    }
+
     virtual void steering(float const v) = 0;
 
     friend std::ostream& operator<<(std::ostream& os, VehicleShape const& shape)
@@ -98,14 +110,17 @@ public:
         return os << "  }";
     }
 
+public:
+
+    sf::RectangleShape m_obb;
+
 protected:
 
     sf::Vector2f m_position;
+    //! \brief Oriented bounding box for collision
     float m_heading;
     std::array<Wheel, N> m_wheels;
 };
-
-
 
 
 class TrailerShape: public VehicleShape<2>
@@ -117,6 +132,10 @@ public:
     TrailerShape(TrailerDimension const& dim_)
         : dim(dim_)
     {
+        // Origin on the middle of the rear wheels
+        m_obb.setSize(sf::Vector2f(dim.length, dim.width));
+        m_obb.setOrigin(dim.back_overhang, m_obb.getSize().y / 2);
+
         // Wheel offset along the Y-axis
         const float K = dim.width / 2 - dim.wheel_width / 2;
 
@@ -131,6 +150,8 @@ public:
     {
         m_heading = heading;
         m_position = position;
+        m_obb.setPosition(position);
+        m_obb.setRotation(RAD2DEG(heading));
 
         m_wheels[WheelType::RL].position = position + ROTATE(m_wheels[WheelType::RL].offset, heading);
         m_wheels[WheelType::RR].position = position + ROTATE(m_wheels[WheelType::RR].offset, heading);
@@ -160,6 +181,10 @@ public:
     CarShape(CarDimension const& dim_)
         : dim(dim_)
     {
+        // Origin on the middle of the rear wheels
+        m_obb.setSize(sf::Vector2f(dim.length, dim.width));
+        m_obb.setOrigin(dim.back_overhang, m_obb.getSize().y / 2);
+
         // Wheel offset along the Y-axis
         const float K = dim.width / 2 - dim.wheel_width / 2;
 
@@ -175,6 +200,8 @@ public:
     {
         m_heading = heading;
         m_position = position;
+        m_obb.setPosition(position);
+        m_obb.setRotation(RAD2DEG(heading));
 
         m_wheels[WheelType::FL].steering = m_wheels[WheelType::FR].steering = steering;
         m_wheels[WheelType::RL].steering = m_wheels[WheelType::RR].steering = 0.0f;

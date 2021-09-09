@@ -53,7 +53,7 @@ Arc::Arc(float x, float y, float r, float start, float end, sf::Color color)
 Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf::Color color)
 {
     // Arc magnitude
-    const float arrowLength = NORM(xa, ya, xb, yb);
+    const float arrowLength = DISTANCE(xa, ya, xb, yb);
 
     // Orientation
     const float teta = (yb - ya) / (xb - xa);
@@ -87,34 +87,47 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf:
     m_tail.setFillColor(color);
 }
 
+//    Y
+//    ^
+//    |
+//    | length
+//    +--------+
+//    |        |
+// O (+)------------> X
+//    |        | width /2
+//    +--------+
 void ParkingDrawable::bind(Parking const& parking)
 {
     m_parking = &parking;
 
 #if 1
-    m_shape.setSize(sf::Vector2f(parking.dim.length, parking.dim.width));
-    m_shape.setOrigin(0.0f, m_shape.getSize().y / 2.0f);
+    const float A = parking.dim.angle;
+    const float l = parking.dim.length;
+    const float w = parking.dim.width;
+
+    m_shape.setSize(sf::Vector2f(l, w));
+    m_shape.setOrigin(sf::Vector2f(0, w/2));
+    m_shape.setRotation(RAD2DEG(A));
     m_shape.setPosition(parking.position());
-    m_shape.setRotation(RAD2DEG(parking.dim.angle));
     m_shape.setFillColor(sf::Color::White);
     m_shape.setOutlineThickness(ZOOM);
     m_shape.setOutlineColor(sf::Color::Black);
-#else
 
-    const float A = parking.dim.angle;
-    const float W = parking.dim.width * cosf(A);
-    const float h = parking.dim.length * sinf(A);
-    const float x = h / tanf(A);
+#else
+    const float A = parking.dim.angle; // rad
+    const float l = parking.dim.length;
+    const float w = parking.dim.width;
+    const float x1 = l / tanf(A);
+    const float x2 = w / sinf(A);
 
     m_shape.setPointCount(4);
     m_shape.setPoint(0, sf::Vector2f(0, 0));
-    m_shape.setPoint(1, sf::Vector2f(x, h));
-    m_shape.setPoint(2, sf::Vector2f(x + W, h));
-    m_shape.setPoint(3, sf::Vector2f(W, 0));
+    m_shape.setPoint(1, sf::Vector2f(x1, l));
+    m_shape.setPoint(2, sf::Vector2f(x2 + x1, l));
+    m_shape.setPoint(3, sf::Vector2f(x2, 0));
 
-    m_shape.setOrigin(W / 2.0f, h / 2.0f);
+    m_shape.setOrigin((x1 + x2) / 2.0f, 0.0f /*l / 2.0f*/);
     m_shape.setPosition(parking.position());
-    //m_shape.setRotation(RAD2DEG(parking.dim.angle));
     m_shape.setFillColor(sf::Color::White);
     m_shape.setOutlineThickness(ZOOM);
     m_shape.setOutlineColor(sf::Color::Black);
@@ -127,6 +140,7 @@ void ParkingDrawable::draw(sf::RenderTarget& target, sf::RenderStates states) co
         return ;
 
     target.draw(m_shape, states);
+    target.draw(Circle(m_parking->position().x, m_parking->position().y, 0.02f, sf::Color::Black), states);
 }
 
 void CarDrawable::bind(Car const& car)
@@ -136,7 +150,7 @@ void CarDrawable::bind(Car const& car)
 
     m_body_shape.setSize(sf::Vector2f(dim.length, dim.width));
     m_body_shape.setOrigin(dim.back_overhang, m_body_shape.getSize().y / 2); // Origin on the middle of the rear wheels
-    m_body_shape.setFillColor(sf::Color(165, 42, 42));
+    m_body_shape.setFillColor(car.color);
     m_body_shape.setOutlineThickness(ZOOM);
     m_body_shape.setOutlineColor(sf::Color::Blue);
 

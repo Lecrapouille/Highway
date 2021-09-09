@@ -28,8 +28,21 @@
 #include "Parking.hpp"
 #include "Car.hpp"
 
+static Parking::Type convert(size_t angle) // [deg]
+{
+    switch (angle)
+    {
+    case 0u:
+        return Parking::Type::Parallel;
+    case 90u:
+        return Parking::Type::Perpendicular;
+    default:
+        return Parking::Type::Parallel;
+    }
+}
+
 Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p)
-    : dim(d), m_position(p)
+    : dim(d), type(convert(d.deg)), m_position(p)
 {}
 
 Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p, Car& car)

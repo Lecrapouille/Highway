@@ -30,12 +30,12 @@
 
 #  include "Dimensions.hpp"
 #  include "TurningRadius.hpp"
-//#  include "CarControl.hpp"
-//#  include "CarShape.hpp"
 #  include "CarPhysics.hpp"
 #  include "CarTrajectory.hpp"
 #  include <memory>
 #  include <deque>
+
+#define DEFAULT_CAR_COLOR 178, 174, 174
 
 class Trailer
 {
@@ -140,6 +140,13 @@ public:
         m_trailers.back()->init(speed(), heading);
     }
 
+    bool intersects(Car const& other) const
+    {
+        // FIXME: traillers collisions
+
+        return shape<CarShape>().intersects(other.shape<CarShape>());
+    }
+
     inline void init(sf::Vector2f const& position, float const speed,
                      float const heading, float const steering)
     {
@@ -150,12 +157,12 @@ public:
         }
     }
 
-    float estimate_parking_length() { return 10.0f; }
+    float estimate_parking_length() { return 10.0f; } // FIXME
 
     bool park(Parking const& parking)
     {
-        m_trajectory = CarTrajectory::create(int(RAD2DEG(parking.dim.angle)));
-        return m_trajectory->init(*this, parking);
+        m_trajectory = CarTrajectory::create(parking.type);
+        return m_trajectory->init(*this, parking, parking.empty());
     }
 
     void update(float const dt)
@@ -231,6 +238,7 @@ public:
 public:
 
     CarDimension const dim;
+    sf::Color color = sf::Color(DEFAULT_CAR_COLOR);
 
 private:
 

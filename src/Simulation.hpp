@@ -47,6 +47,19 @@ public:
         renderer().close();
     }
 
+    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position [meter].
+    //! \param[in] p: position in the windows [pixel].
+    //! \return position in the world [meter].
+    sf::Vector2f world(sf::Vector2i const& p);
+
+    void clear();
+    void createWorld(size_t angle, bool const entering);
+
+    // FIXME: SFMLCar instead ?
+    Car& addPlayer(CarDimension const& dim, sf::Vector2f const& position,
+                   float const heading, float const speed = 0.0f, float const steering = 0.0f);
+    Car& addPlayer(const char* model, sf::Vector2f const& position, float const heading,
+                  float const speed = 0.0f, float const steering = 0.0f);
     Car& addCar(const char* model, Parking& parking);
     Car& addCar(const char* model, sf::Vector2f const& position, float const heading,
                 float const speed = 0.0f, float const steering = 0.0f);
@@ -97,12 +110,23 @@ private: // Derived from GUIStates
         // Do nothing
     }
 
+    // TODO thread for the physics
+
 private:
 
-    sf::View m_view;
+    //! \brief Alive class ?
     std::atomic<bool> m_running{true};
+    //! \brief For managing zoom and camera displacement
+    sf::View m_view;
+    //! \brief Mouse X,Y position within the world coordinate [meter].
+    //! You directly can measure objects (in meter).
+    sf::Vector2f m_mouse;
+    //! \brief Container of parked and self-parking cars
     std::deque<std::unique_ptr<Car>> m_cars;
+    std::unique_ptr<Car> m_player = nullptr;
+    //! \brief Container of parking slots
     std::deque<Parking> m_parkings;
+    // TODO roads and bounding boxes of objects
 };
 
 #endif

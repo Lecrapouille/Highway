@@ -32,6 +32,8 @@
 
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 1000
+#define PLAYER_CAR_COLOR 124, 99, 197// 165, 42, 42
+#define COLISION_COLOR 255, 0, 0
 
 //------------------------------------------------------------------------------
 // Note the view coordinates are
@@ -43,37 +45,58 @@
 Simulation::Simulation(Application& application)
     : GUIStates("Car Simulation", application.renderer())
 {
+    // SFML view
     m_view = renderer().getDefaultView();
     m_view.setSize(float(application.width()), -float(application.height()));
     m_view.zoom(ZOOM);
     renderer().setView(m_view);
+}
 
-    ParkingDimension const& dim = ParkingDimensions::get("epi.45");
+//------------------------------------------------------------------------------
+void Simulation::clear()
+{
+    m_cars.clear();
+    m_parkings.clear();
+}
+
+//------------------------------------------------------------------------------
+void Simulation::createWorld(size_t angle, bool const entering)
+{
+    clear();
+
+    // Create a road
+    // Parking& road1 = addParking(ParkingDimensions::get("road"), sf::Vector2f(100.0f, 107.5f));
+
+    // Create parallel or perpendicular or diagnoal parking slots
+    std::string d = "epi." + std::to_string(angle);
+    ParkingDimension const& dim = ParkingDimensions::get(d.c_str());
     Parking& parking0 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
-    Parking& parking1 = addParking(dim, parking0.position() + sf::Vector2f(parking0.dim.width + 0.9f, 0.0f)); // FIXME 0.9
-    Parking& parking2 = addParking(dim, parking1.position() + sf::Vector2f(parking1.dim.width + 0.9f, 0.0f));
-    Parking& parking3 = addParking(dim, parking2.position() + sf::Vector2f(parking2.dim.width + 0.9f, 0.0f));
-    Parking& parking4 = addParking(dim, parking3.position() + sf::Vector2f(parking3.dim.width + 0.9f, 0.0f));
+    Parking& parking1 = addParking(dim, parking0.position() + parking0.delta());
+    Parking& parking2 = addParking(dim, parking1.position() + parking1.delta());
+    Parking& parking3 = addParking(dim, parking2.position() + parking2.delta());
+    Parking& parking4 = addParking(dim, parking3.position() + parking3.delta());
 
-    //Parking& road1 = addParking(ParkingDimensions::get("road"), sf::Vector2f(100.0f, 107.5f));
-
-    // Parked cars
+    // Add parked cars (static)
     Car& car0 = addCar("Renault.Twingo", parking0);
     Car& car1 = addCar("Renault.Twingo", parking2);
     std::cout << "Car0: " << car0.position().x << ", " << car0.position().y << std::endl;
     std::cout << "Car1: " << car1.position().x << ", " << car1.position().y << std::endl;
 
-    // -----
-    const float K = car1.dim.width / 2.0f;
-    const float offset = 0.5f;
-    const float Xc = parking1.position().x + (car0.dim.length + offset) * cosf(parking1.dim.angle) - K * sinf(parking1.dim.angle);
-    const float Yc = parking1.position().y + (car0.dim.length + offset) * sinf(parking1.dim.angle) + K * cosf(parking1.dim.angle);
-    Car& car2 = addCar("Renault.Twingo", sf::Vector2f(Xc, Yc), parking1.dim.angle);
-    parking1.bind(car2);
+    // Self-parking car (dynamic). Always be the last one (to get it through .back())
+    Car& car3 = addCar("Renault.Twingo", parking3.position() + sf::Vector2f(1.0f, 10.0f), 0.0f);
+    car3.color = sf::Color(PLAYER_CAR_COLOR);
 
-    // -----
-    Car& car3 = addCar("Renault.Twingo", sf::Vector2f(106.0f, 106.0f+2.0f), 0.0f);
-    //car3.attach(TrailerDimensions::get("generic"), 0.0f);
+    // With trailer
+    // car3.attach(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
+
+    // If leaving maneuver then force the car position and heading to be in the
+    // slot.
+    if (!entering)
+    {
+        parking1.bind(car3);
+    }
+
+    // Do the maneuver
     if (!car3.park(parking1))
     {
         std::cerr << "The car cannot park" << std::endl;
@@ -81,8 +104,9 @@ Simulation::Simulation(Application& application)
 }
 
 //------------------------------------------------------------------------------
-Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position, float const heading,
-                        float const speed, float const steering)
+// FIXME: SFMLCar instead ?
+Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position,
+                        float const heading, float const speed, float const steering)
 {
     m_cars.push_back(std::make_unique<Car>(dim));
     m_cars.back()->init(position, speed, heading, steering);
@@ -119,9 +143,22 @@ Parking& Simulation::addParking(const char* type, sf::Vector2f const& position)
 }
 
 //------------------------------------------------------------------------------
+sf::Vector2f Simulation::world(sf::Vector2i const& p)
+{
+    return renderer().mapPixelToCoords(p);
+}
+
+//------------------------------------------------------------------------------
 void Simulation::handleInput()
 {
+    // Measurement
+    float distance;
+    static sf::Vector2f P1, P2;
+
     sf::Event event;
+
+    // Get the X,Y mouse coordinates from the simulated word coordinates.
+    m_mouse = world(sf::Mouse::getPosition(renderer()));
 
     while (m_running && renderer().pollEvent(event))
     {
@@ -130,10 +167,78 @@ void Simulation::handleInput()
         case sf::Event::Closed:
             m_running = false;
             break;
+        // Get world's position
+        case sf::Event::MouseButtonPressed:
+            P1 = m_mouse;
+            std::cout << "P1: (" << m_mouse.x << ", "
+                      << m_mouse.y << ") [m]" << std::endl;
+            break;
+        // Measure distances in meters.
+        case sf::Event::MouseButtonReleased:
+            P2 = m_mouse;
+            distance = SFDISTANCE(P1, P2);
+            if (distance >= 0.001f)
+            {
+                std::cout << "P2: (" << m_mouse.x << ", "
+                          << m_mouse.y << ") [m]" << std::endl;
+                std::cout << "|P1P2| = " << SFDISTANCE(P1, P2)
+                          << " [m]" << std::endl; 
+            }
+            break;
         case sf::Event::KeyPressed:
             if (event.key.code == sf::Keyboard::Escape)
             {
                 m_running = false;
+            }
+            else if (event.key.code == sf::Keyboard::A)
+            {
+                std::cout << "ENTERING BACKWARD PARALLEL" << std::endl;
+                createWorld(0, true);
+            }
+            else if (event.key.code == sf::Keyboard::Z)
+            {
+                std::cout << "LEAVING BACKWARD PARALLEL" << std::endl;
+                createWorld(0, false);
+            }
+            else if (event.key.code == sf::Keyboard::E)
+            {
+                std::cout << "ENTERING BACKWARD DIAGONAL 45" << std::endl;
+                createWorld(45, true);
+            }
+            else if (event.key.code == sf::Keyboard::R)
+            {
+                std::cout << "LEAVING BACKWARD DIAGONAL 45" << std::endl;
+                createWorld(45, false);
+            }
+            else if (event.key.code == sf::Keyboard::T)
+            {
+                std::cout << "ENTERING BACKWARD DIAGONAL 60" << std::endl;
+                createWorld(60, true);
+            }
+            else if (event.key.code == sf::Keyboard::Y)
+            {
+                std::cout << "LEAVING BACKWARD DIAGONAL 60" << std::endl;
+                createWorld(60, false);
+            }
+            else if (event.key.code == sf::Keyboard::U)
+            {
+                std::cout << "ENTERING BACKWARD DIAGONAL 75" << std::endl;
+                createWorld(75, true);
+            }
+            else if (event.key.code == sf::Keyboard::I)
+            {
+                std::cout << "LEAVING BACKWARD DIAGONAL 75" << std::endl;
+                createWorld(75, false);
+            }
+            else if (event.key.code == sf::Keyboard::O)
+            {
+                std::cout << "ENTERING BACKWARD PERPENDICULAR" << std::endl;
+                createWorld(90, true);
+            }
+            else if (event.key.code == sf::Keyboard::P)
+            {
+                std::cout << "LEAVING BACKWARD PERPENDICULAR" << std::endl;
+                createWorld(90, false);
             }
             break;
         default:
@@ -143,12 +248,36 @@ void Simulation::handleInput()
 }
 
 //------------------------------------------------------------------------------
-void Simulation::update(const float dt)
+void Simulation::update(const float dt) // FIXME to be threaded
 {
+    if (m_cars.empty())
+        return ;
+
+    Car& player = *m_cars.back();
+
+    // Update car physics
     for (auto& it: m_cars)
     {
-        it->update(dt);
+        // it->update(dt);
+
+        if (it.get() != &player)
+        {
+            if (it->intersects(player))
+            {
+                std::cout << "Collide" << std::endl;
+                it->color = sf::Color(COLISION_COLOR);
+                player.color = sf::Color(COLISION_COLOR);
+            }
+            else
+            {
+                it->color = sf::Color(DEFAULT_CAR_COLOR);
+                player.color = sf::Color(PLAYER_CAR_COLOR);
+            }
+        }
     }
+
+    // Update the player's car physics
+    player.update(dt);
 }
 
 //------------------------------------------------------------------------------
@@ -157,15 +286,21 @@ void Simulation::draw(const float /*dt*/)
     CarDrawable cd;
     ParkingDrawable pd;
 
-    m_view.setCenter(m_cars[3]->position());
-    renderer().setView(m_view);
+    // Make the camera follows the self-parking car
+    if (!m_cars.empty())
+    {
+        m_view.setCenter(m_cars.back()->position());
+        renderer().setView(m_view);
+    }
 
+    // Draw the world
     for (auto const& it: m_parkings)
     {
         pd.bind(it);
         renderer().draw(pd);
     }
 
+    // Draw cars
     for (auto const& it: m_cars)
     {
         cd.bind(*it);

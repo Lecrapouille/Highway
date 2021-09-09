@@ -38,19 +38,53 @@ class Parking
 {
 public:
 
-    // TODO enum Type { Parallel, Perpendicular, Diagonal45, Diagonal60, Diagonal75 };
+    enum Type { Parallel, Perpendicular, Diagonal45, Diagonal60, Diagonal75 };
 
+    //! \brief Parking slot holding a parked car.
+    //! \param[in] d: parking slot dimension
+    //! \param[in] position: position of the middle of the left side.
+    //! \param[inout] car to be parked. Its position and orientation will be modified
+    //! by this method.
+    //! \note the parking local orientation is providen by ParkingDimension.
+    //! \note we do not manage the orientation in the world coordinate.
     Parking(ParkingDimension const& d, sf::Vector2f const& position, Car& car);
+
+    //! \brief Empty parking.
+    //! \param[in] d: parking slot dimension
+    //! \param[in] position: position of the middle back of the slot.
+    //! \note the parking local orientation is providen by ParkingDimension.
+    //! \note we do not manage the orientation in the world coordinate.
     Parking(ParkingDimension const& d, sf::Vector2f const& position);
+
+    //! \brief Make the slot occupied by the car.
+    //! \param[inout] car to be parked. Its position and orientation will be modified
+    //! by this method.
     void bind(Car& car);
+
+    //! \brief Set the parking slot empty. The parked car stay at its current position.
     void unbind();
+
+    //! \brief Is the parking occupied by a parked car ?
     bool empty() const;
+
+    //! \brief Parked car getter (non const).
     Car& car();
+
+    //! \brief Position getter (non const) of the middle of the left side.
     sf::Vector2f const& position() const { return m_position; }
+
+    //! \brief Delta position to place the next parking
+    sf::Vector2f delta() const
+    {
+        sf::Vector2f p = ROTATE(sf::Vector2f(dim.length, dim.width), -dim.angle);
+        return sf::Vector2f(p.x, 0.0f); // W
+    }
 
 public:
 
+    //! \brief Dimension and information
     ParkingDimension const dim;
+    Parking::Type const type;
 
 private:
 

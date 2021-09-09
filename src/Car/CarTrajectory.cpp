@@ -47,24 +47,15 @@ void CarTrajectory::update(CarControl& control, float const dt)
 }
 
 //------------------------------------------------------------------------------
-std::unique_ptr<CarTrajectory> CarTrajectory::create(int const angle/*CarTrajectory::Type const type*/)
+CarTrajectory::Ptr CarTrajectory::create(Parking::Type const type)
 {
-#if 1
-    if (angle == 0)
-        return std::make_unique<ParallelTrajectory>();
-    return std::make_unique<DiagonalTrajectory>();
-#else
     switch (type)
     {
-    case CarTrajectory::Type::Parallel:
+    case Parking::Type::Parallel:
         return std::make_unique<ParallelTrajectory>();
-    case CarTrajectory::Type::Perpendicular:
-    case CarTrajectory::Type::Diagonal45:
-    case CarTrajectory::Type::Diagonal60:
-    case CarTrajectory::Type::Diagonal75:
-        return std::make_unique<DiagonalTrajectory>();
+    case Parking::Type::Perpendicular:
+        return std::make_unique<PerpTrajectory>();
     default:
-        return nullptr;
+        return std::make_unique<DiagonalTrajectory>();
     }
-#endif
 }

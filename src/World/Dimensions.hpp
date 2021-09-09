@@ -110,13 +110,13 @@ private:
     {
         // https://www.virages.com/Blog/Dimensions-Places-De-Parking
         static std::map<std::string, ParkingDimension> dico = {
-            { "epi.0", { 5.0f, 2.0f, 0.0f } },
-            { "epi.45", { 4.8f, 2.2f, 45.0f } },
-            { "epi.60", { 5.15f, 2.25f, 60.0f } },
-            { "epi.75", { 5.1f, 2.25f, 75.0f } },
-            { "epi.90", { 5.0f, 2.3f, 90.0f } },
-            { "creneau", { 5.0f, 2.0f, 0.0f } },
-            { "bataille", { 5.0f, 2.3f, 90.0f } },
+            { "epi.0", { 5.0f, 2.0f, 0u } },
+            { "epi.45", { 4.8f, 2.2f, 45u } },
+            { "epi.60", { 5.15f, 2.25f, 60u } },
+            { "epi.75", { 5.1f, 2.25f, 75u } },
+            { "epi.90", { 5.0f, 2.3f, 90u } },
+            { "creneau", { 5.0f, 2.0f, 0u } },
+            { "bataille", { 5.0f, 2.3f, 90u } },
         };
         return dico;
     }
