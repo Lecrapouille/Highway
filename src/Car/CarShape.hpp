@@ -29,8 +29,8 @@
 #  define CAR_SHAPE_HPP
 
 #  include "CarDimension.hpp"
-#  include "Utils.hpp"
-//#  include <SFML/System/Vector2.hpp>
+#  include "Utils/Utils.hpp"
+#  include "Utils/Collide.hpp"
 #  include <SFML/Graphics/Rect.hpp>
 #  include <SFML/Graphics/RectangleShape.hpp>
 #  include <array>
@@ -84,14 +84,15 @@ public:
         return m_wheels[0].steering;
     }
 
-    sf::FloatRect boundinBox() const
+    sf::RectangleShape boundinBox() const
     {
-        return m_obb.getGlobalBounds();
+        return m_obb;
     }
 
     bool intersects(VehicleShape<N> const& other) const
     {
-        return boundinBox().intersects(other.boundinBox());
+        sf::Vector2f p;
+        return collide(m_obb, other.boundinBox(), p);
     }
 
     virtual void steering(float const v) = 0;
@@ -109,15 +110,11 @@ public:
         }
         return os << "  }";
     }
-
-public:
-
-    sf::RectangleShape m_obb;
-
 protected:
 
-    sf::Vector2f m_position;
     //! \brief Oriented bounding box for collision
+    sf::RectangleShape m_obb;
+    sf::Vector2f m_position;
     float m_heading;
     std::array<Wheel, N> m_wheels;
 };
