@@ -1,0 +1,12 @@
+- Si car > Xi part dans le mauvais sens
+- Time scaling
+- Finir toutes les maneuvres: Perp, diag, entree et sortie
+- bug trailer
+- YOLO
+- A partir des points de la trajectoire generer les consignes vitesses, angle volant
+- Corriger bug offset lors maneuvre parallele
+- Entre les 2 cercles ajouter une droite si δmax est tres grand (petit cercle => droite)
+- Ajouter fonction displace_y() et faire un displace_xy() fonction generale
+- [FAIT] dimension et max steering angle
+- Ackerman
+- Prolog pour la logique ?

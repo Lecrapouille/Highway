@@ -1,6 +1,6 @@
 ##=====================================================================
 ## Drive: A basic car simulation.
-## Copyright 2021 Quentin Quadrat <lecrapouille@gmail.com>
+## Copyright 2021 Quentin Quadrat <quentin.quadrat@gmail.com>
 ##
 ## This file is part of Drive.
 ##

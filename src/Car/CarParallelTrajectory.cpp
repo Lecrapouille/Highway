@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat lecrapouille@gmail.com
+// 2021 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
