@@ -28,29 +28,40 @@
 #include "Parking.hpp"
 #include "Car.hpp"
 
+//------------------------------------------------------------------------------
 static Parking::Type convert(size_t angle) // [deg]
 {
     switch (angle)
     {
     case 0u:
         return Parking::Type::Parallel;
+    case 45u:
+        return Parking::Type::Diagonal45;
+    case 60u:
+        return Parking::Type::Diagonal60;
+    case 75u:
+        return Parking::Type::Diagonal75;
     case 90u:
         return Parking::Type::Perpendicular;
     default:
+        assert(false && "Unknown parking type");
         return Parking::Type::Parallel;
     }
 }
 
+//------------------------------------------------------------------------------
 Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p)
     : dim(d), type(convert(d.deg)), m_position(p)
 {}
 
+//------------------------------------------------------------------------------
 Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p, Car& car)
     : Parking(d, p)
 {
     m_car = &car;
 }
 
+//------------------------------------------------------------------------------
 void Parking::bind(Car& car)
 {
     //if (car.bound())
@@ -59,11 +70,12 @@ void Parking::bind(Car& car)
     //    throw "Car already bound on parking spot";
 
     sf::Vector2f const offset(car.dim.back_overhang + car.dim.front_overhang, 0.0f);
-    car.init(m_position + ROTATE(offset, dim.angle), 0.0f, dim.angle, 0.0f);
+    car.init(m_position + ROTATE(offset, dim.angle), dim.angle, 0.0f, 0.0f);
     //car.bind();
     m_car = &car;
 }
 
+//------------------------------------------------------------------------------
 void Parking::unbind()
 {
     if (m_car == nullptr)
@@ -73,11 +85,13 @@ void Parking::unbind()
     m_car = nullptr;
 }
 
+//------------------------------------------------------------------------------
 bool Parking::empty() const
 {
     return m_car == nullptr;
 }
 
+//------------------------------------------------------------------------------
 Car& Parking::car()
 {
     assert(m_car != nullptr);

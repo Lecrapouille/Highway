@@ -28,196 +28,237 @@
 #ifndef CAR_SHAPE_HPP
 #  define CAR_SHAPE_HPP
 
-#  include "CarDimension.hpp"
 #  include "Utils/Utils.hpp"
 #  include "Utils/Collide.hpp"
-#  include <SFML/Graphics/Rect.hpp>
+#  include "Car/CarDimension.hpp"
+#  include "Car/Wheels.hpp"
 #  include <SFML/Graphics/RectangleShape.hpp>
-#  include <array>
+#  include <iostream>
 
-struct Wheel
-{
-    //! \brief Relative position from
-    sf::Vector2f offset;
-    //! \brief current position in the world
-    sf::Vector2f position;
-    //! \brief yaw angle
-    float steering;
-    //! \brief speed
-    //float speed;
+// TODO https://datagenetics.com/blog/december12016/index.html
+// TODO https://www.researchgate.net/publication/349289743_Designing_Variable_Ackerman_Steering_Geometry_for_Formula_Student_Race_Car/link/6028146aa6fdcc37a824e404/download
 
-    friend std::ostream& operator<<(std::ostream& os, Wheel const& wheel)
-    {
-        return os << "{ position=(" << wheel.position.x
-                  << ", " << wheel.position.y
-                  << "), steering=" << RAD2DEG(wheel.steering)
-                  << " }";
-    }
-};
-
-
-// Position, orientation and wheel positions
-template<long unsigned int N>
+// *****************************************************************************
+//! \brief A vehicle shape knows it position, heading, bounding box and position
+//! of wheels.
+// *****************************************************************************
+template<class Dim>
 class VehicleShape
 {
 public:
 
+    VehicleShape(Dim const& dimension)
+        : dim(dimension)
+    {}
+
     virtual ~VehicleShape() = default;
 
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the heading [rad].
+    //--------------------------------------------------------------------------
     inline float heading() const
     {
-        return m_heading;
+        return DEG2RAD(m_obb.getRotation());
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return position of the middle of the rear axle.
+    //--------------------------------------------------------------------------
     inline sf::Vector2f position() const
     {
-        return m_position;
+        return m_obb.getPosition();
     }
 
-    inline std::array<Wheel, N> const& wheels() const
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return all the wheels
+    //--------------------------------------------------------------------------
+    inline std::vector<Wheel> const& wheels() const
     {
         return m_wheels;
     }
 
-    inline float steering() const
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the nth wheel
+    //--------------------------------------------------------------------------
+    inline Wheel const& wheel(size_t const nth) const
     {
-        return m_wheels[0].steering;
+        assert(nth < m_wheels.size());
+        return m_wheels[nth];
     }
 
-    sf::RectangleShape boundinBox() const
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the steering angle of the desired wheel
+    //--------------------------------------------------------------------------
+    inline float steering(size_t const nth) const
+    {
+        assert(nth < m_wheels.size());
+        return m_wheels[nth].steering;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief const getter: return the oriented bounding box (obb) of the shape.
+    //--------------------------------------------------------------------------
+    inline sf::RectangleShape obb() const
     {
         return m_obb;
     }
 
-    bool intersects(VehicleShape<N> const& other) const
+    //--------------------------------------------------------------------------
+    //! \brief Check if the shape collides with another vehicle shape.
+    //! \param[out] p: return the minimum translation vector in case of collision
+    //! \return true in case of collision and return the
+    //--------------------------------------------------------------------------
+    inline bool collides(VehicleShape const& other, sf::Vector2f& p) const
     {
-        sf::Vector2f p;
-        return collide(m_obb, other.boundinBox(), p);
+        return collide(obb(), other.obb(), p);
     }
 
-    virtual void steering(float const v) = 0;
-
+    //--------------------------------------------------------------------------
+    //! \brief Debug purpose only: show shape information.
+    //--------------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, VehicleShape const& shape)
     {
-        os << "  Shape {" << std::endl
-           << "    position=(" << shape.m_position.x << ", " << shape.m_position.y << ")," << std::endl
-           << "    heading=" << RAD2DEG(shape.m_heading) << std::endl;
+        os << "  Shape {" << std::endl << "    position=("
+           << shape.position().x << ", " << shape.position().y << "),"
+           << std::endl
+           << "    heading=" << RAD2DEG(shape.heading())
+           << std::endl;
 
-        auto i = N;
+        auto i = shape.wheels().size();
         while (i--)
         {
-            os << "    wheel[" << i << "]=" << shape.m_wheels[i] << "," << std::endl;
+            os << "    wheel[" << i << "]=" << shape.wheel(i) << "," << std::endl;
         }
         return os << "  }";
     }
+
+public:
+
+    //! \brief Const reference to the vehicle's dimension.
+    Dim const& dim;
+
 protected:
 
-    //! \brief Oriented bounding box for collision
+    //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_obb;
-    sf::Vector2f m_position;
-    float m_heading;
-    std::array<Wheel, N> m_wheels;
+    //! \brief Information on the wheels
+    std::vector<Wheel> m_wheels;
 };
 
-
-class TrailerShape: public VehicleShape<2>
+// *****************************************************************************
+//! \brief A vehicle shape specialized for trailer with 2 wheels.
+// *****************************************************************************
+class TrailerShape: public VehicleShape<TrailerDimension>
 {
 public:
 
-    enum WheelType { RR, RL };
+    //--------------------------------------------------------------------------
+    //! \brief Wheel's names: RR: rear right, RL: rear left.
+    //--------------------------------------------------------------------------
+    enum WheelName { RR, RL };
 
-    TrailerShape(TrailerDimension const& dim_)
-        : dim(dim_)
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor: trailer shape with its dimension
+    //--------------------------------------------------------------------------
+    TrailerShape(TrailerDimension const& dimension)
+        : VehicleShape(dimension)
     {
-        // Origin on the middle of the rear wheels
+        // 2 wheels
+        m_wheels.resize(2);
+
+        // Origin on the middle of the rear wheel axle
         m_obb.setSize(sf::Vector2f(dim.length, dim.width));
         m_obb.setOrigin(dim.back_overhang, m_obb.getSize().y / 2);
 
-        // Wheel offset along the Y-axis
+        // Offset along the rear axle
         const float K = dim.width / 2 - dim.wheel_width / 2;
+        m_wheels[WheelName::RL].offset = sf::Vector2f(0.0f, K);
+        m_wheels[WheelName::RR].offset = sf::Vector2f(0.0f, -K);
 
-        m_wheels[WheelType::RL].offset = sf::Vector2f(0.0f, K);
-        m_wheels[WheelType::RR].offset = sf::Vector2f(0.0f, -K);
-        m_wheels[WheelType::RL].steering = m_wheels[WheelType::RR].steering = 0.0f;
-        //wheels[FL].speed = m_wheels[FR].speed = NAN;
-        //wheels[RL].speed = m_wheels[RR].speed = NAN;
+        m_wheels[WheelName::RL].steering = 0.0f;
+        m_wheels[WheelName::RR].steering = 0.0f;
+
+        //m_wheels[WheelName::RL].speed = NAN;
+        //m_wheels[WheelName::RR].speed = NAN;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Set to shape its new attitude
+    //--------------------------------------------------------------------------
     void set(sf::Vector2f const& position, float const heading)
     {
-        m_heading = heading;
-        m_position = position;
         m_obb.setPosition(position);
         m_obb.setRotation(RAD2DEG(heading));
 
-        m_wheels[WheelType::RL].position = position + ROTATE(m_wheels[WheelType::RL].offset, heading);
-        m_wheels[WheelType::RR].position = position + ROTATE(m_wheels[WheelType::RR].offset, heading);
+        m_wheels[WheelName::RL].position =
+                position + ROTATE(m_wheels[WheelName::RL].offset, heading);
+        m_wheels[WheelName::RR].position =
+                position + ROTATE(m_wheels[WheelName::RR].offset, heading);
     }
-
-    inline Wheel const& wheel(WheelType const i) const { return m_wheels[i]; }
-
-    virtual void steering(float const) override
-    {
-        // Do nothing
-    }
-
-public:
-
-    TrailerDimension const dim;
 };
 
-
-
-
-class CarShape: public VehicleShape<4>
+// *****************************************************************************
+//! \brief A vehicle shape specialized for car with 4 wheels.
+// *****************************************************************************
+class CarShape: public VehicleShape<CarDimension>
 {
 public:
 
-    enum WheelType { FL, FR, RR, RL };
+    //--------------------------------------------------------------------------
+    //! \brief Wheel's names: FL: front left, FR: front rigeht, RR: rear right,
+    //! RL: rear left.
+    //--------------------------------------------------------------------------
+    enum WheelName { FL, FR, RR, RL };
 
-    CarShape(CarDimension const& dim_)
-        : dim(dim_)
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor: car shape with its dimension
+    //--------------------------------------------------------------------------
+    CarShape(CarDimension const& dimension)
+        : VehicleShape(dimension)
     {
-        // Origin on the middle of the rear wheels
+        // 4 wheels
+        m_wheels.resize(4);
+
+        // Origin on the middle of the rear wheel axle
         m_obb.setSize(sf::Vector2f(dim.length, dim.width));
         m_obb.setOrigin(dim.back_overhang, m_obb.getSize().y / 2);
 
-        // Wheel offset along the Y-axis
+        // Offset along the rear axle
         const float K = dim.width / 2 - dim.wheel_width / 2;
+        m_wheels[WheelName::FL].offset = sf::Vector2f(dim.wheelbase, -K);
+        m_wheels[WheelName::FR].offset = sf::Vector2f(dim.wheelbase, K);
+        m_wheels[WheelName::RL].offset = sf::Vector2f(0.0f, -K);
+        m_wheels[WheelName::RR].offset = sf::Vector2f(0.0f, K);
 
-        m_wheels[WheelType::FL].offset = sf::Vector2f(dim.wheelbase, -K);
-        m_wheels[WheelType::FR].offset = sf::Vector2f(dim.wheelbase, K);
-        m_wheels[WheelType::RL].offset = sf::Vector2f(0.0f, -K);
-        m_wheels[WheelType::RR].offset = sf::Vector2f(0.0f, K);
+        m_wheels[WheelName::FL].steering = 0.0f;
+        m_wheels[WheelName::FR].steering = 0.0f;
+        m_wheels[WheelName::RR].steering = 0.0f;
+        m_wheels[WheelName::RL].steering = 0.0f;
+
         //wheels[FL].speed = m_wheels[FR].speed = NAN;
         //wheels[RL].speed = m_wheels[RR].speed = NAN;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Set to shape its new attitude
+    //--------------------------------------------------------------------------
     void set(sf::Vector2f const& position, float const heading, float const steering)
     {
-        m_heading = heading;
-        m_position = position;
         m_obb.setPosition(position);
         m_obb.setRotation(RAD2DEG(heading));
 
-        m_wheels[WheelType::FL].steering = m_wheels[WheelType::FR].steering = steering;
-        m_wheels[WheelType::RL].steering = m_wheels[WheelType::RR].steering = 0.0f;
-        m_wheels[WheelType::FL].position = position + ROTATE(m_wheels[WheelType::FL].offset, heading);
-        m_wheels[WheelType::FR].position = position + ROTATE(m_wheels[WheelType::FR].offset, heading);
-        m_wheels[WheelType::RL].position = position + ROTATE(m_wheels[WheelType::RL].offset, heading);
-        m_wheels[WheelType::RR].position = position + ROTATE(m_wheels[WheelType::RR].offset, heading);
+        m_wheels[WheelName::FL].position =
+                position + ROTATE(m_wheels[WheelName::FL].offset, heading);
+        m_wheels[WheelName::FR].position =
+                position + ROTATE(m_wheels[WheelName::FR].offset, heading);
+        m_wheels[WheelName::RR].position =
+                position + ROTATE(m_wheels[WheelName::RR].offset, heading);
+        m_wheels[WheelName::RL].position =
+                position + ROTATE(m_wheels[WheelName::RL].offset, heading);
+
+        m_wheels[WheelName::FL].steering = steering;
+        m_wheels[WheelName::FR].steering = steering;
     }
-
-    inline Wheel const& wheel(WheelType const i) const { return m_wheels[i]; }
-
-    virtual void steering(float const v) override
-    {
-        m_wheels[WheelType::FL].steering = m_wheels[WheelType::FR].steering = v;
-    }
-
-public:
-
-    CarDimension const dim;
 };
 
 #endif

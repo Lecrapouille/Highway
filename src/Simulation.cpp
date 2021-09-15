@@ -85,9 +85,10 @@ void Simulation::createWorld(size_t angle, bool const entering)
     // Self-parking car (dynamic). Always be the last one (to get it through .back())
     Car& car3 = addCar("Renault.Twingo", parking3.position() + sf::Vector2f(1.0f, 10.0f), 0.0f);
     car3.color = sf::Color(PLAYER_CAR_COLOR);
+std::cout << car3 << std::endl;
 
     // With trailer
-    // car3.attach(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
+    //car3.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
 
     // If leaving maneuver then force the car position and heading to be in the
     // slot.
@@ -109,7 +110,7 @@ Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position,
                         float const heading, float const speed, float const steering)
 {
     m_cars.push_back(std::make_unique<Car>(dim));
-    m_cars.back()->init(position, speed, heading, steering);
+    m_cars.back()->init(position, heading, speed, steering);
     return *m_cars.back();
 }
 
@@ -182,7 +183,7 @@ void Simulation::handleInput()
                 std::cout << "P2: (" << m_mouse.x << ", "
                           << m_mouse.y << ") [m]" << std::endl;
                 std::cout << "|P1P2| = " << SFDISTANCE(P1, P2)
-                          << " [m]" << std::endl; 
+                          << " [m]" << std::endl;
             }
             break;
         case sf::Event::KeyPressed:
@@ -262,7 +263,7 @@ void Simulation::update(const float dt) // FIXME to be threaded
 
         if (it.get() != &player)
         {
-            if (it->intersects(player))
+            if (it->collides(player))
             {
                 std::cout << "Collide" << std::endl;
                 it->color = sf::Color(COLISION_COLOR);
@@ -283,9 +284,6 @@ void Simulation::update(const float dt) // FIXME to be threaded
 //------------------------------------------------------------------------------
 void Simulation::draw(const float /*dt*/)
 {
-    CarDrawable cd;
-    ParkingDrawable pd;
-
     // Make the camera follows the self-parking car
     if (!m_cars.empty())
     {
@@ -296,14 +294,12 @@ void Simulation::draw(const float /*dt*/)
     // Draw the world
     for (auto const& it: m_parkings)
     {
-        pd.bind(it);
-        renderer().draw(pd);
+        ::draw(it, renderer());
     }
 
     // Draw cars
     for (auto const& it: m_cars)
     {
-        cd.bind(*it);
-        renderer().draw(cd);
+        ::draw(*it, renderer());
     }
 }

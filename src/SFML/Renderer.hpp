@@ -38,18 +38,33 @@ class Trailer;
 class Parking;
 
 // *****************************************************************************
-//! \brief Arc
+//! \brief Arc used to draw turning radius
 // *****************************************************************************
 class ArcShape: public sf::CircleShape
 {
 public:
 
-    ArcShape(float radius, float start, float end, std::size_t pointCount)
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor
+    //! \param[in] radius: radius of the circle
+    //! \param[in] starting angle [degree]
+    //! \param[in] ending angle [degree]
+    //! \param[in] Number of points composing the arc.
+    //--------------------------------------------------------------------------
+    ArcShape(float radius, float start, float end, std::size_t pointCount = 100u)
         : CircleShape(radius, pointCount + 2),
           m_start(DEG2RAD(start)),
           m_end(DEG2RAD(end))
     {}
 
+    //--------------------------------------------------------------------------
+    //! \brief Get a point of the circle.
+    //! The returned point is in local coordinates, that is, the shape's
+    //! transforms (position, rotation, scale) are not taken into account. The
+    //! result is undefined if \a index is out of the valid range.
+    //! \param index Index of the point to get, in range [0 .. getPointCount() - 1]
+    //! \return index-th point of the shape.
+    //--------------------------------------------------------------------------
     virtual sf::Vector2f getPoint(std::size_t index) const override
     {
         if ((index == 0) || (index == getPointCount()))
@@ -65,12 +80,12 @@ public:
 
 private:
 
-    float m_start;
-    float m_end;
+    float m_start; // [deg]
+    float m_end; // [deg]
 };
 
 // *****************************************************************************
-//! \brief Circle used to draw turning radii
+//! \brief Non-filled circle used to draw turning radius
 // *****************************************************************************
 class Circle: public sf::Drawable
 {
@@ -134,70 +149,7 @@ private:
     sf::ConvexShape m_head;
 };
 
-// *****************************************************************************
-//! \brief
-// *****************************************************************************
-class CarDrawable: public sf::Drawable
-{
-public:
-
-    void bind(Car const& car);
-
-protected:
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final;
-
-private:
-
-    Car const* m_car = nullptr;
-    //! \brief The body drawn as a rectangle.
-    mutable sf::RectangleShape m_body_shape;
-    //! \brief The front wheel drawn as a rectangle.
-    mutable sf::RectangleShape m_wheel_shape;
-};
-
-// *****************************************************************************
-//! \brief
-// *****************************************************************************
-class TrailerDrawable: public sf::Drawable
-{
-public:
-
-    void bind(Trailer const& trailer);
-
-protected:
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final;
-
-private:
-
-    Trailer const* m_trailer = nullptr;
-    //! \brief The body drawn as a rectangle.
-    mutable sf::RectangleShape m_body_shape;
-    //! \brief The front wheel drawn as a rectangle.
-    mutable sf::RectangleShape m_wheel_shape;
-    //! \brief
-    mutable sf::RectangleShape m_truc_shape;
-};
-
-// *****************************************************************************
-//! \brief
-// *****************************************************************************
-class ParkingDrawable: public sf::Drawable
-{
-public:
-
-    void bind(Parking const& parking);
-
-protected:
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final;
-
-private:
-
-    Parking const* m_parking = nullptr;
-    //mutable sf::ConvexShape m_shape;
-    mutable sf::RectangleShape m_shape;
-};
+void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+void draw(Car const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
 
 #endif

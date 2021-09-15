@@ -33,72 +33,166 @@
 #  include <iostream>
 #  include <cassert>
 
-class CarPhysics
+// *****************************************************************************
+//! \brief Base class for doing kinematic or dynamic on a linked list of
+//! elements.
+//! \tparam S a VehicleShape
+// *****************************************************************************
+class IPhysics
 {
 public:
 
-    virtual ~CarPhysics() = default;
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual ~IPhysics() = default;
 
-    void attach(CarPhysics& next)
+    //--------------------------------------------------------------------------
+    //! \brief Join with the given front vehicle.
+    //! \param[inout] physics: the front vehicle.
+    //--------------------------------------------------------------------------
+    void attachTo(IPhysics& front)
     {
-        m_next = &next;
-        next.m_previous = this;
+        next = &front;
+        front.previous = this;
     }
 
-    virtual void update(CarControl const& control, float const dt) = 0;
-    virtual float acceleration() const = 0;
-    virtual float speed() const = 0;
+    //--------------------------------------------------------------------------
+    //! \brief Update the physical model.
+    //--------------------------------------------------------------------------
+    void update(CarControl const& control, float const dt)
+    {
+        onUpdate(control, dt);
+        if (previous != nullptr)
+        {
+            previous->update(control, dt);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return longitudinal acceleration [meter/seconds^2].
+    //--------------------------------------------------------------------------
+    inline float acceleration() const
+    {
+        return m_acceleration;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return longitudinal speed [meter/seconds].
+    //--------------------------------------------------------------------------
+    inline float speed() const
+    {
+        return m_speed;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return position of the middle of the rear axle.
+    //--------------------------------------------------------------------------
     virtual sf::Vector2f position() const = 0;
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the heading [rad].
+    //--------------------------------------------------------------------------
     virtual float heading() const = 0;
 
-    //protected:
+private:
 
-    CarPhysics* m_next = nullptr;
-    CarPhysics* m_previous = nullptr;
+    virtual void onUpdate(CarControl const& control, float const dt) = 0;
+
+public:
+
+    //! \brief Next joined trailer or vehicle. Please do not manage memory:
+    //! this pointer is just a reference.
+    IPhysics* next = nullptr;
+    //! \brief Previous joined trailer or vehicle. Please do not manage memory:
+    //! this pointer is just a reference.
+    IPhysics* previous = nullptr;
+
+protected:
+
+    float m_speed = 0.0f;
+    float m_acceleration = 0.0f;
+    float m_heading;
 };
 
-
-
-class TrailerKinematic: public CarPhysics
+// *****************************************************************************
+//! \brief
+// *****************************************************************************
+class TrailerKinematic: public IPhysics
 {
 public:
 
-    TrailerKinematic(TrailerDimension const& dim, CarPhysics& next)
-        : m_shape(dim)
+    //--------------------------------------------------------------------------
+    //! \brief Attach this trailer to another front vehicle (trailer or car).
+    //! \param[in] dim: the trailer dimension.
+    //! \param[inout] front: the front vehicle.
+    //--------------------------------------------------------------------------
+    TrailerKinematic(TrailerShape& shape, IPhysics& front)
+        : m_shape(shape)
     {
-        attach(next);
+        attachTo(front);
     }
 
-    virtual ~TrailerKinematic() = default;
-
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     void init(float const speed, float const heading)
     {
         float x = 0.0f;
         float y = 0.0f;
-        CarPhysics* vehicle = m_next;
-        assert(vehicle != nullptr);
+        IPhysics* front = next;
+        assert(front != nullptr);
 
-        //while ((vehicle != nullptr) && (vehicle->m_next == nullptr))
+        //while ((front != nullptr) && (front->next == nullptr))
         {
-            x += cosf(vehicle->heading()) * m_shape.dim.wheelbase;
-            y += sinf(vehicle->heading()) * m_shape.dim.wheelbase;
-            //vehicle = vehicle->m_next;
+            //x += cosf(front->heading()) * m_shape.dim.wheelbase;
+            //y += sinf(front->heading()) * m_shape.dim.wheelbase;
+            //front = front->next;
         }
 
-        assert(vehicle != nullptr);
-        sf::Vector2f position = vehicle->position() - sf::Vector2f(x, y);
+        assert(front != nullptr);
+        sf::Vector2f position = front->position() - sf::Vector2f(x, y);
         m_shape.set(position, heading);
         m_speed = speed;
     }
 
-    virtual void update(CarControl const& control, float const dt) override
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return position of the middle of the rear axle.
+    //--------------------------------------------------------------------------
+    virtual inline sf::Vector2f position() const override
     {
-        assert(m_next != nullptr);
+        return m_shape.position();
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the heading [rad].
+    //--------------------------------------------------------------------------
+    virtual inline float heading() const override
+    {
+        return m_shape.heading();
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the shape.
+    //--------------------------------------------------------------------------
+    inline TrailerShape const& shape() const
+    {
+        return m_shape;
+    }
+
+private:
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void onUpdate(CarControl const& control, float const dt) override
+    {
+        assert(next != nullptr);
         float heading = m_shape.heading();
-        float next_heading = m_next->heading();
+        float next_heading = next->heading();
         m_speed = control.outputs.body_speed;
 
-        if (m_next->m_next == nullptr)
+        if (next->next == nullptr)
         {
             heading += dt * m_speed * sinf(next_heading - heading) / m_shape.dim.wheelbase;
         }
@@ -110,77 +204,83 @@ public:
 
         float x = 0.0f;
         float y = 0.0f;
-        CarPhysics* vehicle = m_next;
-        //while ((vehicle != nullptr) && (vehicle->m_next == nullptr))
+        IPhysics* vehicle = next;
+        //while ((vehicle != nullptr) && (vehicle->next == nullptr))
         {
             x += cosf(vehicle->heading()) * m_shape.dim.wheelbase;
             y += sinf(vehicle->heading()) * m_shape.dim.wheelbase;
-            //vehicle = vehicle->m_next;
+            //vehicle = vehicle->next;
         }
 
         assert(vehicle != nullptr);
         sf::Vector2f position = vehicle->position() - sf::Vector2f(x, y);
         m_shape.set(position, heading);
-
-        // Update trailers
-        if (m_previous != nullptr)
-        {
-            m_previous->update(control, dt);
-        }
     }
 
-    virtual float acceleration() const override
+protected:
+
+    TrailerShape& m_shape;
+};
+
+// *****************************************************************************
+//! \brief
+// *****************************************************************************
+class CarKinematic: public IPhysics
+{
+public:
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    CarKinematic(CarShape& shape)
+        : m_shape(shape)
+    {}
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual ~CarKinematic() = default;
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void init(sf::Vector2f const& position, float const heading, float const speed,
+              float const steering)
     {
-        return 0.0f;
+        m_shape.set(position, heading, steering);
+        m_speed = speed;
     }
 
-    virtual float speed() const override
-    {
-        return m_speed;
-    }
-
-    virtual float heading() const override
-    {
-        return m_shape.heading();
-    }
-
-    virtual sf::Vector2f position() const override
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return position of the middle of the rear axle.
+    //--------------------------------------------------------------------------
+    virtual inline sf::Vector2f position() const override
     {
         return m_shape.position();
     }
 
-    TrailerShape const& shape() const
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the heading [rad].
+    //--------------------------------------------------------------------------
+    virtual inline float heading() const override
+    {
+        return m_shape.heading();
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the shape.
+    //--------------------------------------------------------------------------
+    inline CarShape const& shape() const
     {
         return m_shape;
     }
 
 private:
 
-    TrailerShape m_shape;
-    float m_speed = 0.0f;
-};
-
-
-
-
-class CarKinematic: public CarPhysics
-{
-public:
-
-    CarKinematic(CarDimension const& dim)
-        : m_shape(dim)
-    {}
-
-    virtual ~CarKinematic() = default;
-
-    void init(sf::Vector2f const& position, float const speed,
-              float const heading, float const steering)
-    {
-        m_shape.set(position, heading, steering);
-        m_speed = speed;
-    }
-
-    virtual void update(CarControl const& control, float const dt) override
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void onUpdate(CarControl const& control, float const dt) override
     {
         float steering = control.outputs.steering;
         float heading = m_shape.heading();
@@ -191,43 +291,11 @@ public:
         position.x += dt * m_speed * cosf(heading);
         position.y += dt * m_speed * sinf(heading);
         m_shape.set(position, heading, steering);
-
-        // Update trailers
-        if (m_previous != nullptr)
-        {
-            m_previous->update(control, dt);
-        }
     }
 
-    virtual float acceleration() const override
-    {
-        return 0.0f;
-    }
+protected:
 
-    virtual float speed() const override
-    {
-        return m_speed;
-    }
-
-    virtual float heading() const override
-    {
-        return m_shape.heading();
-    }
-
-    virtual sf::Vector2f position() const override
-    {
-        return m_shape.position();
-    }
-
-    CarShape const& shape() const
-    {
-        return m_shape;
-    }
-
-private:
-
-    CarShape m_shape;
-    float m_speed = 0.0f;
+    CarShape& m_shape;
 };
 
 #endif

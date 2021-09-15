@@ -47,6 +47,7 @@ void CarTrajectory::update(CarControl& control, float const dt)
 }
 
 //------------------------------------------------------------------------------
+// FIXME a supprimer
 CarTrajectory::Ptr CarTrajectory::create(Parking::Type const type)
 {
     switch (type)

@@ -45,16 +45,19 @@ class References
 public:
 
     // *************************************************************************
-    //! \brief Helper struct to hold a temporal value used for defining a
-    //! trajectory.
+    //! \brief Helper struct to hold a value to maintain during a given duration.
     // *************************************************************************
-    struct Pair
+    struct TimedValue
     {
-        Pair(float d, float t)
-            : data(d), time(t)
+        //----------------------------------------------------------------------
+        //! \brief param[in] v: value [generic type]
+        //! \brief param[in] t: duration [generic time]
+        //----------------------------------------------------------------------
+        TimedValue(float v, float t)
+            : value(v), time(t)
         {}
 
-        float data;
+        float value;
         float time;
     };
 
@@ -70,7 +73,7 @@ public:
         assert(duration >= 0.0f);
 
         float time = m_references.empty() ? 0.0f : m_references.back().time;
-        m_references.push_back(Pair(value, time + duration));
+        m_references.push_back(TimedValue(value, time + duration));
     }
 
     //--------------------------------------------------------------------------
@@ -88,7 +91,7 @@ public:
             {
                 if (time < m_references[i].time)
                 {
-                    return m_references[i].data;
+                    return m_references[i].value;
                 }
             }
         }
@@ -98,7 +101,7 @@ public:
 
 private:
 
-    std::vector<Pair> m_references;
+    std::vector<TimedValue> m_references;
 };
 
 // *************************************************************************

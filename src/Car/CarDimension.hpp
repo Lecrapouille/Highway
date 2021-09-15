@@ -32,42 +32,67 @@
 #  include <ostream>
 #  include <cassert>
 
+// *****************************************************************************
+//! \brief Trailer blueprint
+// *****************************************************************************
 struct TrailerDimension
 {
-    TrailerDimension(const float w, const float l, const float l2,
+    //--------------------------------------------------------------------------
+    //! \brief Define trailer constants
+    //! \param[in] l: trailer length [meter]
+    //! \param[in] w: trailer width [meter]
+    //! \param[in] wb: wheelbase length (fork length) [meter]
+    //! \param[in] bo: back overhang [meter]
+    //! \param[in] wr: wheel radius [meter]
+    //--------------------------------------------------------------------------
+    TrailerDimension(const float l, const float w, const float d,
                      const float bo, const float wr)
-        : width(w), width2(0.1f), length(l), wheelbase(l2),  back_overhang(bo),
+        : width(w), length(l), wheelbase(d),  back_overhang(bo),
           wheel_radius(wr)
-    {}
+    {
+        track = width - wheel_width;
+    }
 
     //! \brief Vehicle width [meter]
-    float width, width2;
+    float width;
     //! \brief Vehicle length [meter]
-    float length, wheelbase;
+    float length;
+    //! \brief Wheel to wheel distance along width [meter]
+    float track;
+    //! \brief Wheel to wheel distance along the length [meter]
+    float wheelbase;
     //! \brief Porte a faux arriere [meter]
     float back_overhang;
     //! \brief Rayon roue [meter]
     float wheel_radius;
     //! \brief Epaisseur roue [meter] (only used for the rendering)
     float wheel_width = 0.1f;
+    //! \brief Width of the fork [meter] (only used for the rendering)
+    float fork_width = 0.01f;
 };
 
+// *****************************************************************************
+//! \brief Car blueprint
+// *****************************************************************************
 struct CarDimension
 {
     //--------------------------------------------------------------------------
     //! \brief Define vehicle constants
-    //! \param[in] w: car width [meter]
     //! \param[in] l: car length [meter]
+    //! \param[in] w: car width [meter]
     //! \param[in] wb: wheelbase length [meter]
     //! \param[in] bo: back overhang [meter]
     //! \param[in] wr: wheel radius [meter]
-    //! \param[in] tc: turning circle [meter]
+    //! \param[in] tc: turning diameter [meter]
     //--------------------------------------------------------------------------
-    CarDimension(const float w, const float l, const float wb,
-                 const float bo, const float wr, const float /*tc*/)
-        : width(w), length(l), wheelbase(wb), back_overhang(bo),
+    CarDimension(const float l, const float w, const float wb, const float bo,
+                 const float wr, const float td)
+        : length(l), width(w), wheelbase(wb), back_overhang(bo),
           front_overhang(length - wheelbase - back_overhang), wheel_radius(wr)
     {
+        track = width - wheel_width;
+
+        max_steering_angle = asinf(wheelbase / (0.5f * td));
         assert(max_steering_angle > 0.0f);
         assert(max_steering_angle < DEG2RAD(90.0f));
     }
@@ -83,11 +108,13 @@ struct CarDimension
                   << "  }";
     }
 
-    //! \brief Vehicle width [meter]
-    float width;
     //! \brief Vehicle length [meter]
     float length;
-    //! \brief Empattement [meter]
+    //! \brief Vehicle width [meter]
+    float width;
+    //! \brief Wheel to wheel distance along width [meter]
+    float track;
+    //! \brief Wheel to wheel distance along the length [meter]
     float wheelbase;
     //! \brief Porte a faux arriere [meter]
     float back_overhang;
@@ -98,7 +125,7 @@ struct CarDimension
     //! \brief Epaisseur roue [meter] (only used for the rendering)
     float wheel_width = 0.1f;
     //! \brief Limit of steering angle absolute angle [rad]
-    float max_steering_angle = DEG2RAD(35.0f); // FIXME
+    float max_steering_angle;
 };
 
 #endif

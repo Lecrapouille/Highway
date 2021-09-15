@@ -32,55 +32,97 @@
 #  include "ParkingDimension.hpp"
 #  include <map>
 
+// ****************************************************************************
+//! \brief Class holding database of car dimensions. You can complete the
+//! database.
+// ****************************************************************************
 class CarDimensions
 {
 public:
 
-    static bool add(const char* n, CarDimension const& dim)
+    //--------------------------------------------------------------------------
+    //! \brief Add a new car dimension in the database.
+    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
+    //! \param[in] dim the car dimension
+    //--------------------------------------------------------------------------
+    static bool add(const char* name, CarDimension const& dim)
     {
-        return dictionary().insert(std::map<std::string, CarDimension>::value_type(n, dim)).second;
+        assert(name != nullptr);
+        return database().insert(std::map<std::string,
+                                   CarDimension>::value_type(name, dim)).second;
     }
 
-    static CarDimension get(const char* n)
+    //--------------------------------------------------------------------------
+    //! \brief Get the car dimension from its name.
+    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
+    //! \return dim the car dimension
+    //! \return Throw exception if the car is unknown.
+    //--------------------------------------------------------------------------
+    static CarDimension get(const char* name)
     {
-        return dictionary().at(n);
+        assert(name != nullptr);
+        return database().at(name);
     }
 
 private:
 
-    static std::map<std::string, CarDimension>& dictionary()
+    //--------------------------------------------------------------------------
+    //! \brief Private static database.
+    //--------------------------------------------------------------------------
+    static std::map<std::string, CarDimension>& database()
     {
         static std::map<std::string, CarDimension> dico = {
             // https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html
-            { "Renault.Twingo", { 1.646f, 3.615f, 2.492f, 0.494f, 0.328f, 10.0f } },
+            { "Renault.Twingo", { 3.615f, 1.646f, 2.492f, 0.494f, 0.328f, 10.0f } },
             // https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png
-            { "Citroel.DS3", { 1.79f, 4.118f, 2.558f, 0.7f, 0.328f, 10.4f } },
+            { "Citroel.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
             // https://www.vehikit.fr/nissan
-            { "Nissan.NV200", { 1.219f, 4.321f, 2.725f, 0.840f, 0.241f, 10.6f} },
+            { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
             // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
-            { "Audi.A6", { 1.886f, 4.93f, 2.924f, 1.095f, 0.328f, 11.7f } },
+            { "Audi.A6", { 4.93f, 1.886f, 2.924f, 1.095f, 0.328f, 11.7f } },
         };
         return dico;
     }
 };
 
+// ****************************************************************************
+//! \brief Class holding database of trailer dimensions. You can complete the
+//! database.
+// ****************************************************************************
 class TrailerDimensions
 {
 public:
 
-    static bool add(const char* n, TrailerDimension const& dim)
+    //--------------------------------------------------------------------------
+    //! \brief Add a new trailer dimension in the database.
+    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
+    //! \param[in] dim the car dimension
+    //--------------------------------------------------------------------------
+    static bool add(const char* name, TrailerDimension const& dim)
     {
-        return dictionary().insert(std::map<std::string, TrailerDimension>::value_type(n, dim)).second;
+        assert(name != nullptr);
+        return database().insert(std::map<std::string,
+                                 TrailerDimension>::value_type(name, dim)).second;
     }
 
-    static TrailerDimension get(const char* n)
+    //--------------------------------------------------------------------------
+    //! \brief Get the trailer dimension from its name.
+    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
+    //! \return dim the car dimension
+    //! \return Throw exception if the trailer is unknown.
+    //--------------------------------------------------------------------------
+    static TrailerDimension get(const char* name)
     {
-        return dictionary().at(n);
+        assert(name != nullptr);
+        return database().at(name);
     }
 
 private:
 
-    static std::map<std::string, TrailerDimension>& dictionary()
+    //--------------------------------------------------------------------------
+    //! \brief Private static database.
+    //--------------------------------------------------------------------------
+    static std::map<std::string, TrailerDimension>& database()
     {
         static std::map<std::string, TrailerDimension> dico = {
             { "generic", { 1.646f, 1.646f, 2.5f, 0.494f, 0.2f } },
@@ -90,23 +132,44 @@ private:
 };
 
 
+// ****************************************************************************
+//! \brief Class holding database of parking dimensions. You can complete the
+//! database.
+// ****************************************************************************
 class ParkingDimensions
 {
 public:
 
-    static bool add(const char* n, ParkingDimension const& dim)
+    //--------------------------------------------------------------------------
+    //! \brief Add a new parking dimension in the database.
+    //! \param[in] nane: non NULL string of the car "<type>.<angle>"
+    //! \param[in] dim the parking dimension
+    //--------------------------------------------------------------------------
+    static bool add(const char* name, ParkingDimension const& dim)
     {
-        return dictionary().insert(std::map<std::string, ParkingDimension>::value_type(n, dim)).second;
+        assert(name != nullptr);
+        return database().insert(std::map<std::string,
+                                 ParkingDimension>::value_type(name, dim)).second;
     }
 
-    static ParkingDimension get(const char* n)
+    //--------------------------------------------------------------------------
+    //! \brief Get the parking dimension from its name.
+    //! \param[in] nane: non NULL string of the car "<type>.<angle>"
+    //! \return dim the parking dimension
+    //! \return Throw exception if the trailer is unknown.
+    //--------------------------------------------------------------------------
+    static ParkingDimension get(const char* name)
     {
-        return dictionary().at(n);
+        assert(name != nullptr);
+        return database().at(name);
     }
 
 private:
 
-    static std::map<std::string, ParkingDimension>& dictionary()
+    //--------------------------------------------------------------------------
+    //! \brief Private static database.
+    //--------------------------------------------------------------------------
+    static std::map<std::string, ParkingDimension>& database()
     {
         // https://www.virages.com/Blog/Dimensions-Places-De-Parking
         static std::map<std::string, ParkingDimension> dico = {

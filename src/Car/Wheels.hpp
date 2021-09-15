@@ -25,34 +25,30 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef PARKING_DIMENSION_HPP
-#  define PARKING_DIMENSION_HPP
+#ifndef CAR_WHEEL_HPP
+#  define CAR_WHEEL_HPP
 
-#  include "Utils.hpp"
-
-// ****************************************************************************
-//! \brief Class holding parking slot dimensions
-// ****************************************************************************
-struct ParkingDimension
+// *****************************************************************************
+//! \brief
+// *****************************************************************************
+struct Wheel
 {
-    //--------------------------------------------------------------------------
-    //! \brief Set parking slot dimensions.
-    //! \param[in] l parking length.
-    //! \param[in] w parking width.
-    //! \param[in] a parking lane angle (0°: parallel, 90°: perpendicular).
-    //--------------------------------------------------------------------------
-    ParkingDimension(float const l, float const w, size_t const a)
-        : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
-    {}
+    //! \brief Relative position from
+    sf::Vector2f offset;
+    //! \brief current position in the world
+    sf::Vector2f position;
+    //! \brief yaw angle
+    float steering;
+    //! \brief speed
+    //float speed;
 
-    //! \brief Vehicle length [meter]
-    float length;
-    //! \brief Vehicle width [meter]
-    float width;
-    //! \brief Orientation [rad]
-    float angle;
-    //! \brief Orientation [deg]
-    size_t deg;
+    friend std::ostream& operator<<(std::ostream& os, Wheel const& wheel)
+    {
+        return os << "{ position=(" << wheel.position.x
+                  << ", " << wheel.position.y
+                  << "), steering=" << RAD2DEG(wheel.steering)
+                  << " }";
+    }
 };
 
 #endif
