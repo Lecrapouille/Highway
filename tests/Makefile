@@ -18,7 +18,7 @@
 ## along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 ##=====================================================================
 
-TARGET_BIN = Drive
+TARGET_BIN = Drive-TU
 
 # make install
 DESTDIR ?=
@@ -29,8 +29,8 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Search files
 BUILD = build
-VPATH = $(BUILD) src src/Car src/World src/SFML src/Utils
-INCLUDES = -Isrc -Isrc/Car -Isrc/World -Isrc/SFML -Isrc/Utils
+VPATH = $(BUILD) ../src ../src/Car ../src/World ../src/SFML ../src/Utils
+INCLUDES = -I../src -I../src/Car -I../src/World -I../src/SFML -I../src/Utils
 
 # C++14 only because of std::make_unique not present in C++11)
 STANDARD=--std=c++14 -g -O0
@@ -45,8 +45,8 @@ COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
 COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter -Wno-old-style-cast -Wno-sign-conversion
 
 # Compilation
-CXXFLAGS = $(STANDARD) $(COMPIL_FLAGS) `pkg-config --cflags sfml-graphics`
-LDFLAGS = `pkg-config --libs sfml-graphics` -lpthread -ldw
+CXXFLAGS = $(STANDARD) $(COMPIL_FLAGS) `pkg-config --cflags sfml-graphics gtest gmock` --coverage
+LDFLAGS = `pkg-config --libs sfml-graphics gtest gmock` -lpthread -ldw  --coverage
 DEFINES = -DDATADIR=\"$(DATADIR)\" -DBACKWARD_HAS_DW=1
 
 # File dependencies
@@ -54,7 +54,8 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
-OBJS = backward.o Collide.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o Parking.o Renderer.o Simulation.o main.o
+OBJS = backward.o Collide.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o Parking.o Renderer.o
+OBJS += TestCar.o Tests.o
 
 ifeq ($(VERBOSE),1)
 Q :=
@@ -62,17 +63,24 @@ else
 Q := @
 endif
 
-all: $(TARGET_BIN) $(TARGET_LIB)
+COVERAGE_RAPPORT=rapport.info
+COVERAGE_DIR=doc
+COVERAGE_TARGET=logexporter
+
+all: $(TARGET_BIN)
+
+check: all
+	@echo "Runing tests"
+	./$(BUILD)/$(TARGET_BIN) || echo ""
+	lcov --quiet --directory .. -c -o $(COVERAGE_RAPPORT)
+	lcov --quiet --remove $(COVERAGE_RAPPORT) '/usr*' 'external/*' 'tests/*' -o $(COVERAGE_RAPPORT)
+	genhtml --quiet -o $(COVERAGE_DIR) -t "$(COVERAGE_TARGET)" $(COVERAGE_RAPPORT)
+	xdg-open $(COVERAGE_DIR)/index.html >/dev/null
 
 # Link the target
 $(TARGET_BIN): $(OBJS)
 	@echo "Linking $@"
 	$(Q)cd $(BUILD) && $(CXX) $(INCLUDES) -o $(TARGET_BIN) $(OBJS) $(LDFLAGS)
-
-# Create the shared library
-$(TARGET_LIB): $(LIB_OBJS)
-	@echo "Library $@"
-	$(Q)cd $(BUILD) && $(CXX) -shared -o $(TARGET_LIB) $(LIB_OBJS) $(LDFLAGS)
 
 # Compile C++ source files
 %.o : %.cpp $(BUILD)/%.d Makefile
@@ -85,16 +93,6 @@ $(TARGET_LIB): $(LIB_OBJS)
 	@echo "Compiling $<"
 	$(Q)$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
 	@$(POSTCOMPILE)
-
-# Install
-install: $(TARGET_BIN) $(TARGET_LIB)
-	@echo "Installing $(TARGET_BIN)"
-	$(Q)mkdir -p $(BINDIR)
-	$(Q)mkdir -p $(LIBDIR)
-	$(Q)mkdir -p $(DATADIR)
-	cp $(BUILD)/$(TARGET_BIN) $(BINDIR)
-	cp $(BUILD)/$(TARGET_LIB) $(LIBDIR)
-	cp -r data $(DATADIR)/..
 
 # Delete compiled files
 .PHONY: clean
