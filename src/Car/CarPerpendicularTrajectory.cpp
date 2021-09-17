@@ -31,8 +31,6 @@
 #include "Car.hpp"
 #include "Utils.hpp"
 #include <iostream>
-#include <cassert>
-#include <cmath>
 
 //------------------------------------------------------------------------------
 bool PerpTrajectory::init(Car& car, Parking const& parking, bool const entering)

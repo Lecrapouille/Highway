@@ -30,7 +30,7 @@
 #include <iostream>
 
 //------------------------------------------------------------------------------
-void CarTrajectory::update(CarControl& control, float const dt)
+bool CarTrajectory::update(CarControl& control, float const dt)
 {
     m_time += dt;
 
@@ -38,11 +38,15 @@ void CarTrajectory::update(CarControl& control, float const dt)
     {
         control.set_speed(m_speeds.get(m_time));
         control.set_steering(m_steerings.get(m_time));
+
+        return !m_speeds.end(m_time);
     }
     else
     {
         control.set_acceleration(m_accelerations.get(m_time), dt);
         control.set_steering_speed(m_steerings.get(m_time), dt);
+
+        return !m_accelerations.end(m_time);
     }
 }
 

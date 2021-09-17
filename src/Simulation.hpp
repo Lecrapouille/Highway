@@ -28,9 +28,9 @@
 #ifndef MAIN_HPP
 #  define MAIN_HPP
 
-#  include "GUIStates.hpp"
-#  include "Car.hpp"
-#  include "Parking.hpp"
+#  include "SFML/GUIStates.hpp"
+#  include "Car/Car.hpp"
+#  include "World/Parking.hpp"
 #  include <atomic>
 
 // *****************************************************************************
@@ -55,11 +55,10 @@ public:
     void clear();
     void createWorld(size_t angle, bool const entering);
 
-    // FIXME: SFMLCar instead ?
-    Car& addPlayer(CarDimension const& dim, sf::Vector2f const& position,
-                   float const heading, float const speed = 0.0f, float const steering = 0.0f);
-    Car& addPlayer(const char* model, sf::Vector2f const& position, float const heading,
-                  float const speed = 0.0f, float const steering = 0.0f);
+    IACar& addPlayer(const char* model, sf::Vector2f const& position, float const heading,
+                     float const speed = 0.0f, float const steering = 0.0f);
+    IACar& addPlayer(CarDimension const& dim, sf::Vector2f const& position, float const heading,
+                     float const speed = 0.0f, float const steering = 0.0f);
     Car& addCar(const char* model, Parking& parking);
     Car& addCar(const char* model, sf::Vector2f const& position, float const heading,
                 float const speed = 0.0f, float const steering = 0.0f);
@@ -121,9 +120,10 @@ private:
     //! \brief Mouse X,Y position within the world coordinate [meter].
     //! You directly can measure objects (in meter).
     sf::Vector2f m_mouse;
-    //! \brief Container of parked and self-parking cars
+    //! \brief Container of parked cars
     std::deque<std::unique_ptr<Car>> m_cars;
-    std::unique_ptr<Car> m_player = nullptr;
+    //! \brief The autonomous cars
+    std::unique_ptr<IACar> m_ego = nullptr;
     //! \brief Container of parking slots
     std::deque<Parking> m_parkings;
     // TODO roads and bounding boxes of objects

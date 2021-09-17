@@ -10,3 +10,4 @@
 - [FAIT] dimension et max steering angle
 - Ackerman
 - Prolog pour la logique ?
+- World class au lieu de Simulation

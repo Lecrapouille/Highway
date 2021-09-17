@@ -25,25 +25,37 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef UTILS_HPP
-#  define UTILS_HPP
+#ifndef CAR_SENSORS_RADAR_HPP
+#  define CAR_SENSORS_RADAR_HPP
 
-#  include <cmath>
+#  include <SFML/Graphics/RectangleShape.hpp>
+#  include <SFML/System/Vector2.hpp>
 
-#  define ZOOM 0.015f
+class Car;
 
-#  define RAD2DEG(r) ((r) * 57.295779513f)
-#  define DEG2RAD(d) ((d) * 0.01745329251994f)
+struct SensorShape
+{
+   void set(sf::Vector2f const& p, float const orientation);
 
-#  define DISTANCE(xa, ya, xb, yb)                                          \
-   sqrtf(((xb) - (xa)) * ((xb) - (xa)) + ((yb) - (ya)) * ((yb) - (ya)))
+   //! \brief Relative position from the car shape position (middle rear axle)
+   sf::Vector2f offset;
+   //! \brief Relative relative orientation
+   float orientation;
+   //! \brief Oriented bounding box
+   sf::RectangleShape obb;
+};
 
-#  define SFDISTANCE(a, b)                                          \
-   sqrtf(((b.x) - (a.x)) * ((b.x) - (a.x)) + ((b.y) - (a.y)) * ((b.y) - (a.y)))
+class Radar
+{
+public:
 
-#  define ARC_LENGTH(angle, radius) ((angle) * (radius))
+   void init(SensorShape& shape, const float range);
+   void set(sf::Vector2f const& p, float const orientation);
+   bool collides(sf::RectangleShape const& shape, sf::Vector2f& p) const;
 
-#  define ROTATE(p, a) sf::Vector2f(cosf(a) * p.x - sinf(a) * p.y, \
-                                    sinf(a) * p.x + cosf(a) * p.y)
+private:
+
+   SensorShape* m_shape = nullptr;
+};
 
 #endif

@@ -25,25 +25,35 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef UTILS_HPP
-#  define UTILS_HPP
+#  include "Sensors/Radar.hpp"
+#  include "Utils/Utils.hpp"
+#  include "Utils/Collide.hpp"
+#  include <cassert>
 
-#  include <cmath>
+void SensorShape::set(sf::Vector2f const& p, float const orientation)
+{
+   obb.setPosition(p);
+   obb.setRotation(orientation);
+}
 
-#  define ZOOM 0.015f
+void Radar::init(SensorShape& shape, const float range)
+{
+   m_shape = &shape;
+   m_shape->obb.setSize(sf::Vector2f(range, 0.1f));
+   m_shape->obb.setOrigin(0.0f, m_shape->obb.getSize().y / 2);
+   m_shape->obb.setFillColor(sf::Color(165, 42, 42));
+   m_shape->obb.setOutlineThickness(ZOOM);
+   m_shape->obb.setOutlineColor(sf::Color::Blue);
+}
 
-#  define RAD2DEG(r) ((r) * 57.295779513f)
-#  define DEG2RAD(d) ((d) * 0.01745329251994f)
+void Radar::set(sf::Vector2f const& p, float const orientation)
+{
+   assert(m_shape != nullptr);
+   m_shape->set(p, orientation);
+}
 
-#  define DISTANCE(xa, ya, xb, yb)                                          \
-   sqrtf(((xb) - (xa)) * ((xb) - (xa)) + ((yb) - (ya)) * ((yb) - (ya)))
-
-#  define SFDISTANCE(a, b)                                          \
-   sqrtf(((b.x) - (a.x)) * ((b.x) - (a.x)) + ((b.y) - (a.y)) * ((b.y) - (a.y)))
-
-#  define ARC_LENGTH(angle, radius) ((angle) * (radius))
-
-#  define ROTATE(p, a) sf::Vector2f(cosf(a) * p.x - sinf(a) * p.y, \
-                                    sinf(a) * p.x + cosf(a) * p.y)
-
-#endif
+bool Radar::collides(sf::RectangleShape const& shape, sf::Vector2f& p) const
+{
+   assert(m_shape != nullptr);
+   return ::collide(m_shape->obb, shape, p);
+}

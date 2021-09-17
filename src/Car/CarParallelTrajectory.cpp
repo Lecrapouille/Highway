@@ -26,13 +26,8 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "CarTrajectory.hpp"
-#include "TurningRadius.hpp"
 #include "Renderer.hpp"
 #include "Car.hpp"
-#include "Utils.hpp"
-#include <iostream>
-#include <cassert>
-#include <cmath>
 
 //------------------------------------------------------------------------------
 bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const entering)
@@ -42,6 +37,10 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     Remin = radius.external;
     Rimin = radius.internal;
     Rwmin = Rimin + car.dim.width / 2.0f;
+
+    std::cout << "Steermax=" << RAD2DEG(car.dim.max_steering_angle)
+              << ", Remin=" << Remin << ", Rimin=" << Rimin
+              << ", Rwmin=" << Rwmin << std::endl;
 
     // Minimum length of the parallel parking length. See figure 4 "Easy
     // Path Planning and Robust Control for Automatic Parallel Parking" by
@@ -54,21 +53,30 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     // have to add the back overhang.
     assert(Remin >= Rimin);
     float Lmin = car.dim.back_overhang + sqrtf(Remin * Remin - Rimin * Rimin);
+    std::cout << "Lmin=" << Lmin << std::endl;
 
     // Has the parking spot has enough length to perform a one-trial maneuver parking ?
-    if (entering || car.estimate_parking_length() >= Lmin)
+    if (entering)
     {
-        if (!computePathPlanning(car, parking, entering))
-            return false;
+        if (parking.dim.length >= Lmin)
+        {
+            if (!computePathPlanning(car, parking, entering))
+                return false;
 
-        generateReferenceTrajectory(car, entering, VMAX, ADES);
-        return true;
+            generateReferenceTrajectory(car, entering, VMAX, ADES);
+            return true;
+        }
+        else
+        {
+            // Implement "Estimation et contrôle pour le pilotage automatique de
+            // véhicule : Stop&Go et parking automatique"
+            std::cerr << "N-trial entering parallel parking not yet implemented" << std::endl;
+            return false;
+        }
     }
     else
     {
-        // Implement "Estimation et contrôle pour le pilotage automatique de
-        // véhicule : Stop&Go et parking automatique"
-        std::cerr << "N-trial parallel parking not yet implemented" << std::endl;
+        std::cerr << "N-trial leaving parallel parking not yet implemented" << std::endl;
         return false;
     }
 }
@@ -96,7 +104,7 @@ bool ParallelTrajectory::computePathPlanning(Car const& car, Parking const& park
         // maneuver). Note: the X-coordinate cannot yet be computed.
         Yc2 = Yi - Rwmin;
 
-        // Tengant intersection of C1 and C2.
+        // Tangent intersection of C1 and C2.
         Yt = (Yc1 + Yc2) / 2.0f;
         float d = Rwmin * Rwmin - (Yt - Yc1) * (Yt - Yc1);
         if (d < 0.0f)

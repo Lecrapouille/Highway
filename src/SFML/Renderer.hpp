@@ -31,9 +31,8 @@
 #  include "Utils.hpp"
 #  include <SFML/Graphics.hpp>
 
-#  define ZOOM 0.02f
-
 class Car;
+class IACar;
 class Trailer;
 class Parking;
 
@@ -151,5 +150,6 @@ private:
 
 void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
 void draw(Car const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+void draw(IACar const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
 
 #endif

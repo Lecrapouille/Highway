@@ -31,7 +31,6 @@
 #  include "Parking.hpp"
 #  include <SFML/Graphics.hpp> // FIXME deplacer CarTrajectory::draw
 #  include <vector>
-#  include <cassert>
 
 class Car;
 class CarControl;
@@ -42,7 +41,7 @@ static const float ADES = 1.0f; // [m/s/s]
 
 class References
 {
-public:
+private:
 
     // *************************************************************************
     //! \brief Helper struct to hold a value to maintain during a given duration.
@@ -60,6 +59,8 @@ public:
         float value;
         float time;
     };
+
+public:
 
     //--------------------------------------------------------------------------
     void clear()
@@ -99,7 +100,12 @@ public:
         return 0.0f;
     }
 
-private:
+    bool end(float const time)
+    {
+        return time >= m_references.back().time;
+    }
+
+protected:
 
     std::vector<TimedValue> m_references;
 };
@@ -116,7 +122,9 @@ public:
 
     virtual ~CarTrajectory() = default;
     virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;
-    virtual void update(CarControl& control, float const dt);
+    //! \brief
+    //! \return false if no need to update (end of references)
+    virtual bool update(CarControl& control, float const dt);
     virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
 
 protected:

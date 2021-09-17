@@ -26,8 +26,8 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "Simulation.hpp"
-#include "Dimensions.hpp"
-#include "Renderer.hpp"
+#include "World/Dimensions.hpp"
+#include "SFML/Renderer.hpp"
 #include <iostream>
 
 #define WINDOW_WIDTH 1000
@@ -78,34 +78,37 @@ void Simulation::createWorld(size_t angle, bool const entering)
 
     // Add parked cars (static)
     Car& car0 = addCar("Renault.Twingo", parking0);
-    Car& car1 = addCar("Renault.Twingo", parking2);
+    Car& car1 = addCar("Renault.Twingo", parking1);
+    Car& car2 = addCar("Renault.Twingo", parking3);
     std::cout << "Car0: " << car0.position().x << ", " << car0.position().y << std::endl;
     std::cout << "Car1: " << car1.position().x << ", " << car1.position().y << std::endl;
 
-    // Self-parking car (dynamic). Always be the last one (to get it through .back())
-    Car& car3 = addCar("Renault.Twingo", parking3.position() + sf::Vector2f(1.0f, 10.0f), 0.0f);
+    // Self-parking car (dynamic). Always be the last in the container
+    Car& car3 = addPlayer("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
     car3.color = sf::Color(PLAYER_CAR_COLOR);
-std::cout << car3 << std::endl;
+    std::cout << car3 << std::endl;
 
     // With trailer
     //car3.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
-
-    // If leaving maneuver then force the car position and heading to be in the
-    // slot.
-    if (!entering)
-    {
-        parking1.bind(car3);
-    }
-
-    // Do the maneuver
-    if (!car3.park(parking1))
-    {
-        std::cerr << "The car cannot park" << std::endl;
-    }
 }
 
 //------------------------------------------------------------------------------
-// FIXME: SFMLCar instead ?
+IACar& Simulation::addPlayer(CarDimension const& dim, sf::Vector2f const& position,
+                             float const heading, float const speed, float const steering)
+{
+    m_ego = std::make_unique<IACar>(dim, m_cars);
+    m_ego->init(position, heading, speed, steering);
+    return *m_ego;
+}
+
+//------------------------------------------------------------------------------
+IACar& Simulation::addPlayer(const char* model, sf::Vector2f const& position,
+                             float const heading, float const speed, float const steering)
+{
+    return addPlayer(CarDimensions::get(model), position, heading, speed, steering);
+}
+
+//------------------------------------------------------------------------------
 Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position,
                         float const heading, float const speed, float const steering)
 {
@@ -191,6 +194,14 @@ void Simulation::handleInput()
             {
                 m_running = false;
             }
+            else if (event.key.code == sf::Keyboard::Right)
+            {
+                if (m_ego != nullptr)
+                {
+                    std::cout << "CLIGNOTANT: START PARKING" << std::endl;
+                    m_ego->clignotant(m_ego->clignotant() ^ true); // TODO clignotant Left/right
+                }
+            }
             else if (event.key.code == sf::Keyboard::A)
             {
                 std::cout << "ENTERING BACKWARD PARALLEL" << std::endl;
@@ -251,43 +262,42 @@ void Simulation::handleInput()
 //------------------------------------------------------------------------------
 void Simulation::update(const float dt) // FIXME to be threaded
 {
-    if (m_cars.empty())
-        return ;
-
-    Car& player = *m_cars.back();
-
     // Update car physics
     for (auto& it: m_cars)
     {
-        // it->update(dt);
+        it->update(dt);
+    }
 
-        if (it.get() != &player)
+    if (m_ego != nullptr)
+    {
+        // Update the player's car physics
+        m_ego->update(dt);
+
+        // Collide with other car ?
+        for (auto& it: m_cars)
         {
-            if (it->collides(player))
+            if (m_ego->collides(*it))
             {
                 std::cout << "Collide" << std::endl;
                 it->color = sf::Color(COLISION_COLOR);
-                player.color = sf::Color(COLISION_COLOR);
+                m_ego->color = sf::Color(COLISION_COLOR);
             }
             else
             {
                 it->color = sf::Color(DEFAULT_CAR_COLOR);
-                player.color = sf::Color(PLAYER_CAR_COLOR);
+                m_ego->color = sf::Color(PLAYER_CAR_COLOR);
             }
         }
     }
-
-    // Update the player's car physics
-    player.update(dt);
 }
 
 //------------------------------------------------------------------------------
 void Simulation::draw(const float /*dt*/)
 {
     // Make the camera follows the self-parking car
-    if (!m_cars.empty())
+    if (m_ego != nullptr)
     {
-        m_view.setCenter(m_cars.back()->position());
+        m_view.setCenter(m_ego->position());
         renderer().setView(m_view);
     }
 
@@ -301,5 +311,10 @@ void Simulation::draw(const float /*dt*/)
     for (auto const& it: m_cars)
     {
         ::draw(*it, renderer());
+    }
+
+    if (m_ego != nullptr)
+    {
+        ::draw(*m_ego, renderer());
     }
 }

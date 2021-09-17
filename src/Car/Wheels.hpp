@@ -33,7 +33,7 @@
 // *****************************************************************************
 struct Wheel
 {
-    //! \brief Relative position from
+    //! \brief Relative position from the car shape position (middle rear axle)
     sf::Vector2f offset;
     //! \brief current position in the world
     sf::Vector2f position;

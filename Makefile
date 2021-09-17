@@ -29,8 +29,8 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Search files
 BUILD = build
-VPATH = $(BUILD) src src/Car src/World src/SFML src/Utils
-INCLUDES = -Isrc -Isrc/Car -Isrc/World -Isrc/SFML -Isrc/Utils
+VPATH = $(BUILD) src src/Car src/Sensors src/World src/SFML src/Utils
+INCLUDES = -Isrc -Isrc/Car -Isrc/Sensors -Isrc/World -Isrc/SFML -Isrc/Utils
 
 # C++14 only because of std::make_unique not present in C++11)
 STANDARD=--std=c++14 -g -O0
@@ -54,7 +54,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
-OBJS = backward.o Collide.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o Parking.o Renderer.o Simulation.o main.o
+OBJS = backward.o Collide.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o Parking.o Radar.o Scan.o StateMachine.o Renderer.o  Simulation.o main.o
 
 ifeq ($(VERBOSE),1)
 Q :=

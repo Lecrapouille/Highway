@@ -29,8 +29,6 @@
 #  define TURNING_RADIUS_HPP
 
 #  include "CarDimension.hpp"
-#  include <cmath>
-#  include <iostream>
 
 // *****************************************************************************
 //! \brief The turning radius is the radius of the circle created by a

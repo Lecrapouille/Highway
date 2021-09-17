@@ -30,8 +30,6 @@
 
 #  include "CarControl.hpp"
 #  include "CarShape.hpp"
-#  include <iostream>
-#  include <cassert>
 
 // *****************************************************************************
 //! \brief Base class for doing kinematic or dynamic on a linked list of

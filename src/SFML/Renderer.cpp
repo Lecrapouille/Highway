@@ -111,6 +111,25 @@ void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates con
 }
 
 //------------------------------------------------------------------------------
+void draw(IACar const& car, sf::RenderTarget& target, sf::RenderStates const& states)
+{
+    Car const& c = *reinterpret_cast<const Car*>(&car);
+    draw(c, target, states);
+
+    // Car sensors
+    for (auto const& it: c.shape().sensors())
+    {
+        target.draw(it.obb, states);
+    }
+
+    // Debug Trajectory
+    if (car.hasTrajectory())
+    {
+        car.trajectory().draw(target, states);
+    }
+}
+
+//------------------------------------------------------------------------------
 void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     CarShape const& car_shape = car.shape();
@@ -118,14 +137,14 @@ void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& stat
     // Car body.
     // Origin on the middle of the rear wheels
     sf::RectangleShape body(sf::Vector2f(car.dim.length, car.dim.width));
+    body.setOrigin(car.dim.back_overhang, body.getSize().y / 2);
     body.setPosition(car_shape.position());
     body.setRotation(RAD2DEG(car_shape.heading()));
-    body.setOrigin(car.dim.back_overhang, body.getSize().y / 2);
     body.setFillColor(car.color);
     body.setOutlineThickness(ZOOM);
     body.setOutlineColor(sf::Color::Blue);
     target.draw(body, states);
-    target.draw(Circle(car.position().x, car.position().y, 2*ZOOM, sf::Color::Black));
+    target.draw(Circle(car.position().x, car.position().y, ZOOM, sf::Color::Black));
 
     // Car wheels
     sf::RectangleShape wheel(sf::Vector2f(car.dim.wheel_radius * 2, car.dim.wheel_width));
@@ -156,7 +175,7 @@ void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& stat
         body.setOutlineColor(sf::Color::Blue);
         target.draw(body, states);
         target.draw(Circle(trailer_shape.position().x, trailer_shape.position().y,
-                           2*ZOOM, sf::Color::Black));
+                           ZOOM, sf::Color::Black));
 
         arm.setSize(sf::Vector2f(trailer_shape.dim.wheelbase, trailer_shape.dim.fork_width));
         arm.setOrigin(0.0f, arm.getSize().y / 2);
@@ -178,11 +197,5 @@ void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& stat
             wheel.setRotation(RAD2DEG(trailer_shape.heading() + it.steering));
             target.draw(wheel, states);
         }
-    }
-
-    // Debug Trajectory
-    if (car.hasTrajectory())
-    {
-        car.trajectory().draw(target, states);
     }
 }

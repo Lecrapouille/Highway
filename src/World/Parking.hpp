@@ -30,7 +30,9 @@
 
 #  include "ParkingDimension.hpp"
 #  include <SFML/System/Vector2.hpp>
+#  include <ostream>
 #  include <cassert>
+#  include <new>
 
 class Car;
 
@@ -66,6 +68,16 @@ public:
     //! \note we do not manage the orientation in the world coordinate.
     //--------------------------------------------------------------------------
     Parking(ParkingDimension const& d, sf::Vector2f const& position);
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    Parking& operator=(const Parking& obj)
+    {
+        this->~Parking(); // destroy
+        new (this) Parking(obj.dim, obj.position()); // copy construct in place
+        return *this;
+    }
 
     //--------------------------------------------------------------------------
     //! \brief Make the slot occupied by the car.
@@ -106,6 +118,17 @@ public:
     {
         sf::Vector2f p = ROTATE(sf::Vector2f(dim.length, dim.width), -dim.angle);
         return sf::Vector2f(p.x, 0.0f); // W
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Debug purpose only: show shape information.
+    //--------------------------------------------------------------------------
+    friend std::ostream& operator<<(std::ostream& os, Parking const& parking)
+    {
+        os << "Parking P=(" << parking.m_position.x << ", " << parking.m_position.y << "), "
+           << "length=" << parking.dim.length << ", width=" << parking.dim.width
+           << "angle=" << parking.dim.deg << std::endl;
+        return os;
     }
 
 public:
