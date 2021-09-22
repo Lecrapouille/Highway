@@ -32,6 +32,8 @@
 #  include "ParkingDimension.hpp"
 #  include <map>
 
+using namespace SI::literals;
+
 // ****************************************************************************
 //! \brief Class holding database of car dimensions. You can complete the
 //! database.
@@ -174,13 +176,13 @@ private:
     {
         // https://www.virages.com/Blog/Dimensions-Places-De-Parking
         static std::map<std::string, ParkingDimension> dico = {
-            { "epi.0", { 5.0f, 2.0f, 0u } },
-            { "epi.45", { 4.8f, 2.2f, 45u } },
-            { "epi.60", { 5.15f, 2.25f, 60u } },
-            { "epi.75", { 5.1f, 2.25f, 75u } },
-            { "epi.90", { 5.0f, 2.3f, 90u } },
-            { "creneau", { 5.0f, 2.0f, 0u } },
-            { "bataille", { 5.0f, 2.3f, 90u } },
+            { "epi.0", { 5.0_m, 2.0_m, 0.0_deg } },
+            { "epi.45", { 4.8_m, 2.2_m, 45.0_deg } },
+            { "epi.60", { 5.15_m, 2.25_m, 60.0_deg } },
+            { "epi.75", { 5.1_m, 2.25_m, 75.0_deg } },
+            { "epi.90", { 5.0_m, 2.3_m, 90.0_deg } },
+            { "creneau", { 5.0_m, 2.0_m, 0.0_deg } },
+            { "bataille", { 5.0_m, 2.3_m, 90.0_deg } },
         };
         return dico;
     }

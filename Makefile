@@ -33,7 +33,7 @@ VPATH = $(BUILD) src src/Car src/Sensors src/World src/SFML src/Utils
 INCLUDES = -Isrc -Isrc/Car -Isrc/Sensors -Isrc/World -Isrc/SFML -Isrc/Utils
 
 # C++14 only because of std::make_unique not present in C++11)
-STANDARD=--std=c++14 -g -O0
+STANDARD=--std=c++17 -g -O0
 
 # Warnings
 COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \

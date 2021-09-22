@@ -93,13 +93,12 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf:
 //------------------------------------------------------------------------------
 void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
 {
-    const float A = parking.dim.angle;
-    const float l = parking.dim.length;
-    const float w = parking.dim.width;
+    const float l = parking.dim.length.value();
+    const float w = parking.dim.width.value();
 
     sf::RectangleShape shape(sf::Vector2f(l, w));
     shape.setOrigin(sf::Vector2f(0, w/2));
-    shape.setRotation(RAD2DEG(A));
+    shape.setRotation(parking.dim.deg.value());
     shape.setPosition(parking.position());
     shape.setFillColor(sf::Color::White);
     shape.setOutlineThickness(ZOOM);

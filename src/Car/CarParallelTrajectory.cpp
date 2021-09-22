@@ -58,7 +58,7 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     // Has the parking spot has enough length to perform a one-trial maneuver parking ?
     if (entering)
     {
-        if (parking.dim.length >= Lmin)
+        if (parking.dim.length.value() >= Lmin)
         {
             if (!computePathPlanning(car, parking, entering))
                 return false;

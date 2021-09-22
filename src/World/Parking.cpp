@@ -29,9 +29,10 @@
 #include "Car.hpp"
 
 //------------------------------------------------------------------------------
-static Parking::Type convert(size_t angle) // [deg]
+static Parking::Type convert(Degree const angle) // [deg]
 {
-    switch (angle)
+    size_t a = size_t(std::abs(angle.value()));
+    switch (a)
     {
     case 0u:
         return Parking::Type::Parallel;
@@ -70,7 +71,7 @@ void Parking::bind(Car& car)
     //    throw "Car already bound on parking spot";
 
     sf::Vector2f const offset(car.dim.back_overhang + car.dim.front_overhang, 0.0f);
-    car.init(m_position + ROTATE(offset, dim.angle), dim.angle, 0.0f, 0.0f);
+    car.init(m_position + ROTATE(offset, dim.angle), dim.angle.value(), 0.0f, 0.0f);
     //car.bind();
     m_car = &car;
 }
