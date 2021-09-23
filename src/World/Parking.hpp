@@ -37,7 +37,10 @@
 class Car;
 
 // ****************************************************************************
-//! \brief Class Defining a parking slot as entity interacting with the world.
+//! \brief Class defining a parking slot as entity in the simulation world which
+//! can interact with other entities such as vehicles to give some helper
+//! methods for creating the simulation more easily (ie creating a parking
+//! world, place parked cars, get spot coordinates ...)
 // ****************************************************************************
 class Parking
 {
@@ -70,7 +73,7 @@ public:
     Parking(ParkingDimension const& d, sf::Vector2f const& position);
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Copy operator. Ugly code needed because of const member vriables.
     //--------------------------------------------------------------------------
     Parking& operator=(const Parking& obj)
     {
@@ -82,13 +85,14 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Make the slot occupied by the car.
     //! \param[inout] car to be parked. Its position and orientation will be
-    //! modified by this method to follow the parking slot.
+    //! modified by this method to follow the parking slot. Use this method only
+    //! when constructing the simulation world.
     //--------------------------------------------------------------------------
     void bind(Car& car);
 
     //--------------------------------------------------------------------------
-    //! \brief Set the parking slot empty. The parked car stay at its current
-    //! position.
+    //! \brief Set the parking slot empty. If a car was already parked it stays
+    //! at its current position.
     //--------------------------------------------------------------------------
     void unbind();
 
@@ -104,7 +108,7 @@ public:
 
     //--------------------------------------------------------------------------
     //! \brief Const position in the world coordinates of the middle of the left
-    //! lane.
+    //! lane. Once placed in the world the parking slot cannot be displaced.
     //--------------------------------------------------------------------------
     sf::Vector2f const& position() const
     {
@@ -112,11 +116,11 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Delta position to place the next parking
+    //! \brief Helper method to place the next parking along the X-axis.
     //--------------------------------------------------------------------------
     sf::Vector2f delta() const
-    {
-        sf::Vector2f p = ROTATE(sf::Vector2f(dim.length, dim.width), -dim.angle);
+    { // FIXME not working for diagnonal spot
+        sf::Vector2f p = HEADING(sf::Vector2f(dim.length, dim.width), -dim.angle);
         return sf::Vector2f(p.x, 0.0f); // W
     }
 
@@ -140,7 +144,7 @@ public:
 
 protected:
 
-    //! \brief Position within the World coordinate
+    //! \brief Position inside the World coordinate
     sf::Vector2f m_position;
 
 private:

@@ -25,16 +25,15 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef DIMENSIONS_HPP
-#  define DIMENSIONS_HPP
+#ifndef BLUEPRINTS_HPP
+#  define BLUEPRINTS_HPP
 
 #  include "Vehicle/VehicleDimension.hpp"
 #  include "World/ParkingDimension.hpp"
 #  include <map>
 
 // ****************************************************************************
-//! \brief Class holding database of car dimensions. You can complete the
-//! database.
+//! \brief Database of car dimensions. You can interrogate it and complete it.
 // ****************************************************************************
 class CarDimensions
 {
@@ -55,7 +54,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Get the car dimension from its name.
     //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
-    //! \return dim the car dimension
+    //! \return dim the car dimension (by copy).
     //! \return Throw exception if the car is unknown.
     //--------------------------------------------------------------------------
     static CarDimension get(const char* name)

@@ -41,17 +41,17 @@ class Simulation
 public:
 
     //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Draw the chessboard and pieces.
+    //! \brief Draw the world and its entities.
     //-------------------------------------------------------------------------
     void draw(sf::RenderWindow& renderer, sf::View& view);
 
     //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Update GUI.
+    //! \brief Update the simuation states.
     //-------------------------------------------------------------------------
     void update(const float dt);
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Reset entities: parking, cars, ego car ...
     //-------------------------------------------------------------------------
     void clear();
 
@@ -98,6 +98,14 @@ public:
     //! \brief
     //-------------------------------------------------------------------------
     Parking& addParking(ParkingDimension const& dim, sf::Vector2f const& position);
+
+    //-------------------------------------------------------------------------
+    //! \brief Return the altitude at the given coordinates.
+    //-------------------------------------------------------------------------
+    float altitude(sf::Vector2f const& position)
+    {
+        return 0.0f; // Not implemented yet
+    }
 
 protected:
 

@@ -39,18 +39,27 @@
 // TODO https://www.researchgate.net/publication/349289743_Designing_Variable_Ackerman_Steering_Geometry_for_Formula_Student_Race_Vehicle/link/6028146aa6fdcc37a824e404/download
 
 // *****************************************************************************
-//! \brief A vehicle shape knows it position, heading, bounding box and position
-//! of wheels.
+//! \brief A vehicle shape knows it position, heading, bounding box and the
+//! blueprint of its wheels.
+//! \tparam Dim: a class holding dimension of the shape (ie TrailerDimension,
+//! CarDimension ...)
 // *****************************************************************************
 template<class Dim>
 class VehicleShape
 {
 public:
 
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor with the vehicle dimension (ie
+    //! TrailerDimension, CarDimension ...)
+    //--------------------------------------------------------------------------
     VehicleShape(Dim const& dimension)
         : dim(dimension)
     {}
 
+    //--------------------------------------------------------------------------
+    //! \brief Because of virtual methods.
+    //--------------------------------------------------------------------------
     virtual ~VehicleShape() = default;
 
     //--------------------------------------------------------------------------
@@ -70,7 +79,8 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return all the wheels
+    //! \brief Const getter: return the const reference of the container holding
+    //! all the wheels.
     //--------------------------------------------------------------------------
     inline std::vector<Wheel> const& wheels() const
     {
@@ -78,7 +88,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the nth wheel
+    //! \brief Const getter: return the const reference of the nth wheel.
     //--------------------------------------------------------------------------
     inline Wheel const& wheel(size_t const nth) const
     {
@@ -87,7 +97,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the steering angle of the desired wheel
+    //! \brief Const getter: return the steering angle of the desired wheel.
     //--------------------------------------------------------------------------
     inline float steering(size_t const nth) const
     {
@@ -96,7 +106,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief const getter: return the oriented bounding box (obb) of the shape.
+    //! \brief const getter: return the oriented bounding box (OBB) of the shape.
     //--------------------------------------------------------------------------
     inline sf::RectangleShape const& obb() const
     {
@@ -106,7 +116,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Check if the shape collides with another vehicle shape.
     //! \param[out] p: return the minimum translation vector in case of collision
-    //! \return true in case of collision and return the
+    //! \return true in case of collision and return the position of the collision.
     //--------------------------------------------------------------------------
     inline bool collides(VehicleShape const& other, sf::Vector2f& p) const
     {

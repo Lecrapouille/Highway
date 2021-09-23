@@ -65,14 +65,16 @@ public:
 private: // Derived from IGUIStates
 
     //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Draw the chessboard and pieces.
+    //! \brief Inherit from GUI class. Draw the world and its entities.
     //-------------------------------------------------------------------------
     virtual void draw(const float /*dt*/) override;
 
     //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Update GUI.
+    //! \brief Inherit from GUI class. Update GUI states.
     //-------------------------------------------------------------------------
-    virtual void update(const float dt) override;
+    virtual void /*gui_*/update(const float dt) override;
+
+    // TODO physics_update(const float dt)
 
     //-------------------------------------------------------------------------
     //! \brief Inherit from GUI class. Manage mouse and keyboard events.

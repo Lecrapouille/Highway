@@ -37,9 +37,9 @@ struct ParkingDimension
 {
     //--------------------------------------------------------------------------
     //! \brief Set parking slot dimensions.
-    //! \param[in] l parking length.
-    //! \param[in] w parking width.
-    //! \param[in] a parking lane angle (0°: parallel, 90°: perpendicular).
+    //! \param[in] l parking length [meter].
+    //! \param[in] w parking width [meter].
+    //! \param[in] a parking lane angle [deg] (0°: parallel, 90°: perpendicular).
     //--------------------------------------------------------------------------
     ParkingDimension(float const l, float const w, size_t const a)
         : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
