@@ -128,16 +128,16 @@ public:
     //--------------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, VehicleShape const& shape)
     {
-        os << "  Shape {" << std::endl << "    position=("
-           << shape.position().x << ", " << shape.position().y << "),"
+        os << "  Shape {" << std::endl << "    position = ("
+           << shape.position().x << ", " << shape.position().y << ") m,"
            << std::endl
-           << "    heading=" << RAD2DEG(shape.heading())
+           << "    heading = " << RAD2DEG(shape.heading()) << " deg"
            << std::endl;
 
         auto i = shape.wheels().size();
         while (i--)
         {
-            os << "    wheel[" << i << "]=" << shape.wheel(i) << "," << std::endl;
+            os << "    wheel[" << i << "] = " << shape.wheel(i) << "," << std::endl;
         }
         return os << "  }";
     }

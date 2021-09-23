@@ -83,6 +83,13 @@ public:
     }
 
     //--------------------------------------------------------------------------
+    //! \brief Needed because implicit copy constructor is deprecated.
+    //--------------------------------------------------------------------------
+    Parking(Parking const& other)
+        : Parking(other.dim, other.position())
+    {}
+
+    //--------------------------------------------------------------------------
     //! \brief Make the slot occupied by the car.
     //! \param[inout] car to be parked. Its position and orientation will be
     //! modified by this method to follow the parking slot. Use this method only

@@ -40,6 +40,8 @@ void Simulation::clear()
 }
 
 //------------------------------------------------------------------------------
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
 void Simulation::createWorld(size_t angle, bool const entering)
 {
     clear();
@@ -60,17 +62,15 @@ void Simulation::createWorld(size_t angle, bool const entering)
     Car& car0 = addCar("Renault.Twingo", parking0);
     Car& car1 = addCar("Renault.Twingo", parking1);
     Car& car2 = addCar("Renault.Twingo", parking3);
-    std::cout << "Car0: " << car0.position().x << ", " << car0.position().y << std::endl;
-    std::cout << "Car1: " << car1.position().x << ", " << car1.position().y << std::endl;
 
     // Self-parking car (dynamic). Always be the last in the container
-    Car& car3 = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
-    car3.color = sf::Color(EGO_CAR_COLOR);
-    std::cout << car3 << std::endl;
+    Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
 
     // With trailer
-    //car3.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
+    Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
+    std::cout << tr << std::endl;
 }
+#pragma GCC diagnostic pop
 
 //------------------------------------------------------------------------------
 SelfParkingCar& Simulation::addEgo(CarDimension const& dim, sf::Vector2f const& position,
@@ -78,6 +78,9 @@ SelfParkingCar& Simulation::addEgo(CarDimension const& dim, sf::Vector2f const& 
 {
     m_ego = std::make_unique<SelfParkingCar>(dim, m_cars);
     m_ego->init(position, heading, speed, steering);
+    m_ego->name = "ego";
+    m_ego->color = sf::Color(EGO_CAR_COLOR);
+    std::cout << *m_ego << std::endl << std::endl;
     return *m_ego;
 }
 
@@ -92,8 +95,12 @@ SelfParkingCar& Simulation::addEgo(const char* model, sf::Vector2f const& positi
 Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position,
                         float const heading, float const speed, float const steering)
 {
+    static size_t count = 0u;
+
     m_cars.push_back(std::make_unique<Car>(dim));
     m_cars.back()->init(position, heading, speed, steering);
+    m_cars.back()->name += std::to_string(count++);
+    std::cout << *m_cars.back() << std::endl << std::endl;
     return *m_cars.back();
 }
 
@@ -113,7 +120,7 @@ Car& Simulation::addCar(const char* model, Parking& parking)
 }
 
 //------------------------------------------------------------------------------
-Parking& Simulation::addParking(ParkingDimension const& dim, sf::Vector2f const& position)
+Parking& Simulation::addParking(ParkingDimension const& dim, sf::Vector2f const& position) //TODO , count)
 {
     // TODO i = count; while (i--)
     m_parkings.push_back(Parking(dim, position));

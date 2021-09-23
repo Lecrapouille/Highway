@@ -28,44 +28,57 @@
 #include "Vehicle/VehiclePhysics.hpp"
 
 //-----------------------------------------------------------------------------
-TrailerKinematic::TrailerKinematic(TrailerShape& shape, IPhysics& front)
-    : m_shape(shape)
-{
-    attachTo(front);
-}
-
-//-----------------------------------------------------------------------------
 void TrailerKinematic::init(float const speed, float const heading)
 {
     float x = 0.0f;
     float y = 0.0f;
-    IPhysics* front = next;
-    assert(front != nullptr);
 
-    //while ((front != nullptr) && (front->next == nullptr))
-    {
-        //x += cosf(front->heading()) * m_shape.dim.wheelbase;
-        //y += sinf(front->heading()) * m_shape.dim.wheelbase;
-        //front = front->next;
-    }
-
-    assert(front != nullptr);
-    sf::Vector2f position = front->position() - sf::Vector2f(x, y);
-    m_shape.set(position, heading);
+    m_shape.set(sf::Vector2f(x, y), heading);
     m_speed = speed;
+
+    // See "Flatness and motion Planning: the Car with n-trailers" by Pierre Rouchon ...
+    // x0 - sum^{n}_{i=1}(cos(heading_i) d_i)
+    // y0 - sum^{n}_{i=1}(sin(heading_i) d_i)
+    // i: the nth trailer and (x0, y0) middle of the rear axle of the car
+    IPhysics* front = this;
+    while (front != nullptr)
+    {
+       if (front->next == nullptr)
+       {
+           x = front->position().x - x;
+           y = front->position().y - y;
+           std::cout << "car: '" << front->name << "': " << front->position().x << ", " << front->position().y << std::endl;
+           std::cout << "=> " << x << ", " << y << std::endl;
+       }
+       else
+       {
+           TrailerKinematic* f = reinterpret_cast<TrailerKinematic*>(front);
+           float d = f->m_shape.dim.wheelbase;
+
+           std::cout << "Trailer: '" << front->name << "': " << RAD2DEG(f->heading()) << " " << d << std::endl;
+           x = x + cosf(f->heading()) * d;
+           y = y + sinf(f->heading()) * d;
+           std::cout << "=> " << x << ", " << y << std::endl;
+       }
+       front = front->next;
+    }
+    m_shape.set(sf::Vector2f(x, y), heading);
 }
 
 //-----------------------------------------------------------------------------
 void TrailerKinematic::onUpdate(CarControl const& control, float const dt)
 {
+    std::cout << "Trailer update " << name << std::endl;
     assert(next != nullptr);
-    float heading = m_shape.heading();
-    float next_heading = next->heading();
+
     m_speed = control.outputs.body_speed;
+    float heading = m_shape.heading();
+    float x = 0.0f;
+    float y = 0.0f;
 
     if (next->next == nullptr)
     {
-        heading += dt * m_speed * sinf(next_heading - heading) / m_shape.dim.wheelbase;
+        heading += dt * m_speed * sinf(next->heading() - heading) / m_shape.dim.wheelbase;
     }
     else
     {
@@ -73,19 +86,30 @@ void TrailerKinematic::onUpdate(CarControl const& control, float const dt)
         exit(1);
     }
 
-    float x = 0.0f;
-    float y = 0.0f;
-    IPhysics* vehicle = next;
-    //while ((vehicle != nullptr) && (vehicle->next == nullptr))
+    IPhysics* front = this;
+    while (front != nullptr)
     {
-        x += cosf(vehicle->heading()) * m_shape.dim.wheelbase;
-        y += sinf(vehicle->heading()) * m_shape.dim.wheelbase;
-        //vehicle = vehicle->next;
-    }
+       if (front->next == nullptr)
+       {
+           x = front->position().x - x;
+           y = front->position().y - y;
+           std::cout << "car: '" << front->name << "': " << front->position().x << ", " << front->position().y << std::endl;
+           std::cout << "=> " << x << ", " << y << std::endl;
+       }
+       else
+       {
+           TrailerKinematic* f = reinterpret_cast<TrailerKinematic*>(front);
+           float heading = f->heading();
+           float d = f->m_shape.dim.wheelbase;
 
-    assert(vehicle != nullptr);
-    sf::Vector2f position = vehicle->position() - sf::Vector2f(x, y);
-    m_shape.set(position, heading);
+           std::cout << "Trailer: '" << front->name << "': " << RAD2DEG(heading) << " " << d << std::endl;
+           x = x + cosf(heading) * d;
+           y = y + sinf(heading) * d;
+           std::cout << "=> " << x << ", " << y << std::endl;
+       }
+       front = front->next;
+    }
+    m_shape.set(sf::Vector2f(x, y), heading);
 }
 
 //-----------------------------------------------------------------------------

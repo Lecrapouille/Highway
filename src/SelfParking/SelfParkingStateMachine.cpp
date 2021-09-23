@@ -108,7 +108,7 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
     case States::TRAJECTORY_DONE:
         m_state = States::IDLE;
         car.clignotant(false);
-        car.setSpeed(0.0f);
+        car.setRefSpeed(0.0f);
         break;
     }
 

@@ -166,6 +166,7 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     {
         TrailerShape const& trailer_shape = trailer->shape();
 
+        // body
         body.setPosition(trailer_shape.position());
         body.setRotation(RAD2DEG(trailer_shape.heading()));
         body.setSize(sf::Vector2f(trailer_shape.dim.length, trailer_shape.dim.width));
@@ -177,20 +178,23 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
         target.draw(Circle(trailer_shape.position().x, trailer_shape.position().y,
                            ZOOM, sf::Color::Black));
 
+        // fork
+        arm.setPosition(trailer_shape.position());
+        arm.setRotation(RAD2DEG(trailer_shape.heading()));
         arm.setSize(sf::Vector2f(trailer_shape.dim.wheelbase, trailer_shape.dim.fork_width));
         arm.setOrigin(0.0f, arm.getSize().y / 2);
         arm.setFillColor(sf::Color::Black);
         arm.setOutlineThickness(ZOOM);
         arm.setOutlineColor(sf::Color::Blue);
+        target.draw(arm, states);
 
+        // wheels
         wheel.setSize(sf::Vector2f(trailer_shape.dim.wheel_radius * 2,
                                    trailer_shape.dim.wheel_width));
         wheel.setOrigin(wheel.getSize().x / 2, wheel.getSize().y / 2);
         wheel.setFillColor(sf::Color::Black);
         wheel.setOutlineThickness(ZOOM);
         wheel.setOutlineColor(sf::Color::Yellow);
-
-        // Wheels
         for (auto const& it: trailer_shape.wheels())
         {
             wheel.setPosition(it.position);

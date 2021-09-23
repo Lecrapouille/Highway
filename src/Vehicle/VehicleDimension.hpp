@@ -68,7 +68,7 @@ struct TrailerDimension
     //! \brief Epaisseur roue [meter] (only used for the rendering)
     float wheel_width = 0.1f;
     //! \brief Width of the fork [meter] (only used for the rendering)
-    float fork_width = 0.01f;
+    float fork_width = 0.1f;
 };
 
 // *****************************************************************************
@@ -99,12 +99,12 @@ struct CarDimension
 
     friend std::ostream& operator<<(std::ostream& os, CarDimension const& dim)
     {
-        return os << "  Dim = {" << std::endl
-                  << "    length=" << dim.length << std::endl
-                  << "    width=" << dim.width << std::endl
-                  << "    wheelbase=" << dim.wheelbase << std::endl
-                  << "    back_overhang=" << dim.back_overhang << std::endl
-                  << "    front_overhang=" << dim.front_overhang << std::endl
+        return os << "  Dim {" << std::endl
+                  << "    length = " << dim.length << " m" << std::endl
+                  << "    width = " << dim.width << " m" << std::endl
+                  << "    wheelbase = " << dim.wheelbase << " m" << std::endl
+                  << "    back_overhang = " << dim.back_overhang << " m" << std::endl
+                  << "    front_overhang = " << dim.front_overhang << " m" << std::endl
                   << "  }";
     }
 

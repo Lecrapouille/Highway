@@ -44,11 +44,12 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, Parking& parki
     switch (m_state)
     {
     case States::NOT_FOUND:
-        car.setSpeed(0.0f);
+        car.setRefSpeed(0.0f);
         return Status::NOT_DETECTED;
 
     case States::IDLE:
-        car.setSpeed(10.0f);
+        car.setRefSpeed(1.0f);
+        car.setRefSteering(DEG2RAD(30.0f));
         m_distance = 0.0f;
         m_state = States::DETECT_FIRST_CAR;
         return Status::WIP;
@@ -86,7 +87,7 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, Parking& parki
                 parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
                 std::cout << parking << std::endl;
                 m_state = States::FOUND;
-                car.setSpeed(0.0f);
+                car.setRefSpeed(0.0f);
                 return Status::DETECTED;
             }
             m_state = States::IDLE;

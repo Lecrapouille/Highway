@@ -53,7 +53,7 @@ public:
     //! \param[in] front: the front vehicle (car or trailer).
     //--------------------------------------------------------------------------
     Trailer(TrailerDimension const& dimension, IPhysics& front)
-        : dim(dimension), m_shape(dim), m_kinematic(m_shape, front)
+        : dim(dimension), m_shape(dim), m_kinematic(name, m_shape, front)
     {}
 
     //--------------------------------------------------------------------------
@@ -115,6 +115,9 @@ public:
         return m_shape;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Non const getter: return the kinematic.
+    //--------------------------------------------------------------------------
     inline TrailerKinematic& kinematic()
     {
         return m_kinematic;
@@ -123,18 +126,21 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Debug purpose only: show shape information.
     //-------------------------------------------------------------------------
-    //friend std::ostream& operator<<(std::ostream& os, Trailer const& trailer)
-    //{
-    //    return os << "Trailer {" << std::endl
-    //              << trailer.dim << std::endl
-    //              << trailer.m_shape << std::endl
-    //              << "}";
-    //}
+    friend std::ostream& operator<<(std::ostream& os, Trailer const& trailer)
+    {
+        return os << "Trailer " << trailer.name << " {" << std::endl
+                  //TODO << trailer.dim << std::endl
+                  << trailer.m_shape << std::endl
+                  << "}";
+    }
 
 public:
 
     //! \brief Trailer's read-only dimension.
     TrailerDimension const dim;
+
+    //! \brief Car's name
+    std::string name = "trailer";
 
     //! \brief Current car color. Public: to allow to change it for distinguish
     //! car between them or for showing collisions ...
@@ -162,7 +168,7 @@ public:
     //! \param[in] dimension: dimension structure returned by CarDimensions::get().
     //--------------------------------------------------------------------------
     Car(CarDimension const& dimension)
-        : dim(dimension), m_shape(dim), m_kinematic(m_shape)
+        : dim(dimension), m_shape(dim), m_kinematic(name, m_shape)
     {}
 
     //-------------------------------------------------------------------------
@@ -174,6 +180,11 @@ public:
     Car(const char* model)
         : Car(CarDimensions::get(model))
     {}
+
+    //-------------------------------------------------------------------------
+    //! \brief Needed because of virtual methods.
+    //-------------------------------------------------------------------------
+    virtual ~Car() = default;
 
     //-------------------------------------------------------------------------
     //! \brief Initialize first value for the physics.
@@ -199,7 +210,7 @@ public:
     //! \param[in] dimension: the dimension of the trailer.
     //! \param[in] heading: the angle between the trailer and the front vehicle.
     //-------------------------------------------------------------------------
-    void attachTrailer(TrailerDimension const& dimension, const float heading)
+    Trailer& attachTrailer(TrailerDimension const& dimension, const float heading)
     {
         IPhysics* phys;
 
@@ -214,6 +225,8 @@ public:
 
         m_trailers.push_back(std::make_unique<Trailer>(dimension, *phys));
         m_trailers.back()->init(speed(), heading);
+        m_trailers.back()->name += std::to_string(m_trailers.size());
+        return *m_trailers.back();
     }
 
     //-------------------------------------------------------------------------
@@ -229,11 +242,19 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief TODO
+    //! \brief Set the reference speed.
     //-------------------------------------------------------------------------
-    void setSpeed(float const speed)
+    void setRefSpeed(float const speed)
     {
         m_control.set_speed(speed);
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Set the reference steering angle.
+    //-------------------------------------------------------------------------
+    void setRefSteering(float const angle)
+    {
+        m_control.set_steering(angle);
     }
 
     //-------------------------------------------------------------------------
@@ -332,7 +353,7 @@ public:
     //-------------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, Car const& car)
     {
-        return os << "Vehicle {" << std::endl
+        return os << "Vehicle " << car.name << " {" << std::endl
                   << car.dim << std::endl
                   << car.m_shape << std::endl
                   << "}";
@@ -342,6 +363,9 @@ public:
 
     //! \brief Car's read-only dimension.
     CarDimension const dim;
+
+    //! \brief Car's name
+    std::string name = "car";
 
     //! \brief Current car color. Public: to allow to change it for distinguish
     //! car between them or for showing collisions ...

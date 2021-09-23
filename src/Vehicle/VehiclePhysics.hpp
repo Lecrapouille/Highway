@@ -30,6 +30,7 @@
 
 #  include "Vehicle/VehicleControl.hpp"
 #  include "Vehicle/VehicleShape.hpp"
+#  include <string>
 
 // *****************************************************************************
 //! \brief Base class for doing kinematic or dynamic on a linked list of
@@ -43,6 +44,13 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
+    IPhysics(std::string const& n)
+        : name(n)
+    {}
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     virtual ~IPhysics() = default;
 
     //--------------------------------------------------------------------------
@@ -51,6 +59,8 @@ public:
     //--------------------------------------------------------------------------
     void attachTo(IPhysics& front)
     {
+        std::cout << "Attaching " << name << " to " << front.name << std::endl;
+        assert(this != &front);
         next = &front;
         front.previous = this;
     }
@@ -99,6 +109,7 @@ private:
 
 public:
 
+    std::string const& name;
     //! \brief Next joined trailer or vehicle. Please do not manage memory:
     //! this pointer is just a reference.
     IPhysics* next = nullptr;
@@ -125,7 +136,11 @@ public:
     //! \param[in] dim: the trailer dimension.
     //! \param[inout] front: the front vehicle.
     //--------------------------------------------------------------------------
-    TrailerKinematic(TrailerShape& shape, IPhysics& front);
+    TrailerKinematic(std::string const& n, TrailerShape& shape, IPhysics& front)
+        : IPhysics(n), m_shape(shape)
+    {
+        attachTo(front);
+    }
 
     //--------------------------------------------------------------------------
     //! \brief
@@ -178,8 +193,8 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    CarKinematic(CarShape& shape)
-        : m_shape(shape)
+    CarKinematic(std::string const& n, CarShape& shape)
+        : IPhysics(n), m_shape(shape)
     {}
 
     //--------------------------------------------------------------------------

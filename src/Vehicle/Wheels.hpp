@@ -47,9 +47,9 @@ struct Wheel
 
     friend std::ostream& operator<<(std::ostream& os, Wheel const& wheel)
     {
-        return os << "{ position=(" << wheel.position.x
+        return os << "{ position = (" << wheel.position.x
                   << ", " << wheel.position.y
-                  << "), steering=" << RAD2DEG(wheel.steering)
+                  << ") m, steering = " << RAD2DEG(wheel.steering) << " deg"
                   << " }";
     }
 };
