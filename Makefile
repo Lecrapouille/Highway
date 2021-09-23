@@ -62,7 +62,7 @@ POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
 OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
-OBJS_UTILS = backward.o Collide.o 
+OBJS_UTILS = backward.o Collide.o
 OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
 OBJS_SENSORS = Radar.o
 OBJS_TRAJECTORY = CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o

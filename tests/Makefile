@@ -36,8 +36,8 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Search files
 BUILD = build
-VPATH = $(BUILD) ../src ../src/Car ../src/World ../src/SFML ../src/Utils
-INCLUDES = -I../src -I../src/Car -I../src/World -I../src/SFML -I../src/Utils
+VPATH = $(BUILD) . ../src ../src/World ../src/Vehicle ../src/Utils ../src/Sensors ../src/SelfParking ../src/SelfParking/Trajectory ../src/Renderer
+INCLUDES = -I../src -I.
 
 # C++14 only because of std::make_unique not present in C++11)
 STANDARD=--std=c++14 -g -O0
@@ -61,8 +61,15 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
-OBJS = backward.o Collide.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o Parking.o Renderer.o
-OBJS += TestCar.o Tests.o
+OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
+OBJS_UTILS = backward.o Collide.o
+OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
+OBJS_SENSORS = Radar.o
+OBJS_TRAJECTORY = CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o
+OBJS_SELFPARKING = SelfParkingStateMachine.o SelfParkingScanParking.o SelfParkingVehicle.o
+OBJS_TU = TestVehicle.o Tests.o
+
+OBJS = $(OBJS_UTILS) $(OBJS_VEHICLE) $(OBJS_SENSORS) $(OBJS_TRAJECTORY) $(OBJS_SELFPARKING) $(OBJS_SIMULATION) $(OBJS_TU)
 
 ifeq ($(VERBOSE),1)
 Q :=
