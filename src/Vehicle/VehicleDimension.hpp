@@ -25,10 +25,10 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef CAR_DIMENSION_HPP
-#  define CAR_DIMENSION_HPP
+#ifndef VEHICLE_DIMENSION_HPP
+#  define VEHICLE_DIMENSION_HPP
 
-#  include "Utils.hpp"
+#  include "Utils/Utils.hpp"
 #  include <ostream>
 #  include <cassert>
 

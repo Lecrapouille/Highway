@@ -28,7 +28,7 @@
 #ifndef PARKING_HPP
 #  define PARKING_HPP
 
-#  include "ParkingDimension.hpp"
+#  include "World/ParkingDimension.hpp"
 #  include <SFML/System/Vector2.hpp>
 #  include <ostream>
 #  include <cassert>
@@ -116,7 +116,7 @@ public:
     //--------------------------------------------------------------------------
     sf::Vector2f delta() const
     {
-        sf::Vector2f p = ROTATE(sf::Vector2f(dim.length.value(), dim.width.value()), -dim.angle);
+        sf::Vector2f p = ROTATE(sf::Vector2f(dim.length, dim.width), -dim.angle);
         return sf::Vector2f(p.x, 0.0f); // W
     }
 
@@ -126,8 +126,8 @@ public:
     friend std::ostream& operator<<(std::ostream& os, Parking const& parking)
     {
         os << "Parking P=(" << parking.m_position.x << ", " << parking.m_position.y << "), "
-           << "length=" << parking.dim.length.value() << ", width=" << parking.dim.width.value()
-           << "angle=" << parking.dim.deg.value() << std::endl;
+           << "length=" << parking.dim.length << ", width=" << parking.dim.width
+           << "angle=" << parking.dim.deg << std::endl;
         return os;
     }
 

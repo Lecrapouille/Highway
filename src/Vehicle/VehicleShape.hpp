@@ -25,17 +25,18 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef CAR_SHAPE_HPP
-#  define CAR_SHAPE_HPP
+#ifndef VEHICLE_SHAPE_HPP
+#  define VEHICLE_SHAPE_HPP
 
 #  include "Utils/Collide.hpp"
-#  include "Car/CarDimension.hpp"
-#  include "Car/Wheels.hpp"
+#  include "Vehicle/VehicleDimension.hpp"
+#  include "Vehicle/Wheels.hpp"
 #  include "Sensors/Radar.hpp"
 #  include <iostream>
 
+// Ackermann steering mechanics
 // TODO https://datagenetics.com/blog/december12016/index.html
-// TODO https://www.researchgate.net/publication/349289743_Designing_Variable_Ackerman_Steering_Geometry_for_Formula_Student_Race_Car/link/6028146aa6fdcc37a824e404/download
+// TODO https://www.researchgate.net/publication/349289743_Designing_Variable_Ackerman_Steering_Geometry_for_Formula_Student_Race_Vehicle/link/6028146aa6fdcc37a824e404/download
 
 // *****************************************************************************
 //! \brief A vehicle shape knows it position, heading, bounding box and position
@@ -159,41 +160,12 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Default constructor: trailer shape with its dimension
     //--------------------------------------------------------------------------
-    TrailerShape(TrailerDimension const& dimension)
-        : VehicleShape(dimension)
-    {
-        // 2 wheels
-        m_wheels.resize(2);
-
-        // Origin on the middle of the rear wheel axle
-        m_obb.setSize(sf::Vector2f(dim.length, dim.width));
-        m_obb.setOrigin(dim.back_overhang, m_obb.getSize().y / 2);
-
-        // Offset along the rear axle
-        const float K = dim.width / 2 - dim.wheel_width / 2;
-        m_wheels[WheelName::RL].offset = sf::Vector2f(0.0f, K);
-        m_wheels[WheelName::RR].offset = sf::Vector2f(0.0f, -K);
-
-        m_wheels[WheelName::RL].steering = 0.0f;
-        m_wheels[WheelName::RR].steering = 0.0f;
-
-        //m_wheels[WheelName::RL].speed = NAN;
-        //m_wheels[WheelName::RR].speed = NAN;
-    }
+    TrailerShape(TrailerDimension const& dimension);
 
     //--------------------------------------------------------------------------
     //! \brief Set to shape its new attitude
     //--------------------------------------------------------------------------
-    void set(sf::Vector2f const& position, float const heading)
-    {
-        m_obb.setPosition(position);
-        m_obb.setRotation(RAD2DEG(heading));
-
-        m_wheels[WheelName::RL].position =
-                position + ROTATE(m_wheels[WheelName::RL].offset, heading);
-        m_wheels[WheelName::RR].position =
-                position + ROTATE(m_wheels[WheelName::RR].offset, heading);
-    }
+    void set(sf::Vector2f const& position, float const heading);
 };
 
 // *****************************************************************************
@@ -212,76 +184,24 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Default constructor: car shape with its dimension
     //--------------------------------------------------------------------------
-    CarShape(CarDimension const& dimension)
-        : VehicleShape(dimension)
-    {
-        // Origin on the middle of the rear wheel axle
-        m_obb.setSize(sf::Vector2f(dim.length, dim.width));
-        m_obb.setOrigin(dim.back_overhang, m_obb.getSize().y / 2);
-
-        // 4 wheels
-        m_wheels.resize(4);
-
-        // Offset along the rear axle
-        const float K = dim.width / 2 - dim.wheel_width / 2;
-        m_wheels[WheelName::FL].offset = sf::Vector2f(dim.wheelbase, -K); // FIXME L and R inversed
-        m_wheels[WheelName::FR].offset = sf::Vector2f(dim.wheelbase, K);
-        m_wheels[WheelName::RL].offset = sf::Vector2f(0.0f, -K);
-        m_wheels[WheelName::RR].offset = sf::Vector2f(0.0f, K);
-
-        m_wheels[WheelName::FL].steering = 0.0f;
-        m_wheels[WheelName::FR].steering = 0.0f;
-        m_wheels[WheelName::RR].steering = 0.0f;
-        m_wheels[WheelName::RL].steering = 0.0f;
-
-        //wheels[FL].speed = m_wheels[FR].speed = NAN;
-        //wheels[RL].speed = m_wheels[RR].speed = NAN;
-
-        // 4 radars: 1 one each wheel (to make simple)
-        m_sensor_shapes.resize(1/*4*/);
-        //m_sensor_shapes[WheelName::FL].orientation = -90.0f;
-        //m_sensor_shapes[WheelName::FR].orientation = 90.0f;
-        m_sensor_shapes[0*WheelName::RL].orientation = -90.0f;
-        //m_sensor_shapes[WheelName::RR].orientation = 90.0f;
-
-        //m_sensor_shapes[WheelName::FL].offset = sf::Vector2f(dim.wheelbase, -K);
-        //m_sensor_shapes[WheelName::FR].offset = sf::Vector2f(dim.wheelbase, K);
-        m_sensor_shapes[0*WheelName::RL].offset = sf::Vector2f(0.0f, -K);
-        //m_sensor_shapes[WheelName::RR].offset = sf::Vector2f(0.0f, K);
-    }
+    CarShape(CarDimension const& dimension);
 
     //--------------------------------------------------------------------------
     //! \brief Set to shape its new attitude
     //--------------------------------------------------------------------------
-    void set(sf::Vector2f const& position, float const heading, float const steering)
-    {
-        m_obb.setPosition(position);
-        m_obb.setRotation(RAD2DEG(heading));
+    void set(sf::Vector2f const& position, float const heading, float const steering);
 
-        m_wheels[WheelName::FL].position =
-                position + ROTATE(m_wheels[WheelName::FL].offset, heading);
-        m_wheels[WheelName::FR].position =
-                position + ROTATE(m_wheels[WheelName::FR].offset, heading);
-        m_wheels[WheelName::RR].position =
-                position + ROTATE(m_wheels[WheelName::RR].offset, heading);
-        m_wheels[WheelName::RL].position =
-                position + ROTATE(m_wheels[WheelName::RL].offset, heading);
-
-        m_wheels[WheelName::FL].steering = steering;
-        m_wheels[WheelName::FR].steering = steering;
-
-        for (auto& it: m_sensor_shapes)
-        {
-           it.obb.setRotation(it.orientation + RAD2DEG(heading));
-           it.obb.setPosition(position + ROTATE(it.offset, heading));
-        }
-    }
-
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     std::vector<SensorShape>& sensors()
     {
         return m_sensor_shapes;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     std::vector<SensorShape> const& sensors() const
     {
         return m_sensor_shapes;

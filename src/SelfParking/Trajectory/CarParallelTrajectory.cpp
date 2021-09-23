@@ -25,9 +25,10 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "CarTrajectory.hpp"
-#include "Renderer.hpp"
-#include "Car.hpp"
+#include "SelfParking/Trajectory/TurningRadius.hpp"
+#include "SelfParking/Trajectory/CarTrajectory.hpp"
+#include "Renderer/Renderer.hpp"
+#include "Vehicle/Vehicle.hpp"
 
 //------------------------------------------------------------------------------
 bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const entering)
@@ -58,7 +59,7 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     // Has the parking spot has enough length to perform a one-trial maneuver parking ?
     if (entering)
     {
-        if (parking.dim.length.value() >= Lmin)
+        if (parking.dim.length >= Lmin)
         {
             if (!computePathPlanning(car, parking, entering))
                 return false;
@@ -109,6 +110,8 @@ bool ParallelTrajectory::computePathPlanning(Car const& car, Parking const& park
         float d = Rwmin * Rwmin - (Yt - Yc1) * (Yt - Yc1);
         if (d < 0.0f)
         {
+            // To fix this case: we can add a segment line to reach the two circles but who cares
+            // since this happens when the car is outside the road.
             std::cerr << "Car is too far away on Y-axis (greater than its turning radius)"
                       << std::endl;
             return false;

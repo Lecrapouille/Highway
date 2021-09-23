@@ -25,8 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef CAR_CONTROL_HPP
-#  define CAR_CONTROL_HPP
+#ifndef VEHICLE_CONTROL_HPP
+#  define VEHICLE_CONTROL_HPP
 
 class CarControl
 {

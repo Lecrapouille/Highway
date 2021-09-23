@@ -25,89 +25,90 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SIMULATION_HPP
-#  define SIMULATION_HPP
+#ifndef MAIN_HPP
+#  define MAIN_HPP
 
-#  include "SelfParking/SelfParkingVehicle.hpp"
-#  include "World/Parking.hpp"
+#  include "Renderer/GUIStates.hpp"
+#  include "Simulation.hpp"
+#  include <atomic>
 
 // ****************************************************************************
 //! \brief
 // ****************************************************************************
-class Simulation
+class GUISimulation: public IGUIStates
 {
-    friend class GUISimulation;
-
 public:
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    GUISimulation(Application& application);
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    ~GUISimulation()
+    {
+        renderer().close();
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position [meter].
+    //! \param[in] p: position in the windows [pixel].
+    //! \return position in the world [meter].
+    //-------------------------------------------------------------------------
+    sf::Vector2f world(sf::Vector2i const& p)
+    {
+        return renderer().mapPixelToCoords(p);
+    }
+
+private: // Derived from IGUIStates
 
     //-------------------------------------------------------------------------
     //! \brief Inherit from GUI class. Draw the chessboard and pieces.
     //-------------------------------------------------------------------------
-    void draw(sf::RenderWindow& renderer, sf::View& view);
+    virtual void draw(const float /*dt*/) override;
 
     //-------------------------------------------------------------------------
     //! \brief Inherit from GUI class. Update GUI.
     //-------------------------------------------------------------------------
-    void update(const float dt);
+    virtual void update(const float dt) override;
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Inherit from GUI class. Manage mouse and keyboard events.
     //-------------------------------------------------------------------------
-    void clear();
+    virtual void handleInput() override;
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Inherit from GUI class. Return true if GUI is alive.
     //-------------------------------------------------------------------------
-    void createWorld(size_t angle, bool const entering);
+    virtual bool isRunning() override
+    {
+        return m_running;
+    }
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Called when the GUI has been enabled.
     //-------------------------------------------------------------------------
-    SelfParkingCar& addEgo(const char* model, sf::Vector2f const& position, float const heading,
-                  float const speed = 0.0f, float const steering = 0.0f);
+    virtual void activate() override;
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Called when the GUI has been disabled.
     //-------------------------------------------------------------------------
-    SelfParkingCar& addEgo(CarDimension const& dim, sf::Vector2f const& position, float const heading,
-                  float const speed = 0.0f, float const steering = 0.0f);
+    virtual void deactivate() override;
 
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Car& addCar(const char* model, Parking& parking);
+private:
 
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Car& addCar(const char* model, sf::Vector2f const& position, float const heading,
-                float const speed = 0.0f, float const steering = 0.0f);
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Car& addCar(CarDimension const& dim, sf::Vector2f const& position, float const heading,
-                float const speed, float const steering);
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Parking& addParking(const char* type, sf::Vector2f const& position);
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Parking& addParking(ParkingDimension const& dim, sf::Vector2f const& position);
-
-protected:
-
-    //! \brief Container of parked cars
-    std::deque<std::unique_ptr<Car>> m_cars;
-    //! \brief The autonomous cars
-    std::unique_ptr<SelfParkingCar> m_ego = nullptr;
-    //! \brief Container of parking slots
-    std::deque<Parking> m_parkings;
-    // TODO roads and bounding boxes of objects
+    //! \brief Alive class ?
+    std::atomic<bool> m_running{true};
+    //! \brief For managing zoom and camera displacement
+    sf::View m_view;
+    //! \brief Mouse X,Y position within the world coordinate [meter].
+    //! You directly can measure objects (in meter).
+    sf::Vector2f m_mouse;
+    //! \brief Class managing the simulation
+    Simulation m_simulation;
+    // TODO thread for the physics
 };
 
 #endif

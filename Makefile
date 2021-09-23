@@ -1,22 +1,29 @@
-##=====================================================================
-## Drive: A basic car simulation.
-## Copyright 2021 Quentin Quadrat <quentin.quadrat@gmail.com>
+## 2021 Quentin Quadrat quentin.quadrat@gmail.com
 ##
-## This file is part of Drive.
+## This is free and unencumbered software released into the public domain.
 ##
-## Drive is free software: you can redistribute it and/or modify it
-## under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+## Anyone is free to copy, modify, publish, use, compile, sell, or
+## distribute this software, either in source code form or as a compiled
+## binary, for any purpose, commercial or non-commercial, and by any
+## means.
 ##
-## This program is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
+## In jurisdictions that recognize copyright laws, the author or authors
+## of this software dedicate any and all copyright interest in the
+## software to the public domain. We make this dedication for the benefit
+## of the public at large and to the detriment of our heirs and
+## successors. We intend this dedication to be an overt act of
+## relinquishment in perpetuity of all present and future rights to this
+## software under copyright law.
 ##
-## You should have received a copy of the GNU General Public License
-## along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-##=====================================================================
+## THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+## EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+## MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+## IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+## OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+## ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+## OTHER DEALINGS IN THE SOFTWARE.
+##
+## For more information, please refer to <https://unlicense.org>
 
 TARGET_BIN = Drive
 
@@ -29,11 +36,11 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Search files
 BUILD = build
-VPATH = $(BUILD) src src/Car src/Sensors src/World src/SFML src/Utils
-INCLUDES = -Isrc -Isrc/Car -Isrc/Sensors -Isrc/World -Isrc/SFML -Isrc/Utils
+VPATH = $(BUILD) src src/World src/Vehicle src/Utils src/Sensors src/SelfParking src/SelfParking/Trajectory src/Renderer
+INCLUDES = -Isrc -Iinclude
 
 # C++14 only because of std::make_unique not present in C++11)
-STANDARD=--std=c++17 -g -O0
+STANDARD=--std=c++14 -g -O0
 
 # Warnings
 COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
@@ -54,7 +61,14 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Object files
-OBJS = backward.o Collide.o CarControl.o CarPhysics.o CarShape.o CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o Parking.o Radar.o Scan.o StateMachine.o Renderer.o  Simulation.o main.o
+OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
+OBJS_UTILS = backward.o Collide.o 
+OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
+OBJS_SENSORS = Radar.o
+OBJS_TRAJECTORY = CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o
+OBJS_SELFPARKING = SelfParkingStateMachine.o SelfParkingScanParking.o SelfParkingVehicle.o
+
+OBJS = $(OBJS_UTILS) $(OBJS_VEHICLE) $(OBJS_SENSORS) $(OBJS_TRAJECTORY) $(OBJS_SELFPARKING) $(OBJS_SIMULATION) main.o
 
 ifeq ($(VERBOSE),1)
 Q :=

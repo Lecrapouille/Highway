@@ -25,8 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef CAR_WHEEL_HPP
-#  define CAR_WHEEL_HPP
+#ifndef VEHICLE_WHEEL_HPP
+#  define VEHICLE_WHEEL_HPP
 
 // *****************************************************************************
 //! \brief

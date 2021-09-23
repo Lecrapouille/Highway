@@ -25,10 +25,10 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Car/Car.hpp"
+#include "SelfParking/SelfParkingVehicle.hpp"
 
 //-------------------------------------------------------------------------
-void IACar::StateMachine::update(float const dt, IACar& car)
+void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
 {
     States state = m_state;
 
@@ -114,8 +114,8 @@ void IACar::StateMachine::update(float const dt, IACar& car)
 
     if (state != m_state)
     {
-        std::cout << "IACar::StateMachine "
-                  << IACar::StateMachine::to_string(m_state)
+        std::cout << "SelfParkingCar::StateMachine "
+                  << SelfParkingCar::StateMachine::to_string(m_state)
                   << std::endl;
     }
 }

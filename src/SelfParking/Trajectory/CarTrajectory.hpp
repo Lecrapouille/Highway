@@ -28,7 +28,7 @@
 #ifndef CAR_TRAJECTORY_HPP
 #  define CAR_TRAJECTORY_HPP
 
-#  include "Parking.hpp"
+#  include "World/Parking.hpp"
 #  include <SFML/Graphics.hpp> // FIXME deplacer CarTrajectory::draw
 #  include <vector>
 

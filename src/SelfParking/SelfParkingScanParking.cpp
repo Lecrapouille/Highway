@@ -25,12 +25,13 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Car/Car.hpp"
+#include "SelfParking/SelfParkingVehicle.hpp"
 #include "World/Parking.hpp"
-#include "World/Dimensions.hpp"
+#include "World/Blueprints.hpp"
 
 //-------------------------------------------------------------------------
-IACar::Scan::Status IACar::Scan::update(float const dt, IACar& car, Parking& parking)
+SelfParkingCar::Scan::Status
+SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, Parking& parking)
 {
     States state = m_state;
 
@@ -47,7 +48,7 @@ IACar::Scan::Status IACar::Scan::update(float const dt, IACar& car, Parking& par
         return Status::NOT_DETECTED;
 
     case States::IDLE:
-        car.setSpeed(1.0f);
+        car.setSpeed(10.0f);
         m_distance = 0.0f;
         m_state = States::DETECT_FIRST_CAR;
         return Status::WIP;
@@ -99,8 +100,8 @@ IACar::Scan::Status IACar::Scan::update(float const dt, IACar& car, Parking& par
 
     if (state != m_state)
     {
-        std::cout << "  IACar::Scan "
-                  << IACar::Scan::to_string(m_state) << std::endl;
+        std::cout << "  SelfParkingCar::Scan "
+                  << SelfParkingCar::Scan::to_string(m_state) << std::endl;
     }
 
     return Status::NOT_DETECTED;

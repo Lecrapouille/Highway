@@ -1,13 +1,14 @@
-- Si car > Xi part dans le mauvais sens
-- Time scaling
+- creneau: Si car > Xi part dans le mauvais sens
+- trajectoire Time scaling si vitesse voiure != 1m/s
 - Finir toutes les maneuvres: Perp, diag, entree et sortie
-- bug trailer
-- YOLO
+- bug trailer cinematic
+- YOLO: pour detecter points du parking
 - A partir des points de la trajectoire generer les consignes vitesses, angle volant
-- Corriger bug offset lors maneuvre parallele
-- Entre les 2 cercles ajouter une droite si δmax est tres grand (petit cercle => droite)
+- Corriger bug offset "Lz" lors maneuvre parallele
+- [NON] Creneau: Entre les 2 cercles ajouter une droite si δmax est tres grand (petit cercle => droite)
 - Ajouter fonction displace_y() et faire un displace_xy() fonction generale
 - [FAIT] dimension et max steering angle
 - Ackerman
 - Prolog pour la logique ?
-- World class au lieu de Simulation
+- [FAIT] World class au lieu de Simulation
+- Ajouter les X capteurs et quand on mets le clignotant: activer les capteurs du cote indique par le clignotant et dessiner uniquement eux. 

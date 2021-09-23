@@ -25,10 +25,10 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Renderer.hpp"
-#include "Utils.hpp"
-#include "Car.hpp"
-#include "Parking.hpp"
+#include "Renderer/Renderer.hpp"
+#include "Utils/Utils.hpp"
+#include "SelfParking/SelfParkingVehicle.hpp"
+#include "World/Parking.hpp"
 
 //------------------------------------------------------------------------------
 Circle::Circle(float x, float y, float r, sf::Color color)
@@ -91,14 +91,15 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf:
 }
 
 //------------------------------------------------------------------------------
-void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
+void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
 {
-    const float l = parking.dim.length.value();
-    const float w = parking.dim.width.value();
+    const float A = parking.dim.angle;
+    const float l = parking.dim.length;
+    const float w = parking.dim.width;
 
     sf::RectangleShape shape(sf::Vector2f(l, w));
     shape.setOrigin(sf::Vector2f(0, w/2));
-    shape.setRotation(parking.dim.deg.value());
+    shape.setRotation(RAD2DEG(A));
     shape.setPosition(parking.position());
     shape.setFillColor(sf::Color::White);
     shape.setOutlineThickness(ZOOM);
@@ -110,7 +111,7 @@ void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates con
 }
 
 //------------------------------------------------------------------------------
-void draw(IACar const& car, sf::RenderTarget& target, sf::RenderStates const& states)
+void Renderer::draw(SelfParkingCar const& car, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     Car const& c = *reinterpret_cast<const Car*>(&car);
     draw(c, target, states);
@@ -129,7 +130,7 @@ void draw(IACar const& car, sf::RenderTarget& target, sf::RenderStates const& st
 }
 
 //------------------------------------------------------------------------------
-void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& states)
+void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     CarShape const& car_shape = car.shape();
 

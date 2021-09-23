@@ -25,45 +25,5 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef UNITS_HPP
-#  define UNITS_HPP
+#include "SelfParking/SelfParkingVehicle.hpp"
 
-// https://github.com/bernedom/SI
-#include <SI/length.h>
-#include <SI/angle.h>
-
-using namespace SI::literals;
-
-using Meter = SI::metre_t<float>;
-
-template<class T>
-using degree_t = SI::angle_t<T, std::ratio<10000, 572958>>;
-
-using Degree = degree_t<float>;
-using Radian = SI::angle_t<float, std::ratio<1>>;
-
-constexpr degree_t<long double> operator""_deg(long double value) {
-    return degree_t<long double>{value};
-}
-
-constexpr float cosf(Radian const a)
-{
-   return ::cosf(a.value());
-}
-
-constexpr float sinf(Radian const a)
-{
-   return ::sinf(a.value());
-}
-
-constexpr float cosf(Degree const d)
-{
-   return ::cosf(Radian(d));
-}
-
-constexpr float sinf(Degree const d)
-{
-   return ::sinf(Radian(d));
-}
-
-#endif // UNITS_HPP

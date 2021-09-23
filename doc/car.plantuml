@@ -1,0 +1,93 @@
+@startuml
+
+Car -> Dimension
+Kinematic .> Dimension
+
+abstract Physics
+Physics <|-- Kinematic
+Physics <-> Physics
+Kinematic --> Shape
+Dimension <.. Shape
+Shape --> sf::RectangleShape
+Shape -> "4" Wheel
+
+Car --> Kinematic
+Car -> "*" Trailer
+Car --> Control
+Car --> Trajectory
+
+abstract class Physics
+{
+  + attach(Physics)
+  + /init(x0, y0, v0, h0 ...)/
+  + /update(Control::outputs, dt)/
+  + /getPosition(), getHeading() .../
+  - Physics: next, previous
+}
+
+abstract class Control
+{
+  +  /update(inputs, outputs, dt)/
+}
+
+abstract class Shape
+{
+  + /setAttitude(x0, y0, v0, h0 ...)/
+  + getPosition() { sf::RectangleShape::getPosition(); }
+  + getHeading()  { sf::RectangleShape::getOrientation(); }
+  + getSteeringAngle(Wheel::enum)
+}
+
+class sf::RectangleShape
+{
+  + setPosition(p)
+  + setRotation(o)
+  + getTransformationMatrix()
+  + collides(sf::RectangleShape)
+}
+
+class Car
+{
+  + update(dt)
+  + getPosition() { Shape::getPosition(); }
+  + getHeading() { Shape::getOrientation(); }
+  + getSpeed() { Kinematic::getSpeed(); }
+}
+
+note top of Car : update()\n{\n    Trajectory::update(Control, dt);\n    Control::update(dt);\n    Kinematic::update(Control, dt);\n}
+
+class Trajectory
+{
+  + update(Control, dt)
+  + generatePath()
+  + generateReferences()
+  - Reference references[]
+  - sf::Vector2f path[]
+}
+
+class Reference
+{
+  + car_speed
+  + car_acceleration
+  + steering_angle
+}
+
+class Wheel
+{
+  + offset: sf::Vector2f offset
+  + position: sf::Vector2f
+  + steering: radian
+}
+
+class Dimension
+{
+  + wheelbase
+  + overhang ...
+}
+
+class Kinematic
+{
+  + getPosition() { Shape::getPosition(); }
+  + getHeading()  { Shape::getOrientation(); }
+}
+@enduml

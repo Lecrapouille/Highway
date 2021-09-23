@@ -29,7 +29,6 @@
 #  define PARKING_DIMENSION_HPP
 
 #  include "Utils/Utils.hpp"
-#  include "Utils/Units.hpp"
 
 // ****************************************************************************
 //! \brief Class holding parking slot dimensions
@@ -38,22 +37,22 @@ struct ParkingDimension
 {
     //--------------------------------------------------------------------------
     //! \brief Set parking slot dimensions.
-    //! \param[in] l parking length [meter].
-    //! \param[in] w parking width [meter].
-    //! \param[in] a parking lane angle [deg] (0°: parallel, 90°: perpendicular).
+    //! \param[in] l parking length.
+    //! \param[in] w parking width.
+    //! \param[in] a parking lane angle (0°: parallel, 90°: perpendicular).
     //--------------------------------------------------------------------------
-    ParkingDimension(Meter const l, Meter const w, Degree const a)
-        : length(l), width(w), angle(a), deg(a)
+    ParkingDimension(float const l, float const w, size_t const a)
+        : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
     {}
 
     //! \brief Vehicle length [meter]
-    Meter length;
+    float length;
     //! \brief Vehicle width [meter]
-    Meter width;
+    float width;
     //! \brief Orientation [rad]
-    Radian angle;
+    float angle;
     //! \brief Orientation [deg]
-    Degree deg;
+    size_t deg;
 };
 
 #endif

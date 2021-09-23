@@ -28,11 +28,11 @@
 #ifndef RENDERER_HPP
 #  define RENDERER_HPP
 
-#  include "Utils.hpp"
+#  include "Utils/Utils.hpp"
 #  include <SFML/Graphics.hpp>
 
 class Car;
-class IACar;
+class SelfParkingCar;
 class Trailer;
 class Parking;
 
@@ -148,8 +148,16 @@ private:
     sf::ConvexShape m_head;
 };
 
-void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
-void draw(Car const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
-void draw(IACar const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+// *****************************************************************************
+//! \brief
+// *****************************************************************************
+class Renderer
+{
+public:
+
+    static void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+    static void draw(Car const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+    static void draw(SelfParkingCar const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+};
 
 #endif

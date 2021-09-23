@@ -25,11 +25,11 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "CarTrajectory.hpp"
-#include "TurningRadius.hpp"
-#include "Renderer.hpp"
-#include "Car.hpp"
-#include "Utils.hpp"
+#include "SelfParking/Trajectory/CarTrajectory.hpp"
+#include "SelfParking/Trajectory/TurningRadius.hpp"
+#include "Renderer/Renderer.hpp"
+#include "Vehicle/Vehicle.hpp"
+#include "Utils/Utils.hpp"
 #include <iostream>
 
 //------------------------------------------------------------------------------

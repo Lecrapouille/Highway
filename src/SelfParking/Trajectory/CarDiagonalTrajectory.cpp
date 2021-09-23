@@ -25,11 +25,11 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "CarTrajectory.hpp"
-#include "TurningRadius.hpp"
-#include "Renderer.hpp"
-#include "Car.hpp"
-#include "Utils.hpp"
+#include "SelfParking/Trajectory/CarTrajectory.hpp"
+#include "SelfParking/Trajectory/TurningRadius.hpp"
+#include "Renderer/Renderer.hpp"
+#include "Vehicle/Vehicle.hpp"
+#include "Utils/Utils.hpp"
 #include <iostream>
 #include <cassert>
 #include <cmath>
@@ -62,17 +62,15 @@ bool DiagonalTrajectory::computePathPlanning(Car const& car, Parking const& park
         // (Xc, Yc) the front left corner of the car once parked
         const float K = car.dim.width / 2.0f;
         const float QQ = 0.5f;
-        const float c = cosf(parking.dim.angle);
-        const float s = sinf(parking.dim.angle);
-        Xc = parking.position().x + (car.dim.length + car.dim.front_overhang + QQ) * c - K * s;
-        Yc = parking.position().y + (car.dim.length + car.dim.front_overhang + QQ) * s + K * c;
+        Xc = parking.position().x + (car.dim.length + car.dim.front_overhang + QQ) * cosf(parking.dim.angle) - K * sinf(parking.dim.angle);
+        Yc = parking.position().y + (car.dim.length + car.dim.front_overhang + QQ) * sinf(parking.dim.angle) + K * cosf(parking.dim.angle);
         std::cout << "Xc: " << Xc << ", Yc: " << Yc << std::endl;
 
         dl = Yi - (car.dim.width / 2.0f) - Yc;
         std::cout << "dl: " << dl << std::endl;
 
         // 1ere manoeuver
-        const float N = car.dim.length + dv * c - car.dim.back_overhang;
+        const float N = car.dim.length + dv * cosf(parking.dim.angle) - car.dim.back_overhang;
         Rin1 = (N * N + d * d) / (2.0f * d)     + (car.dim.width / 2.0f);
         theta1 = asinf(N / Rin1);
         beta1 = atanf(car.dim.wheelbase / (Rin1 + car.dim.length / 2.0f));
@@ -80,7 +78,7 @@ bool DiagonalTrajectory::computePathPlanning(Car const& car, Parking const& park
         std::cout << "Turn1: { R: " << Rin1 << ", the: " << RAD2DEG(theta1) << ", beta: " << RAD2DEG(beta1) << " }" << std::endl;
 
         // 2ieme maneuvre
-        theta2 = parking.dim.angle.value() - theta1; // = car.heading() a la fin de la 1ere maneuvre
+        theta2 = parking.dim.angle - theta1; // = car.heading() a la fin de la 1ere maneuvre
         Rin2 = dl / (1.0f - cosf(theta2))       + (car.dim.width / 2.0f) ;
         beta2 = atanf(car.dim.wheelbase / (Rin2 + car.dim.length / 2.0f));
 

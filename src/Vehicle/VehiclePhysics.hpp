@@ -25,11 +25,11 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef CAR_PHYSICS_HPP
-#  define CAR_PHYSICS_HPP
+#ifndef VEHICLE_PHYSICS_HPP
+#  define VEHICLE_PHYSICS_HPP
 
-#  include "CarControl.hpp"
-#  include "CarShape.hpp"
+#  include "Vehicle/VehicleControl.hpp"
+#  include "Vehicle/VehicleShape.hpp"
 
 // *****************************************************************************
 //! \brief Base class for doing kinematic or dynamic on a linked list of
@@ -125,34 +125,12 @@ public:
     //! \param[in] dim: the trailer dimension.
     //! \param[inout] front: the front vehicle.
     //--------------------------------------------------------------------------
-    TrailerKinematic(TrailerShape& shape, IPhysics& front)
-        : m_shape(shape)
-    {
-        attachTo(front);
-    }
+    TrailerKinematic(TrailerShape& shape, IPhysics& front);
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    void init(float const speed, float const heading)
-    {
-        float x = 0.0f;
-        float y = 0.0f;
-        IPhysics* front = next;
-        assert(front != nullptr);
-
-        //while ((front != nullptr) && (front->next == nullptr))
-        {
-            //x += cosf(front->heading()) * m_shape.dim.wheelbase;
-            //y += sinf(front->heading()) * m_shape.dim.wheelbase;
-            //front = front->next;
-        }
-
-        assert(front != nullptr);
-        sf::Vector2f position = front->position() - sf::Vector2f(x, y);
-        m_shape.set(position, heading);
-        m_speed = speed;
-    }
+    void init(float const speed, float const heading);
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return position of the middle of the rear axle.
@@ -183,37 +161,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void onUpdate(CarControl const& control, float const dt) override
-    {
-        assert(next != nullptr);
-        float heading = m_shape.heading();
-        float next_heading = next->heading();
-        m_speed = control.outputs.body_speed;
-
-        if (next->next == nullptr)
-        {
-            heading += dt * m_speed * sinf(next_heading - heading) / m_shape.dim.wheelbase;
-        }
-        else
-        {
-            std::cerr << "not yet managed" << std::endl;
-            exit(1);
-        }
-
-        float x = 0.0f;
-        float y = 0.0f;
-        IPhysics* vehicle = next;
-        //while ((vehicle != nullptr) && (vehicle->next == nullptr))
-        {
-            x += cosf(vehicle->heading()) * m_shape.dim.wheelbase;
-            y += sinf(vehicle->heading()) * m_shape.dim.wheelbase;
-            //vehicle = vehicle->next;
-        }
-
-        assert(vehicle != nullptr);
-        sf::Vector2f position = vehicle->position() - sf::Vector2f(x, y);
-        m_shape.set(position, heading);
-    }
+    virtual void onUpdate(CarControl const& control, float const dt) override;
 
 protected:
 
@@ -243,11 +191,7 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     void init(sf::Vector2f const& position, float const heading, float const speed,
-              float const steering)
-    {
-        m_shape.set(position, heading, steering);
-        m_speed = speed;
-    }
+              float const steering);
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return position of the middle of the rear axle.
@@ -278,18 +222,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void onUpdate(CarControl const& control, float const dt) override
-    {
-        float steering = control.outputs.steering;
-        float heading = m_shape.heading();
-        sf::Vector2f position = m_shape.position();
-
-        m_speed = control.outputs.body_speed;
-        heading += dt * m_speed * tanf(steering) / m_shape.dim.wheelbase;
-        position.x += dt * m_speed * cosf(heading);
-        position.y += dt * m_speed * sinf(heading);
-        m_shape.set(position, heading, steering);
-    }
+    virtual void onUpdate(CarControl const& control, float const dt) override;
 
 protected:
 

@@ -36,7 +36,7 @@
 //! \brief Interface class for drawing a SFML window and handling mouse and
 //! keyboard events.
 // *****************************************************************************
-class GUIStates
+class IGUIStates
 {
     friend class Application;
 
@@ -44,12 +44,12 @@ public:
 
     //! \brief Hold and manage an application. The application shall be destroy
     //! after this class.
-    GUIStates(const char* name, sf::RenderWindow& render)
+    IGUIStates(const char* name, sf::RenderWindow& render)
         : m_render(render), bgColor(0, 0, 100, 255), m_name(name)
     {}
 
     //! \brief Needed because of virtual methods.
-    virtual ~GUIStates() = default;
+    virtual ~IGUIStates() = default;
 
     //! \brief Return the SFML window.
     inline sf::RenderWindow& renderer()
@@ -106,7 +106,7 @@ private:
 // *****************************************************************************
 class Application
 {
-    friend class GUIStates;
+    friend class IGUIStates;
 
 public:
 
@@ -133,7 +133,7 @@ public:
     }
 
     //! \brief Push a new GUI which will be draw by SFML.
-    inline void push(GUIStates& gui)
+    inline void push(IGUIStates& gui)
     {
         m_guis.push(&gui);
         gui.activate();
@@ -149,7 +149,7 @@ public:
     }
 
     //! \brief Get the GUI placed on the top of the stack.
-    inline GUIStates& peek()
+    inline IGUIStates& peek()
     {
         assert(!m_guis.empty());
         return *m_guis.top();
@@ -158,7 +158,7 @@ public:
     //! \brief Push a new GUI on the top of the stack and start a loop for
     //! managing its draw and IO events. When the GUI is closed it will be drop
     //! from the stack.
-    void loop(GUIStates& gui)
+    void loop(IGUIStates& gui)
     {
         sf::Clock clock;
 
@@ -166,7 +166,7 @@ public:
         while (gui.isRunning())
         {
             float dt = clock.restart().asSeconds();
-            GUIStates& gui = peek();
+            IGUIStates& gui = peek();
             m_renderer.clear(gui.bgColor);
             gui.handleInput();
             gui.update(dt);
@@ -192,7 +192,7 @@ public:
 
 private:
 
-    std::stack<GUIStates*> m_guis;
+    std::stack<IGUIStates*> m_guis;
     //! \brief GUIs use th SMFL library for their rendering.
     sf::RenderWindow m_renderer;
 };

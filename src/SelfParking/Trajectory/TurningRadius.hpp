@@ -28,7 +28,7 @@
 #ifndef TURNING_RADIUS_HPP
 #  define TURNING_RADIUS_HPP
 
-#  include "CarDimension.hpp"
+#  include "Vehicle/VehicleDimension.hpp"
 
 // *****************************************************************************
 //! \brief The turning radius is the radius of the circle created by a

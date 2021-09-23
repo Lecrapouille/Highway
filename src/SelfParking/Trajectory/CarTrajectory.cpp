@@ -25,4 +25,42 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "CarControl.hpp"
+#include "SelfParking/Trajectory/CarTrajectory.hpp"
+#include "Vehicle/VehicleControl.hpp"
+#include <iostream>
+
+//------------------------------------------------------------------------------
+bool CarTrajectory::update(CarControl& control, float const dt)
+{
+    m_time += dt;
+
+    if (USE_KINEMATIC)
+    {
+        control.set_speed(m_speeds.get(m_time));
+        control.set_steering(m_steerings.get(m_time));
+
+        return !m_speeds.end(m_time);
+    }
+    else
+    {
+        control.set_acceleration(m_accelerations.get(m_time), dt);
+        control.set_steering_speed(m_steerings.get(m_time), dt);
+
+        return !m_accelerations.end(m_time);
+    }
+}
+
+//------------------------------------------------------------------------------
+// FIXME a supprimer
+CarTrajectory::Ptr CarTrajectory::create(Parking::Type const type)
+{
+    switch (type)
+    {
+    case Parking::Type::Parallel:
+        return std::make_unique<ParallelTrajectory>();
+    case Parking::Type::Perpendicular:
+        return std::make_unique<PerpTrajectory>();
+    default:
+        return std::make_unique<DiagonalTrajectory>();
+    }
+}
