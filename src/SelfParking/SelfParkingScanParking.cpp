@@ -37,7 +37,7 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
 
     // This condition is purely for the simulation: is the ego car outside the
     // simulation game (parking area) ?
-    if (car.position().x >= 123.0f) // out of parking
+    if (car.position().x >= 140.0f) // out of parking
     {
         std::cout << "  Outside parking" << std::endl;
         m_state = States::EMPTY_SPOT_NOT_FOUND;
@@ -53,7 +53,7 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
     case States::IDLE:
         // The car was stopped and now it has to drive along parking spots and
         // scan parked cars to find the first empty parking spot.
-        car.setRefSpeed(1.0f);
+        car.setRefSpeed(3.0f);
         m_distance = 0.0f;
         m_state = States::DETECT_FIRST_CAR;
         return Status::IN_PROGRESS;
@@ -72,8 +72,15 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
     case States::DETECT_EMPTY_SPOT:
         // The car is detecting a "hole". Is it a real parking spot ? To know it
         // it integrates its speed to know the length of the spot.
-        if (detected)// FIXME || m_distance >= 4.8f) // meters
+        if (detected)
         {
+            std::cout << "DETECT_EMPTY_SPOT: car.detect true" << std::endl;
+            m_state = States::DETECT_SECOND_CAR;
+        }
+        else if (m_distance >= 6.4f) // meters FIXME should be Lmin
+        {
+            // two consecutive empty spots: avoid to drive to the next parked
+            // car do the maneuver directly
             std::cout << "DETECT_EMPTY_SPOT: car.detect true" << std::endl;
             m_state = States::DETECT_SECOND_CAR;
         }
@@ -85,27 +92,29 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
         return Status::IN_PROGRESS;
 
     case States::DETECT_SECOND_CAR:
-        if (detected)// FIXME |||| m_distance >= 4.8f) // meters
+        if (detected && (m_distance <= car.dim.length))
         {
-            // The car has detected the parking spot: returns its dimension.
-            std::cout << "DETECT_SECOND_CAR: car.detect true" << std::endl;
-            if (m_distance >= 4.8f)
-            {
-                // TODO Missing detection of the type of parking type
-                ParkingDimension dim(m_distance, 2.0f, 0u);
-                parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
-                m_parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
-                std::cout << "Parking detected: " << parking << std::endl;
-                m_state = States::EMPTY_SPOT_FOUND;
-                car.setRefSpeed(0.0f);
-                return Status::SUCCEEDED;
-            }
-            m_state = States::IDLE;
+            // Too small length: continue scanning parked cars
+            std::cout << "No way to park here!!!" << std::endl;
+            m_state = States::DETECT_FIRST_CAR;
         }
+        else if (detected || m_distance >= 6.4f) // FIXME should be Lmin
+        {
+            car.setRefSpeed(0.0f);
+
+            // TODO Missing detection of the type of parking type
+            ParkingDimension dim(m_distance, 2.0f, 0u);
+            parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
+            m_parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
+            std::cout << "Parking detected: " << parking << std::endl;
+            m_state = States::EMPTY_SPOT_FOUND;
+            return Status::SUCCEEDED;
+        }
+        m_state = States::IDLE;
         return Status::IN_PROGRESS;
 
     case States::EMPTY_SPOT_FOUND:
-        // The Stay in this state
+        // The parking was found, stay in this state and return the parking
         car.setRefSpeed(0.0f);
         parking = m_parking;
         return Status::SUCCEEDED;

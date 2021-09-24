@@ -136,9 +136,9 @@ public:
     //--------------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, Parking const& parking)
     {
-        os << "Parking P=(" << parking.m_position.x << ", " << parking.m_position.y << "), "
-           << "length=" << parking.dim.length << ", width=" << parking.dim.width
-           << "angle=" << parking.dim.deg << std::endl;
+        os << "Parking P = (" << parking.m_position.x << ", " << parking.m_position.y << "), "
+           << "length = " << parking.dim.length << ", width = " << parking.dim.width
+           << ", angle =" << parking.dim.deg << std::endl;
         return os;
     }
 

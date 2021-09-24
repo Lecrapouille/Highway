@@ -60,8 +60,8 @@ void Simulation::createWorld(size_t angle, bool const entering)
 
     // Add parked cars (static)
     Car& car0 = addCar("Renault.Twingo", parking0);
-    Car& car1 = addCar("Renault.Twingo", parking1);
-    Car& car2 = addCar("Renault.Twingo", parking3);
+    Car& car1 = addCar("Audi.A6", parking1);
+    Car& car2 = addCar("Audi.A6", parking3);
 
     // Self-parking car (dynamic). Always be the last in the container
     Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
