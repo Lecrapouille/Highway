@@ -11,5 +11,7 @@
 - Ackerman
 - Prolog pour la logique ?
 - [FAIT] World class au lieu de Simulation
-- Ajouter les X capteurs et quand on mets le clignotant: activer les capteurs du cote indique par le clignotant et dessiner uniquement eux.
-- Wheels position 3D: add world's altitude
+- [FAIT] Ajouter les X capteurs et quand on mets le clignotant: activer les capteurs du cote indique par le clignotant et dessiner uniquement eux.
+- Wheels position 3D: add world.altitude()
+- Car sensors: car.detect() retourne un bit field: 1 par capteur et ajouter les 12 capteurs
+- ajouter la sortie de parking dans la machine a etat

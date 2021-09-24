@@ -47,12 +47,12 @@ void Simulation::createWorld(size_t angle, bool const entering)
     clear();
 
     // Create a road
-    // Parking& road1 = addParking(ParkingDimensions::get("road"), sf::Vector2f(100.0f, 107.5f));
+    // Road& road1 = addRoad(RoadDimensions::get("road.2ways"), curvature, length);
 
     // Create parallel or perpendicular or diagnoal parking slots
     std::string d = "epi." + std::to_string(angle);
     ParkingDimension const& dim = ParkingDimensions::get(d.c_str());
-    Parking& parking0 = addParking(dim, sf::Vector2f(97.5f, 100.0f));
+    Parking& parking0 = addParking(dim, sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
     Parking& parking1 = addParking(dim, parking0.position() + parking0.delta());
     Parking& parking2 = addParking(dim, parking1.position() + parking1.delta());
     Parking& parking3 = addParking(dim, parking2.position() + parking2.delta());
@@ -67,8 +67,8 @@ void Simulation::createWorld(size_t angle, bool const entering)
     Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
 
     // With trailer
-    Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
-    std::cout << tr << std::endl;
+    //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
+    //std::cout << tr << std::endl;
 }
 #pragma GCC diagnostic pop
 
@@ -192,4 +192,3 @@ void Simulation::draw(sf::RenderWindow& renderer, sf::View& view)
         Renderer::draw(*m_ego, renderer);
     }
 }
-

@@ -108,9 +108,18 @@ void GUISimulation::handleInput()
             {
                 if (m_simulation.m_ego != nullptr)
                 {
-                    // TODO TURNING INDICATOR: Left/right
-                    std::cout << "TURNING INDICATOR: START PARKING" << std::endl;
-                    m_simulation.m_ego->clignotant(m_simulation.m_ego->clignotant() ^ true);
+                    std::cout << "TURNING INDICATOR RIGHT: START PARKING" << std::endl;
+                    m_simulation.m_ego->turning_indicator(
+                        false, m_simulation.m_ego->turning_right() ^ true);
+                }
+            }
+            else if (event.key.code == sf::Keyboard::Left)
+            {
+                if (m_simulation.m_ego != nullptr)
+                {
+                    std::cout << "TURNING INDICATOR LEFT: START PARKING" << std::endl;
+                    m_simulation.m_ego->turning_indicator(
+                        m_simulation.m_ego->turning_left() ^ true, false);
                 }
             }
             else if (event.key.code == sf::Keyboard::A)

@@ -33,9 +33,16 @@
 
 class Car;
 
+// ****************************************************************************
+//! \brief A sensor shape is just a blue print used inside of the vehicle shape
+//! for orienting automatically the sensor when the vehicle shape is turned.
+// ****************************************************************************
 struct SensorShape
 {
-   void set(sf::Vector2f const& p, float const orientation);
+   //--------------------------------------------------------------------------
+   //! \brief Set the sensor attitude (position and heading orientation)
+   //--------------------------------------------------------------------------
+   void set(sf::Vector2f const& position, float const orientation);
 
    //! \brief Relative position from the car shape position (middle rear axle)
    sf::Vector2f offset;
@@ -45,16 +52,39 @@ struct SensorShape
    sf::RectangleShape obb;
 };
 
+// ****************************************************************************
+//! \brief Very ultra basic sensor detecting parked cars. This sensor is certainly
+//! not realist for works as a bug entenna and detect oriented boundind boxes
+//! collisions.
+// ****************************************************************************
 class Radar
 {
 public:
 
+   //--------------------------------------------------------------------------
+   //! \brief Default constructor: bind a bluiprint and set the sensor rangle.
+   //! \param[in] range [m].
+   //! \fixme should be in constructor but since a vehicle has a sensors but its
+   //! shape holds SensorShape we had to split it. I dunno how to fix that.
+   //--------------------------------------------------------------------------
    void init(SensorShape& shape, const float range);
-   void set(sf::Vector2f const& p, float const orientation);
-   bool collides(sf::RectangleShape const& shape, sf::Vector2f& p) const;
+
+   //--------------------------------------------------------------------------
+   //! \brief Set the sensor attitude (position and heading orientation)
+   //--------------------------------------------------------------------------
+   void set(sf::Vector2f const& position, float const orientation);
+
+   //--------------------------------------------------------------------------
+   //! \brief Is the sensor collides to the given bounding box ?
+   //! \param[in] shape: the bounding box (of a parked car ie).
+   //! \param[inout] p the point of collision.
+   //! \return true if the sensor has detected a box.
+   //--------------------------------------------------------------------------
+   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p) const;
 
 private:
 
+   // FIXME ideally SensorShape& if possible to replace init() by the constructor!
    SensorShape* m_shape = nullptr;
 };
 

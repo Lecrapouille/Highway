@@ -25,48 +25,45 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#  include "Sensors/Radar.hpp"
-#  include "Utils/Utils.hpp"
-#  include "Utils/Collide.hpp"
-#  include <cassert>
+#ifndef UNITS_HPP
+#  define UNITS_HPP
 
-//-----------------------------------------------------------------------------
-void SensorShape::set(sf::Vector2f const& p, float const orientation)
-{
-   obb.setPosition(p);
-   obb.setRotation(orientation);
+// https://github.com/bernedom/SI
+#include <SI/length.h>
+#include <SI/angle.h>
+
+using namespace SI::literals;
+
+using Meter = SI::metre_t<float>;
+
+template<class T>
+using degree_t = SI::angle_t<T, std::ratio<10000, 572958>>;
+
+using Degree = degree_t<float>;
+using Radian = SI::angle_t<float, std::ratio<1>>;
+
+constexpr degree_t<long double> operator""_deg(long double value) {
+    return degree_t<long double>{value};
 }
 
-//-----------------------------------------------------------------------------
-void Radar::init(SensorShape& shape, const float range)
+constexpr float cosf(Radian const a)
 {
-   m_shape = &shape;
-   m_shape->obb.setSize(sf::Vector2f(range, 0.1f));
-   m_shape->obb.setOrigin(0.0f, m_shape->obb.getSize().y / 2);
-   m_shape->obb.setFillColor(sf::Color(165, 42, 42));
-   m_shape->obb.setOutlineThickness(ZOOM);
-   m_shape->obb.setOutlineColor(sf::Color::Blue);
+   return ::cosf(a.value());
 }
 
-//-----------------------------------------------------------------------------
-void Radar::set(sf::Vector2f const& p, float const orientation)
+constexpr float sinf(Radian const a)
 {
-   assert(m_shape != nullptr);
-   m_shape->set(p, orientation);
+   return ::sinf(a.value());
 }
 
-//-----------------------------------------------------------------------------
-bool Radar::detects(sf::RectangleShape const& shape, sf::Vector2f& p) const
+constexpr float cosf(Degree const d)
 {
-   assert(m_shape != nullptr);
-   bool res = ::collide(m_shape->obb, shape, p);
-   if (res)
-   {
-      m_shape->obb.setFillColor(sf::Color::Red);
-   }
-   else
-   {
-      m_shape->obb.setFillColor(sf::Color::Green);
-   }
-   return res;
+   return ::cosf(Radian(d));
 }
+
+constexpr float sinf(Degree const d)
+{
+   return ::sinf(Radian(d));
+}
+
+#endif // UNITS_HPP

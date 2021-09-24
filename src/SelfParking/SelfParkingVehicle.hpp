@@ -33,51 +33,110 @@
 #  include "SelfParking/Trajectory/TurningRadius.hpp"
 
 // ****************************************************************************
-//! \brief Self-Parking vehicle
+//! \brief Vehicle with Self-Parking system.
 // ****************************************************************************
 class SelfParkingCar: public Car
 {
 private:
 
+    // *************************************************************************
+    //! \brief Helper class holding the state machine for scaning parked cars
+    //! and detect the first empty parking spot. The implementation of this
+    //! state machine is made in SelfParkingScanParking.cpp: Detect the first
+    //! parked car, then detect the empty spot, then detect the next parked car.
+    // *************************************************************************
     class Scan
     {
+        //! \brief Define the differents states of the state machine: Detect the
+        //! first parked car, then detect the empty spot, then detect the next
+        //! parked car.
         enum States {
-            NOT_FOUND, IDLE, DETECT_FIRST_CAR, DETECT_HOLE,
-            DETECT_SECOND_CAR, FOUND
+            EMPTY_SPOT_NOT_FOUND, IDLE, DETECT_FIRST_CAR, DETECT_EMPTY_SPOT,
+            DETECT_SECOND_CAR, EMPTY_SPOT_FOUND
         };
 
     public:
 
-        enum Status { WIP, DETECTED, NOT_DETECTED };
+        //! \brief Return code to the main state machine (the one used for
+        //! parking): scanning, parking spot found (success), spot not found
+        //! (failure).
+        enum Status { IN_PROGRESS, SUCCEEDED, FAILED };
 
+        //----------------------------------------------------------------------
+        //! \brief Default constructor. m_parking is initialized with dummy
+        //! value.
+        //----------------------------------------------------------------------
+        Scan()
+            : m_parking(ParkingDimensions::get("epi.45"), sf::Vector2f(0.0f, 0.0f))
+        {}
+
+        //----------------------------------------------------------------------
+        //! \brief Reset the state machine to the initial state.
+        //----------------------------------------------------------------------
         inline void start() { m_state = IDLE; }
-        Scan::Status update(float const dt, SelfParkingCar& car, Parking& parking);
+
+        //----------------------------------------------------------------------
+        //! \brief Update the state machine.
+        //! \param[in] dt: delta time in seconds.
+        //! \param[inout] car: the reference of the ego car.
+        //! \param[in] detected: bitfield of detection returned by sensors.
+        //! \param[out] parking: return the parking dimension if and if
+        //! SUCCEEDED is returned (else the content is unchanged).
+        //! \return if the parking has found, or not found or still searching an
+        //! empty spot.
+        //----------------------------------------------------------------------
+        Scan::Status update(float const dt, SelfParkingCar& car, bool detected, Parking& parking);
 
     private:
 
+        //----------------------------------------------------------------------
+        //! \brief For debug purpose only.
+        //----------------------------------------------------------------------
         std::string to_string(SelfParkingCar::Scan::States s)
         {
             switch (s)
             {
-            case SelfParkingCar::Scan::States::NOT_FOUND: return "NOT_FOUND";
-            case SelfParkingCar::Scan::States::IDLE: return "IDLE";
-            case SelfParkingCar::Scan::States::DETECT_FIRST_CAR: return "DETECT_FIRST_CAR";
-            case SelfParkingCar::Scan::States::DETECT_HOLE: return "DETECT_HOLE";
-            case SelfParkingCar::Scan::States::DETECT_SECOND_CAR: return "DETECT_SECOND_CAR";
-            case SelfParkingCar::Scan::States::FOUND: return "FOUND";
-            default: return "???";
+            case SelfParkingCar::Scan::States::EMPTY_SPOT_NOT_FOUND:
+                return "EMPTY_SPOT_NOT_FOUND";
+            case SelfParkingCar::Scan::States::IDLE:
+                return "IDLE";
+            case SelfParkingCar::Scan::States::DETECT_FIRST_CAR:
+                return "DETECT_FIRST_CAR";
+            case SelfParkingCar::Scan::States::DETECT_EMPTY_SPOT:
+                return "DETECT_EMPTY_SPOT";
+            case SelfParkingCar::Scan::States::DETECT_SECOND_CAR:
+                return "DETECT_SECOND_CAR";
+            case SelfParkingCar::Scan::States::EMPTY_SPOT_FOUND:
+                return "EMPTY_SPOT_FOUND";
+            default:
+                return "???";
             }
         }
 
     private:
 
+        //! \brief Current state of the state machine.
         Scan::States m_state = IDLE;
+        //! \brief Memorize the car position when the first car has been
+        //! detected.
         sf::Vector2f m_position;
+        //! \brief Estimation of the empty spot length.
         float m_distance = 0.0f;
-    };
+        //! \brief Memorize the parking spot once detected.
+        Parking m_parking;
+    }; // class Scan
 
+    // *************************************************************************
+    //! \brief Main state machine for self-parking: drive along the parking,
+    //! scan parked cars and detect empty spot, compute the path for parking and
+    //! compute the reference speed and reference steering angle for the cruise
+    //! controler.
+    // *************************************************************************
     class StateMachine
     {
+        //! \brief Define the differents states of the state machine: wait the
+        //! event to start parking, scan parked cars, compute the trajectory to
+        //! the spot.
         enum States {
             IDLE, SCAN_PARKING_SPOTS, COMPUTE_ENTERING_TRAJECTORY,
             COMPUTE_LEAVING_TRAJECTORY, DRIVE_ALONG_TRAJECTORY,
@@ -86,38 +145,62 @@ private:
 
     public:
 
+        //----------------------------------------------------------------------
+        //! \brief Default constructor. m_parking is initialized with dummy
+        //! value.
+        //----------------------------------------------------------------------
         StateMachine()
-            : m_parking(ParkingDimensions::get("epi.45"),
-                        sf::Vector2f(0.0f, 0.0f))
+            : m_parking(ParkingDimensions::get("epi.45"), sf::Vector2f(0.0f, 0.0f))
         {}
 
+        //----------------------------------------------------------------------
+        //! \brief Update the state machine.
+        //! \param[in] dt: delta time in seconds.
+        //! \param[inout] car: the reference of the ego car.
+        //----------------------------------------------------------------------
         void update(float const dt, SelfParkingCar& car);
 
     private:
 
+        //----------------------------------------------------------------------
+        //! \brief For debug purpose only.
+        //----------------------------------------------------------------------
         std::string to_string(SelfParkingCar::StateMachine::States s)
         {
             switch (s)
             {
-            case SelfParkingCar::StateMachine::States::IDLE: return "IDLE";
-            case SelfParkingCar::StateMachine::States::SCAN_PARKING_SPOTS: return "SCAN_PARKING_SPOTS";
-            case SelfParkingCar::StateMachine::States::COMPUTE_ENTERING_TRAJECTORY: return "COMPUTE_ENTERING_TRAJECTORY";
-            case SelfParkingCar::StateMachine::States::COMPUTE_LEAVING_TRAJECTORY: return "COMPUTE_LEAVING_TRAJECTORY";
-            case SelfParkingCar::StateMachine::States::DRIVE_ALONG_TRAJECTORY: return "DRIVE_ALONG_TRAJECTORY";
-            case SelfParkingCar::StateMachine::States::TRAJECTORY_DONE: return "TRAJECTORY_DONE";
-            default: return "???";
+            case SelfParkingCar::StateMachine::States::IDLE:
+                return "IDLE";
+            case SelfParkingCar::StateMachine::States::SCAN_PARKING_SPOTS:
+                return "SCAN_PARKING_SPOTS";
+            case SelfParkingCar::StateMachine::States::COMPUTE_ENTERING_TRAJECTORY:
+                return "COMPUTE_ENTERING_TRAJECTORY";
+            case SelfParkingCar::StateMachine::States::COMPUTE_LEAVING_TRAJECTORY:
+                return "COMPUTE_LEAVING_TRAJECTORY";
+            case SelfParkingCar::StateMachine::States::DRIVE_ALONG_TRAJECTORY:
+                return "DRIVE_ALONG_TRAJECTORY";
+            case SelfParkingCar::StateMachine::States::TRAJECTORY_DONE:
+                return "TRAJECTORY_DONE";
+            default:
+                return "???";
             }
         }
 
+        //! \brief Current state of the state machine.
         States m_state = States::IDLE;
-        Parking m_parking;
+        //! \brief Parking spot scanner state machine.
         SelfParkingCar::Scan m_scan;
-    };
+        //! \brief Parking spot dimension if and only the scan found one
+        Parking m_parking;
+    }; // class StateMachine
 
 public:
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor.
+    //! \param[in] dimension: dimension of the car shape.
+    //! \param[in] cars: const reference to cars living in the simulation. This
+    //! the simplest way to simulate the presence of existing cars.
     //-------------------------------------------------------------------------
     SelfParkingCar(CarDimension const& dimension, std::deque<std::unique_ptr<Car>> const& cars)
         : Car(dimension), m_cars(cars)
@@ -134,14 +217,22 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor.
+    //! \param[in] model: non-NULL string car varient to get dimension of the
+    //! car shape.
+    //! \param[in] cars: const reference to cars living in the simulation. This
+    //! the simplest way to simulate the presence of existing cars.
     //-------------------------------------------------------------------------
     SelfParkingCar(const char* model, std::deque<std::unique_ptr<Car>> const& cars)
         : SelfParkingCar(CarDimensions::get(model), cars)
     {}
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Initialize first value for the physics equations.
+    //! \param[in] position: position of the middle of the rear axle.
+    //! \param[in] heading: initial yaw of the car [rad]
+    //! \param[in] speed: initial longitudinal speed [m/s] (usually 0).
+    //! \param[in] steering: initial front wheels orientation [rad] (usually 0).
     //-------------------------------------------------------------------------
     virtual void init(sf::Vector2f const& position, float const heading,
                       float const speed = 0.0f, float const steering = 0.0f) override
@@ -155,33 +246,31 @@ public:
 
     //-------------------------------------------------------------------------
     //! \brief Check if the car detects other car.
+    //! \return true if a car has been detected by one of sensors.
     //-------------------------------------------------------------------------
-    bool detect()
+    bool detect() // FIXME retourner un champ de bit 1 bool par capteur
     {
-        sf::Vector2f p;
-        //for (auto const& rad: m_radars) // TODO left or right
+        sf::Vector2f p; // TODO to be returned
+
+        for (auto const& car: m_cars)
         {
-            for (auto const& car: m_cars)
+            // TODO for the moment a single sensor
+            // TODO simulate defectuous sensor
+            if (m_turning_right)
             {
-                if (m_radars[0].collides(car->obb(), p))
+                assert(m_radars.size() >= CarShape::WheelName::RR);
+                if (m_radars[CarShape::WheelName::RR].detects(car->obb(), p))
+                    return true;
+            }
+            else if (m_turning_left)
+            {
+                assert(m_radars.size() >= CarShape::WheelName::RL);
+                if (m_radars[CarShape::WheelName::RL].detects(car->obb(), p))
                     return true;
             }
         }
+
         return false;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Trigger the car to find an empty parking spot.
-    //! \note Simulate the event when the driver has activate the flashing light
-    //-------------------------------------------------------------------------
-    void clignotant(bool const set)
-    {
-        m_clignotant = set;
-    }
-
-    bool clignotant()
-    {
-        return m_clignotant;
     }
 
     //-------------------------------------------------------------------------

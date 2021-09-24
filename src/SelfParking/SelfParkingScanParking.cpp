@@ -31,79 +31,92 @@
 
 //-------------------------------------------------------------------------
 SelfParkingCar::Scan::Status
-SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, Parking& parking)
+SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected, Parking& parking)
 {
     States state = m_state;
 
-    if (car.position().x >= 200) // out of parking
+    // This condition is purely for the simulation: is the ego car outside the
+    // simulation game (parking area) ?
+    if (car.position().x >= 123.0f) // out of parking
     {
         std::cout << "  Outside parking" << std::endl;
-        m_state = States::NOT_FOUND;
+        m_state = States::EMPTY_SPOT_NOT_FOUND;
     }
 
     switch (m_state)
     {
-    case States::NOT_FOUND:
+    case States::EMPTY_SPOT_NOT_FOUND:
+        // The car did not found the parking spot: reset states.
         car.setRefSpeed(0.0f);
-        return Status::NOT_DETECTED;
+        return Status::FAILED;
 
     case States::IDLE:
+        // The car was stopped and now it has to drive along parking spots and
+        // scan parked cars to find the first empty parking spot.
         car.setRefSpeed(1.0f);
-        car.setRefSteering(DEG2RAD(30.0f));
         m_distance = 0.0f;
         m_state = States::DETECT_FIRST_CAR;
-        return Status::WIP;
+        return Status::IN_PROGRESS;
 
     case States::DETECT_FIRST_CAR:
-        if (!car.detect())
+        // The car has detected the first parked car. Now search a gap (either
+        // space between car either real parking spot).
+        if (!detected) // FIXME bitfield
         {
             std::cout << "DETECT_FIRST_CAR: car.detect false" << std::endl;
             m_position = car.position();
-            m_state = States::DETECT_HOLE;
+            m_state = States::DETECT_EMPTY_SPOT;
         }
-        return Status::WIP;
+        return Status::IN_PROGRESS;
 
-    case States::DETECT_HOLE:
-        if (!car.detect())
+    case States::DETECT_EMPTY_SPOT:
+        // The car is detecting a "hole". Is it a real parking spot ? To know it
+        // it integrates its speed to know the length of the spot.
+        if (detected)// FIXME || m_distance >= 4.8f) // meters
+        {
+            std::cout << "DETECT_EMPTY_SPOT: car.detect true" << std::endl;
+            m_state = States::DETECT_SECOND_CAR;
+        }
+        else
         {
             std::cout << "Empty spot distance: " << m_distance << std::endl;
             m_distance += car.speed() * dt;
         }
-        else
-        {
-            std::cout << "DETECT_HOLE: car.detect true" << std::endl;
-            m_state = States::DETECT_SECOND_CAR;
-        }
-        return Status::WIP;
+        return Status::IN_PROGRESS;
 
     case States::DETECT_SECOND_CAR:
-        if (car.detect())
+        if (detected)// FIXME |||| m_distance >= 4.8f) // meters
         {
+            // The car has detected the parking spot: returns its dimension.
             std::cout << "DETECT_SECOND_CAR: car.detect true" << std::endl;
             if (m_distance >= 4.8f)
             {
-                // TODO know distance 2.0f
+                // TODO Missing detection of the type of parking type
                 ParkingDimension dim(m_distance, 2.0f, 0u);
                 parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
-                std::cout << parking << std::endl;
-                m_state = States::FOUND;
+                m_parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
+                std::cout << "Parking detected: " << parking << std::endl;
+                m_state = States::EMPTY_SPOT_FOUND;
                 car.setRefSpeed(0.0f);
-                return Status::DETECTED;
+                return Status::SUCCEEDED;
             }
             m_state = States::IDLE;
         }
-        return Status::WIP;
+        return Status::IN_PROGRESS;
 
-    case States::FOUND:
-        parking = Parking(ParkingDimensions::get("epi.0"), m_position);
-        return Status::DETECTED;
+    case States::EMPTY_SPOT_FOUND:
+        // The Stay in this state
+        car.setRefSpeed(0.0f);
+        parking = m_parking;
+        return Status::SUCCEEDED;
     }
 
+    // Debug purpose
     if (state != m_state)
     {
         std::cout << "  SelfParkingCar::Scan "
                   << SelfParkingCar::Scan::to_string(m_state) << std::endl;
     }
 
-    return Status::NOT_DETECTED;
+    return Status::FAILED;
 }

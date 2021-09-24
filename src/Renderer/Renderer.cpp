@@ -117,9 +117,15 @@ void Renderer::draw(SelfParkingCar const& car, sf::RenderTarget& target, sf::Ren
     draw(c, target, states);
 
     // Car sensors
-    for (auto const& it: c.shape().sensors())
+    auto const& sensors = c.shape().sensors();
+    size_t i = sensors.size();
+    while (i--)
     {
-        target.draw(it.obb, states);
+        // Note: front sensors are not drawn
+        if (car.turning_left() && (i == CarShape::WheelName::RL))
+            target.draw(sensors[i].obb, states);
+        else if (car.turning_right() && (i == CarShape::WheelName::RR))
+            target.draw(sensors[i].obb, states);
     }
 
     // Debug Trajectory
@@ -158,6 +164,8 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
         wheel.setRotation(RAD2DEG(car_shape.heading() + it.steering));
         target.draw(wheel, states);
     }
+
+    // TODO Turning indicator
 
     // Trailers
     // Origin on the middle of the rear wheels

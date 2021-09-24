@@ -31,9 +31,10 @@
 void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
 {
     States state = m_state;
+    bool detected = car.detect();
 
-    // User aborted auto-parking
-    if (!car.clignotant())
+    // Has the driver aborted the auto-parking system ?
+    if (!car.turning_left() && !car.turning_right())
     {
         m_state = States::TRAJECTORY_DONE;
     }
@@ -41,15 +42,18 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
     switch (m_state)
     {
     case States::IDLE:
-        if (car.clignotant())
+        // Waiting the driver press a button to start the self-parking process.
+        if (car.turning_left() || car.turning_right())
         {
-            if (true) // outside the parking spot
+            if (true) // TODO car.isParked()
             {
+                // The car is not parked: start scanning parked cars
                 m_state = States::SCAN_PARKING_SPOTS;
                 m_scan.start();
             }
             else
             {
+                // The car was parked: compute the path to leave the spot
                 m_state = States::COMPUTE_LEAVING_TRAJECTORY;
             }
         }
@@ -57,61 +61,82 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
 
     case States::SCAN_PARKING_SPOTS:
         {
-            Scan::Status scanning = m_scan.update(dt, car, m_parking);
-            if (scanning == Scan::Status::DETECTED)
+            // The car is scanning parked cars to find an empty parking spot
+            Scan::Status scanning = m_scan.update(dt, car, detected, m_parking);
+
+            // Empty parking spot detected
+            if (scanning == Scan::Status::SUCCEEDED)
             {
-                std::cout << "Scan::Status::DETECTED" << std::endl;
+                std::cout << "Scan::Status::SUCCEEDED" << std::endl;
                 m_state = States::COMPUTE_ENTERING_TRAJECTORY;
             }
-            else if (scanning == Scan::Status::NOT_DETECTED)
+            // Failed to find an empty parking spot
+            else if (scanning == Scan::Status::FAILED)
             {
-                std::cout << "Scan::Status::NOT_DETECTED" << std::endl;
+                std::cout << "Scan::Status::FAILED" << std::endl;
                 m_state = States::TRAJECTORY_DONE;
             }
-            else // scanning == WIP
+            else // scanning == Scan::Status::IN_PROGRESS
             {
-                // Do nothing
+                // Do nothing: the car is still scanning parked car to find
+                // empty parking spot.
             }
         }
         break;
 
     case States::COMPUTE_ENTERING_TRAJECTORY:
-        car.park(m_parking, true);
-        m_state = States::DRIVE_ALONG_TRAJECTORY;
+        // Empty parking spot detected: if possible compute a path to the spot
+        if (car.park(m_parking, true))
+        {
+            m_state = States::DRIVE_ALONG_TRAJECTORY;
+        }
+        else
+        {
+            m_state = States::IDLE;
+        }
         break;
 
     case States::COMPUTE_LEAVING_TRAJECTORY:
-        car.park(m_parking, false);
-        m_state = States::DRIVE_ALONG_TRAJECTORY;
+        // Leaving the parking spot detected: if possible compute a path to exit
+        // the spot.
+        if (car.park(m_parking, false))
+        {
+            m_state = States::DRIVE_ALONG_TRAJECTORY;
+        }
+        else
+        {
+            std::cout << "SORRY I do not know how to leave by myself" << std::endl;
+            m_state = States::TRAJECTORY_DONE;
+        }
         break;
 
     case States::DRIVE_ALONG_TRAJECTORY:
+        // The car is driving along its computed path
         if (!car.hasTrajectory())
         {
             std::cout << "Pas de trajectoire" << std::endl;
             m_state = States::TRAJECTORY_DONE;
         }
+        else if (car.updateTrajectory(dt) == false)
+        {
+            std::cout << "trajectoire done" << std::endl;
+            m_state = States::TRAJECTORY_DONE;
+        }
         else
         {
-            if (car.updateTrajectory(dt) == false)
-            {
-                std::cout << "trajectoire done" << std::endl;
-                m_state = States::TRAJECTORY_DONE;
-            }
-            else
-            {
-                // Do nothing: travelling along the trajectory WIP
-            }
+            // Do nothing: the car is currently travelling along the trajectory
         }
         break;
 
     case States::TRAJECTORY_DONE:
+        // Reset the car states
         m_state = States::IDLE;
-        car.clignotant(false);
+        car.turning_indicator(false, false);
         car.setRefSpeed(0.0f);
         break;
     }
 
+    // Debug purpose
     if (state != m_state)
     {
         std::cout << "SelfParkingCar::StateMachine "

@@ -86,12 +86,6 @@ CarShape::CarShape(CarDimension const& dimension)
     //wheels[FL].speed = m_wheels[FR].speed = NAN;
     //wheels[RL].speed = m_wheels[RR].speed = NAN;
 
-#if 1 // FIXME 1 sensor for the moment
-    // 4 radars: 1 one each wheel (to make simple)
-    m_sensor_shapes.resize(1);
-    m_sensor_shapes[0].orientation = -90.0f;
-    m_sensor_shapes[0].offset = sf::Vector2f(0.0f, -K);
-#else
     // 4 radars: 1 one each wheel (to make simple)
     m_sensor_shapes.resize(4);
     m_sensor_shapes[WheelName::FL].orientation = 90.0f;
@@ -103,7 +97,6 @@ CarShape::CarShape(CarDimension const& dimension)
     m_sensor_shapes[WheelName::FR].offset = sf::Vector2f(dim.wheelbase, -K);
     m_sensor_shapes[WheelName::RL].offset = sf::Vector2f(0.0f, K);
     m_sensor_shapes[WheelName::RR].offset = sf::Vector2f(0.0f, -K);
-#endif
 }
 
 //-----------------------------------------------------------------------------

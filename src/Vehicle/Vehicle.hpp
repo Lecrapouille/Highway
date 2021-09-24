@@ -343,9 +343,36 @@ public:
     //! \brief Const getter: return all trailers attached to the car in order
     //! and starting by the one attached to the car.
     //-------------------------------------------------------------------------
-    std::deque<std::unique_ptr<Trailer>> const& trailers() const
+    inline std::deque<std::unique_ptr<Trailer>> const& trailers() const
     {
         return m_trailers;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Trigger the car to find an empty parking spot.
+    //! \note Simulate the event when the driver has activate the flashing light
+    //-------------------------------------------------------------------------
+    inline void turning_indicator(bool const left, bool const right)
+    {
+        assert(!left || !right);
+        m_turning_left = left;
+        m_turning_right = right;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Is the car turning left.
+    //-------------------------------------------------------------------------
+    inline bool turning_left() const
+    {
+        return m_turning_left;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Is the car turning right.
+    //-------------------------------------------------------------------------
+    inline bool turning_right() const
+    {
+        return m_turning_right;
     }
 
     //-------------------------------------------------------------------------
@@ -381,6 +408,10 @@ protected:
     CarControl m_control;
     //! \brief List of trailers attached to the car
     std::deque<std::unique_ptr<Trailer>> m_trailers;
+    //! \brief Truning indicator
+    bool m_turning_left = false;
+    //! \brief Truning indicator
+    bool m_turning_right = false;
 };
 
 #endif
