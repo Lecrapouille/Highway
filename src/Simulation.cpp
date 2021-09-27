@@ -63,6 +63,10 @@ void Simulation::createWorld(size_t angle, bool const entering)
     Car& car1 = addCar("Audi.A6", parking1);
     Car& car2 = addCar("Audi.A6", parking3);
 
+    //addGhost("Renault.Twingo", sf::Vector2f(108.045f, 100.0f), 0.0f);
+    //addGhost("Renault.Twingo", sf::Vector2f(109.121f, 100.130f), DEG2RAD(14.273258f)); // C1, ThetaE1
+    //addGhost("Renault.Twingo", sf::Vector2f(108.363335f, 99.865936f), DEG2RAD(24.659098f)); // C2, ThetaE2+ThetaSum
+
     // Self-parking car (dynamic). Always be the last in the container
     Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
 
@@ -120,6 +124,36 @@ Car& Simulation::addCar(const char* model, Parking& parking)
 }
 
 //------------------------------------------------------------------------------
+Car& Simulation::addGhost(CarDimension const& dim, sf::Vector2f const& position,
+                          float const heading, float const speed, float const steering)
+{
+    static size_t count = 0u;
+
+    m_ghosts.push_back(std::make_unique<Car>(dim));
+    m_ghosts.back()->init(position, heading, speed, steering);
+    m_ghosts.back()->name += std::to_string(count++);
+    m_ghosts.back()->color = sf::Color::White;
+    std::cout << *m_ghosts.back() << std::endl << std::endl;
+    return *m_ghosts.back();
+}
+
+//------------------------------------------------------------------------------
+Car& Simulation::addGhost(const char* model, sf::Vector2f const& position, float const heading,
+                        float const speed, float const steering)
+{
+    return addGhost(CarDimensions::get(model), position, heading, speed, steering);
+}
+
+//------------------------------------------------------------------------------
+Car& Simulation::addGhost(const char* model, Parking& parking)
+{
+    Car& car = addGhost(CarDimensions::get(model), sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f, 0.0f);
+    parking.bind(car);
+    return car;
+}
+
+
+//------------------------------------------------------------------------------
 Parking& Simulation::addParking(ParkingDimension const& dim, sf::Vector2f const& position) //TODO , count)
 {
     // TODO i = count; while (i--)
@@ -152,7 +186,6 @@ void Simulation::update(const float dt)
         {
             if (m_ego->collides(*it))
             {
-                std::cout << "Collide" << std::endl;
                 it->color = sf::Color(COLISION_COLOR);
                 m_ego->color = sf::Color(COLISION_COLOR);
             }
@@ -183,6 +216,12 @@ void Simulation::draw(sf::RenderWindow& renderer, sf::View& view)
 
     // Draw cars
     for (auto const& it: m_cars)
+    {
+        Renderer::draw(*it, renderer);
+    }
+
+    // Draw cars
+    for (auto const& it: m_ghosts)
     {
         Renderer::draw(*it, renderer);
     }

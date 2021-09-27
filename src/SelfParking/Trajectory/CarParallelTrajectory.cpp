@@ -92,52 +92,94 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
 }
 
 //------------------------------------------------------------------------------
+// TODO a bouger dans Renderer
+void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    if (m_trials == 1u)
+    {
+        // Drive to initial position
+        target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
+
+        // Turn 1
+        target.draw(Arc(Xc2, Yc2, Rwmin, 90.0f, RAD2DEG(min_central_angle), sf::Color::Blue), states);
+        target.draw(Arrow(Xc2, Yc2, Xt, Yt, sf::Color::Blue), states);
+
+        // Turn 2
+        target.draw(Arc(Xc1, Yc1, Rwmin, -90.0f, RAD2DEG(min_central_angle), sf::Color::Red), states);
+        target.draw(Arrow(Xc1, Yc1, Xc1, Yf, sf::Color::Red), states);
+
+        // Path
+        target.draw(Circle(Xi, Yi, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xs, Ys, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xf, Yf, ZOOM, sf::Color::Green), states);
+    }
+    else if (m_trials == 2u)
+    {
+        return ;
+        target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
+        target.draw(Arc(Xc1, Yc1, Remin, 270.0f, RAD2DEG(theta_t1), sf::Color::Blue), states);
+        target.draw(Arc(Xc2, Yc2, Rrg, 90.0f, RAD2DEG(theta_sum1), sf::Color::Red), states);
+        target.draw(Arc(Xc2, Yc2, Rrg, 90.0f, RAD2DEG(theta_sum1 + theta_E2), sf::Color::Red), states);
+        target.draw(Arc(Xc2, Yc2, Rrg, 90.0f, RAD2DEG(theta_sum1 + theta_E2 + theta_p), sf::Color::Red), states);
+
+        target.draw(Arc(Xc4, Yc4, Rwmin, 90.0f, RAD2DEG(theta_Ef), sf::Color::Cyan), states);
+        target.draw(Arc(Xc3, Yc3, Rwmin, 270.0f, RAD2DEG(theta_sum2 + theta_E3), sf::Color::Cyan), states);
+
+        target.draw(Circle(Xi, Yi, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xem0, Yem0, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xem1, Yem1, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xem2, Yem2, ZOOM, sf::Color::Red), states);
+
+        target.draw(Circle(Xc3, Yc3, ZOOM, sf::Color::Yellow), states);
+        target.draw(Circle(Xc4, Yc4, ZOOM, sf::Color::Yellow), states);
+        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Yellow), states);
+    }
+}
+
+//------------------------------------------------------------------------------
 // Entering to parking spot in two trials
 bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
 {
     printf("inPath2Trials\n");
     m_trials = 2u;
 
-    // TODO never used ?
-    //Xf = parking.position().x;
-    //Yf = parking.position().y;
+    // Relative position from middle top of the parking
+    Xem0 = car.dim.back_overhang - parking.dim.length / 2.0f;
+    Yem0 = car.dim.width / 2.0f;
 
-    // NEW
-    Xc1 = car.dim.back_overhang - parking.dim.length / 2.0f;
-    Yc1 = car.dim.wheelbase / 2.0f + Rwmin;
-    theta_E1 = asinf((parking.dim.length / 2.0f - Xc1) / Remin) -
-               asinf((car.dim.wheelbase - car.dim.back_overhang) / Remin);
+    Xi = car.position().x;
+    Yi = car.position().y;
+    Xf = parking.position().x - Xem0;
+    Yf = parking.position().y - Yem0;
+    std::cout << "Parking: " << parking.position().x << " " << parking.position().y << std::endl;
+
+    // GOOD
+    Xc1 = Xem0;
+    Yc1 = Yem0 + Rwmin;
+    theta_t1 = asinf((parking.dim.length / 2.0f - Xc1) / Remin);
+    theta_s = asinf((car.dim.length - car.dim.back_overhang) / Remin);
+    theta_E1 = theta_t1 - theta_s;
     theta_sum1 = theta_E1;
-
-    printf("Xc1=%f, Yc1=%f, theta_E1=%f, theta_sum1=%f\n",
-           Xc1, Yc1, RAD2DEG(theta_E1), RAD2DEG(theta_sum1));
-
-
     Xem1 = Xc1 + Rwmin * cosf(theta_sum1 + 3.0f * 3.1415f / 2.0f);
     Yem1 = Yc1 + Rwmin * sinf(theta_sum1 + 3.0f * 3.1415f / 2.0f);
+
+    // GOOD
     Xc2 = 2.0f * Xem1 - Xc1;
     Yc2 = 2.0f * Yem1 - Yc1;
-
     Rrg = sqrtf(car.dim.back_overhang * car.dim.back_overhang +
                 (Rimin + car.dim.width) * (Rimin + car.dim.width));
     theta_p = acosf((Rimin + car.dim.width) / Rrg);
     theta_g = acosf((Xc2 + parking.dim.length / 2.0f) / Rrg);
-    theta_E2 = 3.1415f / 2.0f - theta_sum1 - theta_p - theta_p - theta_g;
-
-    printf("Xc2=%f, Yc2=%f, theta_E2=%f, theta_sum2=%f\n",
-           Xc2, Yc2, RAD2DEG(theta_E2), RAD2DEG(theta_sum2));
-
+    theta_E2 = 3.1415f / 2.0f - theta_sum1 - theta_p - theta_g;
     theta_sum2 = theta_sum1 + theta_E2;
     Xem2 = Xc2 + Rwmin * cosf(theta_sum2 + 3.1415f / 2.0f);
     Yem2 = Yc2 + Rwmin * sinf(theta_sum2 + 3.1415f / 2.0f);
-    Xc3 = 2.0f * Xem2 - Xc2;
-    Yc3 = 2.0f * Yem2 - Yc2;
 
     // like done in inPath1Trial
-    Xi = car.position().x;
-    Yi = car.position().y;
-
-    Yc4 = Yi - Rwmin;
+    Xc3 = 2.0f * Xem2 - Xc2;
+    Yc3 = 2.0f * Yem2 - Yc2;
+    Yc4 = (Yi - Yf) - Rwmin;
     Yt = (Yc3 + Yc4) / 2.0f;
     float d = Rwmin * Rwmin - (Yt - Yc3) * (Yt - Yc3);
     if (d < 0.0f)
@@ -149,9 +191,30 @@ bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
     Xt = Xc3 + sqrtf(d);
     Xs = Xc4 = 2.0f * Xt - Xc3;
     Ys = Yi;
+    printf("Xc4=%f, Yc4=%f,\n", Xc4, Yc4);
 
     theta_Ef = atan2f(Xt - Xc3, Yc3 - Yt);
-    min_central_angle = theta_Ef - theta_sum2;
+    theta_E3 = theta_Ef - theta_sum2;
+    printf("theta_Ef=%f, theta_E3=%f\n", RAD2DEG(theta_Ef), RAD2DEG(theta_E3));
+
+    Xem0 += Xf;
+    Yem0 += Yf;
+    Xem1 += Xf;
+    Yem1 += Yf;
+    Xem2 += Xf;
+    Yem2 += Yf;
+    Xs += Xf;
+    // Ys += Yf;
+    Xt += Xf;
+    Yt += Yf;
+    Xc1 += Xf;
+    Yc1 += Yf;
+    Xc2 += Xf;
+    Yc2 += Yf;
+    Xc3 += Xf;
+    Yc3 += Yf;
+    Xc4 += Xf;
+    Yc4 += Yf;
 
     std::cout << "=============================" << std::endl;
     std::cout << "Initial position: " << Xi << " " << Yi << std::endl;
@@ -161,9 +224,73 @@ bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
     std::cout << "Center 3th turn: " << Xc2 << " " << Yc2 << std::endl;
     std::cout << "Center 4th turn: " << Xc1 << " " << Yc1 << std::endl;
     std::cout << "Touching point: " << Xt << " " << Yt << std::endl;
-    std::cout << "Angle: " << RAD2DEG(min_central_angle) << std::endl;
+    std::cout << "Angle: " << RAD2DEG(theta_E3) << std::endl;
     std::cout << "Final position: " << Xf << " " << Yf << std::endl;
     return true;
+}
+
+//------------------------------------------------------------------------------
+// Generete cruise control references for entering to parking spot in two trials
+void ParallelTrajectory::inRef2Trials(Car const& car, float const VMAX, float const ADES)
+{
+    // Duration to turn front wheels to the maximal angle [s]
+    float const DURATION_TO_TURN_WHEELS = 0.0f;
+
+    // Clear internal states
+    m_speeds.clear();
+    m_accelerations.clear();
+    m_steerings.clear();
+    m_time = 0.0f;
+
+    // Be sure to use basolute values
+    assert(VMAX > 0.0f);
+    assert(ADES > 0.0f);
+
+    // Init reference to idle the car.
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
+
+    // Init car position -> position when starting the 1st turn
+    float t = std::abs(Xi - Xs) / VMAX;
+    m_speeds.add(-VMAX, t);
+    m_steerings.add(0.0f, t);
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(-car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+    // 1st turn
+    t = ARC_LENGTH(theta_Ef, Rwmin) / VMAX;
+    m_speeds.add(-VMAX, t);
+    m_steerings.add(-car.dim.max_steering_angle, t);
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+    // 2nd turn
+    t = ARC_LENGTH(theta_E3, Rwmin) / VMAX;
+    m_speeds.add(-VMAX, t);
+    m_steerings.add(car.dim.max_steering_angle, t);
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+    // 3th turn
+    t = ARC_LENGTH(theta_E2, Rwmin) / VMAX;
+    m_speeds.add(VMAX, t);
+    m_steerings.add(-car.dim.max_steering_angle, t);
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+    // 4th turn
+    t = ARC_LENGTH(theta_E1, Rwmin) / VMAX;
+    m_speeds.add(-VMAX, t);
+    m_steerings.add(car.dim.max_steering_angle, t);
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+
+    // Centering in the parking spot
+    t = std::abs((5.0f/*FIXME PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f) / VMAX;
+    m_speeds.add(VMAX, t);
+    m_steerings.add(0.0f, t);
+    m_speeds.add(0.0f, 0.0f);
+    m_steerings.add(0.0f, 0.0f);
 }
 
 //------------------------------------------------------------------------------
@@ -179,6 +306,7 @@ bool ParallelTrajectory::inPath1Trial(Car const& car, Parking const& parking)
     // Final destination: the parking slot
     Xf = parking.position().x;
     Yf = parking.position().y;
+    std::cout << "Park " << Xf << " " << Yf << std::endl;
 
     // C1: center of the ending turn (end position of the 2nd turning maneuver)
     Xc1 = Xf + car.dim.back_overhang;
@@ -239,64 +367,7 @@ bool ParallelTrajectory::outPath1Trial(Car const& /*car*/, Parking const& /*park
 }
 #endif
 
-//------------------------------------------------------------------------------
-// Generete cruise control references for entering to parking spot in two trials
-void ParallelTrajectory::inRef2Trials(Car const& car, float const VMAX, float const ADES)
-{
-    // Duration to turn front wheels to the maximal angle [s]
-    float const DURATION_TO_TURN_WHEELS = 0.0f;
 
-    // Clear internal states
-    m_speeds.clear();
-    m_accelerations.clear();
-    m_steerings.clear();
-    m_time = 0.0f;
-
-    // Be sure to use basolute values
-    assert(VMAX > 0.0f);
-    assert(ADES > 0.0f);
-
-    // Init reference to idle the car.
-    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-    m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
-
-    // Init car position -> position when starting the 1st turn
-    float t = std::abs(Xi - Xs) / VMAX;
-    m_speeds.add(-VMAX, t);
-    m_steerings.add(0.0f, t);
-
-    // Pause the car to turn the wheel
-    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-    m_steerings.add(-car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
-
-    // 1st turn: start position -> P
-    t = ARC_LENGTH(theta_Ef, Rwmin) / VMAX;
-    m_speeds.add(-VMAX, t);
-    m_steerings.add(-car.dim.max_steering_angle, t);
-
-#if 0
-    // Pause the car to turn the wheel
-    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
-
-    // 2nd turn: P -> final
-    m_speeds.add(-VMAX, t);
-    m_steerings.add(car.dim.max_steering_angle, t);
-
-    // Pause the car to turn the wheel
-    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-    m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
-
-    // Centering in the parking spot
-    t = std::abs((5.0f/*FIXME PARKING_BATAILLE_LENGTH*/ - car.dim.length) / 2.0f) / VMAX;
-    m_speeds.add(VMAX, t);
-    m_steerings.add(0.0f, t);
-#endif
-
-    // Init reference to idle the car
-    m_speeds.add(0.0f, 0.0f);
-    m_steerings.add(0.0f, 0.0f);
-}
 
 //------------------------------------------------------------------------------
 // Generete cruise control references for entering to parking spot in one trial
@@ -368,29 +439,3 @@ void ParallelTrajectory::outRef2Trials(Car const& car, float const VMAX, float c
 {
 }
 #endif
-
-//------------------------------------------------------------------------------
-// TODO a bouger dans Renderer
-void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    if (m_trials == 1u)
-    {
-        target.draw(Circle(Xc1, Yc1, Rwmin, sf::Color::Red), states);
-        target.draw(Arrow(Xc1, Yc1, Xc1, Yf, sf::Color::Red), states);
-        target.draw(Circle(Xc2, Yc2, Rwmin, sf::Color::Blue), states);
-        target.draw(Arrow(Xc2, Yc2, Xs, Ys, sf::Color::Blue), states);
-        target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
-        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Yellow), states);
-        target.draw(Circle(Xc1, Yf, ZOOM, sf::Color::Yellow), states);
-    }
-    else if (m_trials == 2u)
-    {
-        target.draw(Circle(Xc3, Yc3, Rwmin, sf::Color::Red), states);
-        target.draw(Arrow(Xc3, Yc3, Xc3, Yf, sf::Color::Red), states);
-        target.draw(Circle(Xc4, Yc4, Rwmin, sf::Color::Blue), states);
-        target.draw(Arrow(Xc4, Yc4, Xs, Ys, sf::Color::Blue), states);
-        target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
-        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Yellow), states);
-        target.draw(Circle(Xc1, Yf, ZOOM, sf::Color::Yellow), states);
-    }
-}

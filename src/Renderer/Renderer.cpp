@@ -105,9 +105,7 @@ void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::Render
     shape.setOutlineThickness(ZOOM);
     shape.setOutlineColor(sf::Color::Black);
     target.draw(shape, states);
-
-    target.draw(Circle(parking.position().x, parking.position().y, 0.02f,
-                       sf::Color::Black), states);
+    target.draw(Circle(parking.position().x, parking.position().y, ZOOM, sf::Color::Black), states);
 }
 
 //------------------------------------------------------------------------------

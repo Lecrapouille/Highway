@@ -30,6 +30,7 @@
 
 #  include <SFML/Graphics/RectangleShape.hpp>
 #  include <SFML/System/Vector2.hpp>
+#  include <cassert>
 
 class Car;
 
@@ -81,6 +82,12 @@ public:
    //! \return true if the sensor has detected a box.
    //--------------------------------------------------------------------------
    bool detects(sf::RectangleShape const& shape, sf::Vector2f& p) const;
+
+   inline SensorShape const& shape() const
+   {
+      assert(m_shape != nullptr);
+      return *m_shape;
+   }
 
 private:
 

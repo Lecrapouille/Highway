@@ -326,6 +326,17 @@ public:
         return m_trajectory->update(m_control, dt);
     }
 
+    inline std::vector<Radar> const& radars() const
+    {
+        return m_radars;
+    }
+
+    inline Radar const& radar(CarShape::WheelName const nth) const
+    {
+        assert(nth < m_radars.size());
+        return m_radars[nth];
+    }
+
 private:
 
     //! \brief The list of parked needed for simulate radar

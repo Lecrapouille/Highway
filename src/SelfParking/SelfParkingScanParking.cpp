@@ -104,8 +104,9 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
 
             // TODO Missing detection of the type of parking type
             ParkingDimension dim(m_distance, 2.0f, 0u);
-            parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
-            m_parking = Parking(dim, sf::Vector2f(m_position.x + 0.2f, m_position.y - 2.0f));
+            float const offset_x = car.dim.back_overhang;
+            parking = Parking(dim, sf::Vector2f(m_position.x + offset_x, m_position.y - 2.0f));
+            m_parking = Parking(dim, sf::Vector2f(m_position.x + offset_x, m_position.y - 2.0f));
             std::cout << "Parking detected: " << parking << std::endl;
             m_state = States::EMPTY_SPOT_FOUND;
             return Status::SUCCEEDED;
