@@ -26,8 +26,6 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "SelfParking/SelfParkingVehicle.hpp"
-#include "World/Parking.hpp"
-#include "World/Blueprints.hpp"
 
 //-------------------------------------------------------------------------
 SelfParkingCar::Scan::Status
@@ -53,7 +51,7 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
     case States::IDLE:
         // The car was stopped and now it has to drive along parking spots and
         // scan parked cars to find the first empty parking spot.
-        car.setRefSpeed(3.0f);
+        car.setRefSpeed(15.0f);
         m_distance = 0.0f;
         m_state = States::DETECT_FIRST_CAR;
         return Status::IN_PROGRESS;
@@ -63,7 +61,8 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
         // space between car either real parking spot).
         if (!detected) // FIXME bitfield
         {
-            std::cout << "DETECT_FIRST_CAR: car.detect false" << std::endl;
+            std::cout << "******* Memorize position: (" << car.position().x << ", "
+                      << car.position().y << ")" << std::endl;
             m_position = car.position();
             m_state = States::DETECT_EMPTY_SPOT;
         }
@@ -84,11 +83,9 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
             std::cout << "DETECT_EMPTY_SPOT: car.detect true" << std::endl;
             m_state = States::DETECT_SECOND_CAR;
         }
-        else
-        {
-            std::cout << "Empty spot distance: " << m_distance << std::endl;
-            m_distance += car.speed() * dt;
-        }
+
+        std::cout << "Empty spot distance: " << m_distance << std::endl;
+        m_distance += car.speed() * dt;
         return Status::IN_PROGRESS;
 
     case States::DETECT_SECOND_CAR:
@@ -103,10 +100,10 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
             car.setRefSpeed(0.0f);
 
             // TODO Missing detection of the type of parking type
+            std::cout << "Parking distance=" << m_distance << " at " << m_position.x << std::endl;
             ParkingDimension dim(m_distance, 2.0f, 0u);
-            float const offset_x = car.dim.back_overhang;
-            parking = Parking(dim, sf::Vector2f(m_position.x + offset_x, m_position.y - 2.0f));
-            m_parking = Parking(dim, sf::Vector2f(m_position.x + offset_x, m_position.y - 2.0f));
+            parking = Parking(dim, sf::Vector2f(m_position.x, m_position.y - 5.0f)); // FIXME calculer la profondeur
+            m_parking = Parking(dim, sf::Vector2f(m_position.x, m_position.y - 5.0f));
             std::cout << "Parking detected: " << parking << std::endl;
             m_state = States::EMPTY_SPOT_FOUND;
             return Status::SUCCEEDED;

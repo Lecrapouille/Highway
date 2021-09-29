@@ -36,7 +36,7 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Search files
 BUILD = build
-VPATH = $(BUILD) src src/World src/Vehicle src/Utils src/Sensors src/SelfParking src/SelfParking/Trajectory src/Renderer
+VPATH = $(BUILD) src src/World src/Vehicle src/Utils src/Sensors src/SelfParking src/SelfParking/Trajectories src/Renderer
 INCLUDES = -Isrc -Iinclude
 
 # C++14 only because of std::make_unique not present in C++11)
@@ -65,8 +65,8 @@ OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
 OBJS_UTILS = backward.o Collide.o
 OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
 OBJS_SENSORS = Radar.o
-OBJS_TRAJECTORY = CarTrajectory.o CarPerpendicularTrajectory.o CarParallelTrajectory.o CarDiagonalTrajectory.o
-OBJS_SELFPARKING = SelfParkingStateMachine.o SelfParkingScanParking.o SelfParkingVehicle.o
+OBJS_TRAJECTORY = Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
+OBJS_SELFPARKING = SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
 
 OBJS = $(OBJS_UTILS) $(OBJS_VEHICLE) $(OBJS_SENSORS) $(OBJS_TRAJECTORY) $(OBJS_SELFPARKING) $(OBJS_SIMULATION) main.o
 

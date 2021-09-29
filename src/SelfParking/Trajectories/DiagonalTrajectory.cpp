@@ -25,8 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "SelfParking/Trajectory/CarTrajectory.hpp"
-#include "SelfParking/Trajectory/TurningRadius.hpp"
+#include "SelfParking/Trajectories/TurningRadius.hpp"
+#include "SelfParking/Trajectories/DiagonalTrajectory.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Vehicle/Vehicle.hpp"
 #include "Utils/Utils.hpp"

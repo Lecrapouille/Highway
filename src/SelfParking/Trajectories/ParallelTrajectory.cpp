@@ -25,8 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "SelfParking/Trajectory/TurningRadius.hpp"
-#include "SelfParking/Trajectory/CarTrajectory.hpp"
+#include "SelfParking/Trajectories/TurningRadius.hpp"
+#include "SelfParking/Trajectories/ParallelTrajectory.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Vehicle/Vehicle.hpp"
 
@@ -116,7 +116,8 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
     }
     else if (m_trials == 2u)
     {
-        return ;
+        //return ;
+
         target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
         target.draw(Arc(Xc1, Yc1, Remin, 270.0f, RAD2DEG(theta_t1), sf::Color::Blue), states);
         target.draw(Arc(Xc2, Yc2, Rrg, 90.0f, RAD2DEG(theta_sum1), sf::Color::Red), states);
@@ -131,9 +132,9 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
         target.draw(Circle(Xem1, Yem1, ZOOM, sf::Color::Green), states);
         target.draw(Circle(Xem2, Yem2, ZOOM, sf::Color::Red), states);
 
-        target.draw(Circle(Xc3, Yc3, ZOOM, sf::Color::Yellow), states);
-        target.draw(Circle(Xc4, Yc4, ZOOM, sf::Color::Yellow), states);
-        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Yellow), states);
+        target.draw(Circle(Xc3, Yc3, ZOOM, sf::Color::Black), states);
+        target.draw(Circle(Xc4, Yc4, ZOOM, sf::Color::Black), states);
+        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Black), states);
     }
 }
 
@@ -141,6 +142,7 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
 // Entering to parking spot in two trials
 bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
 {
+    const float MARGIN = 0.4f;
     printf("inPath2Trials\n");
     m_trials = 2u;
 
@@ -150,7 +152,7 @@ bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
 
     Xi = car.position().x;
     Yi = car.position().y;
-    Xf = parking.position().x - Xem0;
+    Xf = parking.position().x - Xem0 + car.dim.back_overhang;
     Yf = parking.position().y - Yem0;
     std::cout << "Parking: " << parking.position().x << " " << parking.position().y << std::endl;
 
@@ -158,7 +160,7 @@ bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
     Xc1 = Xem0;
     Yc1 = Yem0 + Rwmin;
     theta_t1 = asinf((parking.dim.length / 2.0f - Xc1) / Remin);
-    theta_s = asinf((car.dim.length - car.dim.back_overhang) / Remin);
+    theta_s = asinf((car.dim.length + MARGIN - car.dim.back_overhang) / Remin);
     theta_E1 = theta_t1 - theta_s;
     theta_sum1 = theta_E1;
     Xem1 = Xc1 + Rwmin * cosf(theta_sum1 + 3.0f * 3.1415f / 2.0f);
@@ -235,6 +237,7 @@ void ParallelTrajectory::inRef2Trials(Car const& car, float const VMAX, float co
 {
     // Duration to turn front wheels to the maximal angle [s]
     float const DURATION_TO_TURN_WHEELS = 0.0f;
+    float t;
 
     // Clear internal states
     m_speeds.clear();
@@ -251,9 +254,18 @@ void ParallelTrajectory::inRef2Trials(Car const& car, float const VMAX, float co
     m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
 
     // Init car position -> position when starting the 1st turn
-    float t = std::abs(Xi - Xs) / VMAX;
-    m_speeds.add(-VMAX, t);
-    m_steerings.add(0.0f, t);
+    if (Xi > Xs)
+    {
+        t = Xi - Xs / VMAX;
+        m_speeds.add(-VMAX, t);
+        m_steerings.add(0.0f, t);
+    }
+    else
+    {
+        t = Xs - Xi / VMAX;
+        m_speeds.add(VMAX, t);
+        m_steerings.add(0.0f, t);
+    }
     m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
     m_steerings.add(-car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
 
@@ -375,6 +387,7 @@ void ParallelTrajectory::inRef1Trial(Car const& car, float const VMAX, float con
 {
     // Duration to turn front wheels to the maximal angle [s]
     float const DURATION_TO_TURN_WHEELS = 0.0f;
+    float t;
 
     // Clear internal states
     m_speeds.clear();
@@ -391,9 +404,18 @@ void ParallelTrajectory::inRef1Trial(Car const& car, float const VMAX, float con
     m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
 
     // Init car position -> position when starting the 1st turn
-    float t = std::abs(Xi - Xs) / VMAX;
-    m_speeds.add(-VMAX, t);
-    m_steerings.add(0.0f, t);
+    if (Xi > Xs)
+    {
+        t = Xi - Xs / VMAX;
+        m_speeds.add(-VMAX, t);
+        m_steerings.add(0.0f, t);
+    }
+    else
+    {
+        t = Xs - Xi / VMAX;
+        m_speeds.add(VMAX, t);
+        m_steerings.add(0.0f, t);
+    }
 
     // Pause the car to turn the wheel
     m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);

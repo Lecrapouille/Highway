@@ -25,8 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef CAR_TRAJECTORY_HPP
-#  define CAR_TRAJECTORY_HPP
+#ifndef CAR_TRAJECTORIES_HPP
+#  define CAR_TRAJECTORIES_HPP
 
 #  include "World/Parking.hpp"
 #  include <SFML/Graphics.hpp> // FIXME deplacer CarTrajectory::draw
@@ -137,103 +137,6 @@ protected:
     References m_speeds;
     //! \brief Timed reference for front wheel angles.
     References m_steerings;
-};
-
-// *************************************************************************
-//! \brief Compute the trajectory allowing the car to park. For parallel
-//! parking only!
-// *************************************************************************
-class ParallelTrajectory: public CarTrajectory
-{
-public:
-
-    virtual bool init(Car& car, Parking const& parking, bool const entering) override;
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-private:
-
-    bool inPath1Trial(Car const& car, Parking const& parking);
-    bool inPath2Trials(Car const& car, Parking const& parking);
-    //bool outPath1Trial(Car const& car, Parking const& parking);
-    //bool outPath2Trials(Car const& car, Parking const& parking);
-
-    // Max valocity [m/s]
-    // Desired acceleration [m/s/s]
-    void inRef1Trial(Car const& car, float const VMAX, float const ADES);
-    void inRef2Trials(Car const& car, float const VMAX, float const ADES);
-    //void outRef1Trial(Car const& car, float const VMAX, float const ADES);
-    //void outRef2Trials(Car const& car, float const VMAX, float const ADES);
-
-private:
-
-    size_t m_trials = 0u;
-    float Rimin, Remin, Rwmin;
-    //! \brief X-Y world coordinates:
-    // s: initial car position
-    // f: final car position
-    // s: starting position for turning
-    // c1: Center of the circle 1
-    // c2: Center of the circle 2
-    // t: tangential intersection point between C1 and C2
-    float Xc1, Yc1, Xc2, Yc2, Xt, Yt, Xs, Ys, Xi, Yi, Xf, Yf;
-
-    float Xc3, Yc3, Xc4, Yc4, theta_t1, theta_s, theta_E1, theta_E2, theta_E3, theta_Ef, theta_sum1;
-    float Xem0, Yem0, Xem1, Yem1, Xem2, Yem2, theta_sum2, theta_p, theta_g, Rrg;
-
-    //! \brief Minimal central angle for making the turn.
-    float min_central_angle;
-};
-
-// *************************************************************************
-//! \brief
-// *************************************************************************
-class DiagonalTrajectory: public CarTrajectory
-{
-public:
-
-    virtual bool init(Car& car, Parking const& parking, bool const entering) override;
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-private:
-
-    bool computePathPlanning(Car const& car, Parking const& parking, bool const entering);
-    void generateReferenceTrajectory(Car const& car, bool const entering, float const vmax, float const ades);
-
-private:
-
-    // rayon pour sortir
-    float Rin1;
-    float theta1;
-    float beta1; // angle braquage
-
-    float Rin2;
-    float theta2;
-    float beta2; // angle braquage
-
-    float Xi, Yi, Xdm, Ydm, Xc, Yc, dl;
-};
-
-// *************************************************************************
-//! \brief
-// *************************************************************************
-class PerpTrajectory: public CarTrajectory
-{
-public:
-
-    virtual bool init(Car& car, Parking const& parking, bool const entering) override;
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-private:
-
-    bool computePathPlanning(Car const& car, Parking const& parking, bool const entering);
-    // Max valocity [m/s]
-    // Desired acceleration [m/s/s]
-    void generateReferenceTrajectory(Car const& car, bool const entering, float const vmax, float const ades);
-
-private:
-
-    float Rmin, Rwmin;
-    float Xi, Yi, Lz, Xe, Ye;
 };
 
 #endif

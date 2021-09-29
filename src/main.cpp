@@ -26,9 +26,7 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "main.hpp"
-#include "World/Blueprints.hpp"
 #include "Renderer/Renderer.hpp"
-#include <iostream>
 
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 1000

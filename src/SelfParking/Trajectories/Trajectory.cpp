@@ -25,7 +25,10 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "SelfParking/Trajectory/CarTrajectory.hpp"
+#include "SelfParking/Trajectories/Trajectory.hpp"
+#include "SelfParking/Trajectories/DiagonalTrajectory.hpp"
+#include "SelfParking/Trajectories/PerpendicularTrajectory.hpp"
+#include "SelfParking/Trajectories/ParallelTrajectory.hpp"
 #include "Vehicle/VehicleControl.hpp"
 #include <iostream>
 

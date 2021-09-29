@@ -68,7 +68,7 @@ void Simulation::createWorld(size_t angle, bool const entering)
     //addGhost("Renault.Twingo", sf::Vector2f(108.363335f, 99.865936f), DEG2RAD(24.659098f)); // C2, ThetaE2+ThetaSum
 
     // Self-parking car (dynamic). Always be the last in the container
-    Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 2.0f), 0.0f);
+    Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f);
 
     // With trailer
     //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));

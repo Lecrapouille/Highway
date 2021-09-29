@@ -30,7 +30,6 @@
 
 #  include "Renderer/GUIStates.hpp"
 #  include "Simulation.hpp"
-#  include <atomic>
 
 // ****************************************************************************
 //! \brief

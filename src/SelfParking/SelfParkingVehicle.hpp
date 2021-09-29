@@ -29,8 +29,8 @@
 #  define SELF_PARKING_VEHICLE_HPP
 
 #  include "Vehicle/Vehicle.hpp"
-#  include "SelfParking/Trajectory/CarTrajectory.hpp"
-#  include "SelfParking/Trajectory/TurningRadius.hpp"
+#  include "SelfParking/Trajectories/TurningRadius.hpp"
+#  include "SelfParking/Trajectories/Trajectory.hpp"
 
 // ****************************************************************************
 //! \brief Vehicle with Self-Parking system.
@@ -206,7 +206,7 @@ public:
         : Car(dimension), m_cars(cars)
     {
         auto& sensors = m_shape.sensors();
-        float const range = 1.0f;
+        float const range = 10.0f;
 
         m_radars.resize(sensors.size());
         size_t i = sensors.size();
