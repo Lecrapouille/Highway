@@ -60,6 +60,17 @@ private:
 
     size_t m_trials = 0u;
     float Rimin, Remin, Rwmin;
+
+    //! \brief X-Y world coordinates of the middle rear axle of the ego car.
+    std::vector<sf::Vector2f> Em;
+    //! \brief X-Y world coordinates of the immedite center of rotations.
+    std::vector<sf::Vector2f> Em;
+    //! \brief
+    std::vector<float> theta_E;
+    std::vector<float> theta_sum;
+
+// TODO: to be removed
+
     //! \brief X-Y world coordinates:
     // s: initial car position
     // f: final car position
@@ -68,10 +79,8 @@ private:
     // c2: Center of the circle 2
     // t: tangential intersection point between C1 and C2
     float Xc1, Yc1, Xc2, Yc2, Xt, Yt, Xs, Ys, Xi, Yi, Xf, Yf;
-
     float Xc3, Yc3, Xc4, Yc4, theta_t1, theta_s, theta_E1, theta_E2, theta_E3, theta_Ef, theta_sum1;
     float Xem0, Yem0, Xem1, Yem1, Xem2, Yem2, theta_sum2, theta_p, theta_g, Rrg;
-
     //! \brief Minimal central angle for making the turn.
     float min_central_angle;
 };

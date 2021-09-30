@@ -139,6 +139,105 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
 }
 
 //------------------------------------------------------------------------------
+size_t ParallelTrajectory::computePath(Car const& car, Parking const& parking)
+{
+    const float MAX_ITERATIONS = 8u;
+    const float MARGIN = 0.4f;
+    const float PI_2 = 3.1415f / 2.0f;
+    const float PI3_2 = 3.0f * 3.1415f / 2.0f;
+
+    size_t i = 0u; // iterations
+    float Xem0 = car.dim.back_overhang - parking.dim.length / 2.0f;
+    float Yem0 = car.dim.width / 2.0f;
+
+   theta_E.reserve(MAX_ITERATIONS);
+   theta_sum.reserve(MAX_ITERATIONS);
+   C.reserve(MAX_ITERATIONS);
+   Em.reserve(MAX_ITERATIONS);
+
+    while (true)
+    {
+        if (i & 1) // Tourne gauche, marche avant
+        {
+            if (i == 0u) // 1ere iteration
+            {
+                C[i].x = Xem0;
+                C[i].y = Yem0;
+                float theta_t = asinf((parking.dim.length / 2.0f - C[i].x) / Remin);
+                float theta_s = asinf((car.dim.length + MARGIN - car.dim.back_overhang) / Remin);
+                theta_E[i] = theta_t - theta_s;
+                theta_sum[i] = theta_E[i];
+            }
+            else
+            {
+                C[i].x = 2.0f * Em[i - 1].x - C[i - 1].x;
+                C[i].y = 2.0f * Em[i - 1].y - C[i - 1].y;
+                float theta_t = asinf((parking.dim.length / 2.0f - C[i].x) / Remin);
+                float theta_s = asinf((car.dim.length + MARGIN - car.dim.back_overhang) / Remin);
+                theta_E[i] = theta_t - theta_sum[i - 1] - theta_s;
+                theta_sum[i] = theta_sum[i - 1] + theta_E[i];
+            }
+            Em[i].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI3_2);
+            Em[i].y = C[i].y + Rwmin * sinf(theta_sum[i] + PI3_2);
+
+            float w = Remin * Remin - (C[i].x - parking.dim.length / 2.0f) * (C[i].x - parking.dim.length / 2.0f);
+            if (d < 0.0f)
+            {
+                std::cerr << "Car is too far away on Y-axis (greater than its turning radius)"
+                          << std::endl;
+                return 0u;
+            }
+            w = C[i].y + sqrtf(w);
+            if (w > parking.dim.width)
+            {
+                i += 1u;
+                break;
+            }
+        }
+        else // Tourne droite, marche arriere
+        {
+            C[i].x = 2.0f * Em[i - 1].x - C[i - 1].x;
+            C[i].y = 2.0f * Em[i - 1].y - C[i - 1].y;
+            float Rrg = sqrtf(car.dim.back_overhang * car.dim.back_overhang +
+                          (Rimin + car.dim.width) * (Rimin + car.dim.width));
+            float theta_p = acosf((Rimin + car.dim.width) / Rrg);
+            float theta_g = acosf((C[i].x + parking.dim.length / 2.0f) / Rrg);
+            theta_E[i] = PI_2 - theta_sum[i - 1] - theta_p - theta_g;
+            theta_sum[i] = theta_sum[i - 1] + theta_E[i];
+            Em[i].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI3_2);
+            Em[i].y = C[i].y + Rwmin * sinf(theta_sum[i] + PI3_2);
+        }
+
+        i += 1u;
+        if (i == MAX_ITERATIONS)
+        {
+            std::cerr << "Too many iterations" << std::endl;
+            return 0u;
+        }
+    }
+
+    // Two last turns to leave the parking spot
+    C[i].x = 2.0f * Em[i - 1].x - C[i - 1].x;
+    C[i].y = 2.0f * Em[i - 1].y - C[i - 1].y;
+    C[i + 1].y = (Yi - Yf) - Rwmin;
+    Yt = (C[i].y + C[i + 1].y) / 2.0f;
+    float d = Rwmin * Rwmin - (Yt - C[i].y) * (Yt - C[i].y);
+    if (d < 0.0f)
+    {
+        std::cerr << "Car is too far away on Y-axis (greater than its turning radius)"
+                  << std::endl;
+        return 0u;
+    }
+    Xt = C[i].x + sqrtf(d);
+    Xs = C[i + 1].x = 2.0f * Xt - C[i].x;
+    Ys = Yi;
+    theta_E[i + 1] = atan2f(Xt - C[i].x, C[i].y - Yt); // Final angle
+    theta_E[i] = theta_E[i + 1] - theta_sum[i];
+
+    return m_trials = i;
+}
+
+//------------------------------------------------------------------------------
 // Entering to parking spot in two trials
 bool ParallelTrajectory::inPath2Trials(Car const& car, Parking const& parking)
 {
