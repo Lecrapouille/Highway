@@ -44,45 +44,41 @@ public:
 
 private:
 
-    bool inPath1Trial(Car const& car, Parking const& parking);
-    bool inPath2Trials(Car const& car, Parking const& parking);
-    //bool outPath1Trial(Car const& car, Parking const& parking);
-    //bool outPath2Trials(Car const& car, Parking const& parking);
-
-    // Max valocity [m/s]
-    // Desired acceleration [m/s/s]
-    void inRef1Trial(Car const& car, float const VMAX, float const ADES);
-    void inRef2Trials(Car const& car, float const VMAX, float const ADES);
-    //void outRef1Trial(Car const& car, float const VMAX, float const ADES);
-    //void outRef2Trials(Car const& car, float const VMAX, float const ADES);
-
+    size_t computePath(Car const& car, Parking const& parking);
+    void generateReferences(Car const& car, Parking const& parking,
+                            float const VMAX, float const ADES);
 private:
 
-    size_t m_trials = 0u;
-    float Rimin, Remin, Rwmin;
-
+    //! \brief Minimal turning radius for the internal point of the ego car.
+    float Rimin;
+    //! \brief Minimal turning radius for the external point of the ego car.
+    float Remin;
+    //! \brief Minimal turning radius for the external point of the ego car.
+    float Rwmin;
+    //! \brief Minimal turning radius for the external point of the ego car.
+    float Lmin;
+    //! \brief Number needed of maneuvers for parking the car (change of gear)
+    size_t m_maneuvers = 0u;
     //! \brief X-Y world coordinates of the middle rear axle of the ego car.
     std::vector<sf::Vector2f> Em;
     //! \brief X-Y world coordinates of the immedite center of rotations.
-    std::vector<sf::Vector2f> Em;
-    //! \brief
-    std::vector<float> theta_E;
-    std::vector<float> theta_sum;
-
-// TODO: to be removed
-
-    //! \brief X-Y world coordinates:
-    // s: initial car position
-    // f: final car position
-    // s: starting position for turning
-    // c1: Center of the circle 1
-    // c2: Center of the circle 2
-    // t: tangential intersection point between C1 and C2
-    float Xc1, Yc1, Xc2, Yc2, Xt, Yt, Xs, Ys, Xi, Yi, Xf, Yf;
-    float Xc3, Yc3, Xc4, Yc4, theta_t1, theta_s, theta_E1, theta_E2, theta_E3, theta_Ef, theta_sum1;
-    float Xem0, Yem0, Xem1, Yem1, Xem2, Yem2, theta_sum2, theta_p, theta_g, Rrg;
-    //! \brief Minimal central angle for making the turn.
-    float min_central_angle;
+    std::vector<sf::Vector2f> C;
+    //! \brief X-Y world coordinates of the initial position of the middle of
+    //! rear axle of the ego car.
+    float Xi, Yi;
+    //! \brief X-Y world coordinates of the starting position of the middle of
+    //! rear axle of the ego car for doing the first turning.
+    float Xs, Ys;
+    //! \brief X-Y world coordinates of the starting position of the middle of
+    //! rear axle of the ego car at the end of the maneuver.
+    float Xf, Yf;
+    //! \brief X-Y world coordinates of the tangential point of the two final
+    //! turns.
+    float Xt, Yt;
+    //! \brief Memorize angles
+    std::vector<float> theta_E, theta_t, theta_s, theta_p, theta_g, theta_sum;
+    //! \brief Memorize Turning radius
+    std::vector<float> Rrg;
 };
 
 #endif

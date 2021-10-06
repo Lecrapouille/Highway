@@ -19,3 +19,4 @@
 - Parallel 2 maneuvres: j'ai ajouter un offset pour ne pas cogner la voitur de devant.
 - Parallel 2 maneuvres: virer les coordinees relatives au parking
 - Parallel N maneuvres: todo
+- [FAIT] ego voiture collision ne devient pas rouge

@@ -32,19 +32,21 @@
 #  include "Simulation.hpp"
 
 // ****************************************************************************
-//! \brief
+//! \brief Class deriving form SFML GUI States and managing the GUI for the
+//! simulation.
 // ****************************************************************************
 class GUISimulation: public IGUIStates
 {
 public:
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default Constructor.
+    //! \param[inout] application the main class managing the stack of GUI
     //-------------------------------------------------------------------------
     GUISimulation(Application& application);
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Destructor. Close the renderer.
     //-------------------------------------------------------------------------
     ~GUISimulation()
     {
@@ -52,7 +54,8 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position [meter].
+    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position
+    //! [meter].
     //! \param[in] p: position in the windows [pixel].
     //! \return position in the world [meter].
     //-------------------------------------------------------------------------

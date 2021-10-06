@@ -67,13 +67,11 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
             // Empty parking spot detected
             if (scanning == Scan::Status::SUCCEEDED)
             {
-                std::cout << "Scan::Status::SUCCEEDED" << std::endl;
                 m_state = States::COMPUTE_ENTERING_TRAJECTORY;
             }
             // Failed to find an empty parking spot
             else if (scanning == Scan::Status::FAILED)
             {
-                std::cout << "Scan::Status::FAILED" << std::endl;
                 m_state = States::TRAJECTORY_DONE;
             }
             else // scanning == Scan::Status::IN_PROGRESS
@@ -114,12 +112,12 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
         // The car is driving along its computed path
         if (!car.hasTrajectory())
         {
-            std::cout << "Pas de trajectoire" << std::endl;
+            std::cout << "No trajectory" << std::endl;
             m_state = States::TRAJECTORY_DONE;
         }
         else if (car.updateTrajectory(dt) == false)
         {
-            std::cout << "trajectoire done" << std::endl;
+            std::cout << "Trajectory done" << std::endl;
             m_state = States::TRAJECTORY_DONE;
         }
         else
@@ -139,7 +137,7 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
     // Debug purpose
     if (state != m_state)
     {
-        std::cout << "SelfParkingCar::StateMachine "
+        std::cout << "SelfParkingCar::StateMachine new state: "
                   << SelfParkingCar::StateMachine::to_string(m_state)
                   << std::endl;
     }

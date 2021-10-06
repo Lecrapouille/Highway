@@ -33,7 +33,7 @@
 #define COLISION_COLOR 255, 0, 0
 
 //------------------------------------------------------------------------------
-void Simulation::clear()
+void Simulation::reset()
 {
     m_cars.clear();
     m_parkings.clear();
@@ -42,9 +42,9 @@ void Simulation::clear()
 //------------------------------------------------------------------------------
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
-void Simulation::createWorld(size_t angle, bool const entering)
+void Simulation::createWorld(size_t const angle, bool const /*parked*/)
 {
-    clear();
+    reset();
 
     // Create a road
     // Road& road1 = addRoad(RoadDimensions::get("road.2ways"), curvature, length);
@@ -125,9 +125,10 @@ Car& Simulation::addCar(const char* model, Parking& parking)
 
 //------------------------------------------------------------------------------
 Car& Simulation::addGhost(CarDimension const& dim, sf::Vector2f const& position,
-                          float const heading, float const speed, float const steering)
+                          float const heading, float const steering)
 {
     static size_t count = 0u;
+    static float speed = 0.0f;
 
     m_ghosts.push_back(std::make_unique<Car>(dim));
     m_ghosts.back()->init(position, heading, speed, steering);
@@ -139,15 +140,15 @@ Car& Simulation::addGhost(CarDimension const& dim, sf::Vector2f const& position,
 
 //------------------------------------------------------------------------------
 Car& Simulation::addGhost(const char* model, sf::Vector2f const& position, float const heading,
-                        float const speed, float const steering)
+                          float const steering)
 {
-    return addGhost(CarDimensions::get(model), position, heading, speed, steering);
+    return addGhost(CarDimensions::get(model), position, heading, steering);
 }
 
 //------------------------------------------------------------------------------
 Car& Simulation::addGhost(const char* model, Parking& parking)
 {
-    Car& car = addGhost(CarDimensions::get(model), sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f, 0.0f);
+    Car& car = addGhost(CarDimensions::get(model), sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f);
     parking.bind(car);
     return car;
 }
@@ -182,6 +183,7 @@ void Simulation::update(const float dt)
         m_ego->update(dt);
 
         // Collide with other car ?
+        m_ego->color = sf::Color(EGO_CAR_COLOR);
         for (auto& it: m_cars)
         {
             if (m_ego->collides(*it))
@@ -192,7 +194,6 @@ void Simulation::update(const float dt)
             else
             {
                 it->color = sf::Color(DEFAULT_CAR_COLOR);
-                m_ego->color = sf::Color(EGO_CAR_COLOR);
             }
         }
     }

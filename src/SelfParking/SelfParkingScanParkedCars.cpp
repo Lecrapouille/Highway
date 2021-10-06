@@ -61,8 +61,6 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
         // space between car either real parking spot).
         if (!detected) // FIXME bitfield
         {
-            std::cout << "******* Memorize position: (" << car.position().x << ", "
-                      << car.position().y << ")" << std::endl;
             m_position = car.position();
             m_state = States::DETECT_EMPTY_SPOT;
         }
@@ -73,18 +71,15 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
         // it integrates its speed to know the length of the spot.
         if (detected)
         {
-            std::cout << "DETECT_EMPTY_SPOT: car.detect true" << std::endl;
             m_state = States::DETECT_SECOND_CAR;
         }
         else if (m_distance >= 6.4f) // meters FIXME should be Lmin
         {
             // two consecutive empty spots: avoid to drive to the next parked
             // car do the maneuver directly
-            std::cout << "DETECT_EMPTY_SPOT: car.detect true" << std::endl;
             m_state = States::DETECT_SECOND_CAR;
         }
 
-        std::cout << "Empty spot distance: " << m_distance << std::endl;
         m_distance += car.speed() * dt;
         return Status::IN_PROGRESS;
 
@@ -92,19 +87,19 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
         if (detected && (m_distance <= car.dim.length))
         {
             // Too small length: continue scanning parked cars
-            std::cout << "No way to park here!!!" << std::endl;
+            std::cout << "Scan: No way to park at X: " << m_position.x
+                      << " because distance is too short (" << m_distance << " m)" << std::endl;
             m_state = States::DETECT_FIRST_CAR;
         }
         else if (detected || m_distance >= 6.4f) // FIXME should be Lmin
         {
             car.setRefSpeed(0.0f);
 
-            // TODO Missing detection of the type of parking type
-            std::cout << "Parking distance=" << m_distance << " at " << m_position.x << std::endl;
+            // TODO Missing detection of the type of parking type. FIXME 2.0f: parking width
             ParkingDimension dim(m_distance, 2.0f, 0u);
             parking = Parking(dim, sf::Vector2f(m_position.x, m_position.y - 5.0f)); // FIXME calculer la profondeur
             m_parking = Parking(dim, sf::Vector2f(m_position.x, m_position.y - 5.0f));
-            std::cout << "Parking detected: " << parking << std::endl;
+            std::cout << "Scan: Parking spot detected: " << parking << std::endl;
             m_state = States::EMPTY_SPOT_FOUND;
             return Status::SUCCEEDED;
         }
@@ -121,7 +116,7 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
     // Debug purpose
     if (state != m_state)
     {
-        std::cout << "  SelfParkingCar::Scan "
+        std::cout << "  SelfParkingCar::Scan new state: "
                   << SelfParkingCar::Scan::to_string(m_state) << std::endl;
     }
 

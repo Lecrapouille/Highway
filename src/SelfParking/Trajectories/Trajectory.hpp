@@ -102,7 +102,7 @@ public:
 
     bool end(float const time)
     {
-        return time >= m_references.back().time;
+        return m_references.empty() || (time >= m_references.back().time);
     }
 
 protected:
