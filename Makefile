@@ -27,42 +27,53 @@
 
 TARGET_BIN = Drive
 
-# make install
+# Needed for the command: make install
 DESTDIR ?=
 PREFIX ?= /usr
 BINDIR := $(DESTDIR)$(PREFIX)/bin
 LIBDIR := $(DESTDIR)$(PREFIX)/lib
 DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
-# Search files
+# Compilation searching files
 BUILD = build
 VPATH = $(BUILD) src src/World src/Vehicle src/Utils src/Sensors src/SelfParking src/SelfParking/Trajectories src/Renderer
 INCLUDES = -Isrc -Iinclude
 
-# C++14 only because of std::make_unique not present in C++11)
-STANDARD=--std=c++14 -g -O0
+# C++14 (only because of std::make_unique not present in C++11)
+STANDARD=--std=c++14
 
-# Warnings
+# Compilation flags
 COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
   -Wunused-result -Wunused-parameter -Wtype-limits                  \
   -Wcast-align -Wcast-qual -Wconversion -Wfloat-equal               \
   -Wpointer-arith -Wswitch-enum -pedantic -Wpacked -Wold-style-cast \
   -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion
+COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter \
+  -Wno-old-style-cast -Wno-sign-conversion
 
-COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter -Wno-old-style-cast -Wno-sign-conversion
+# Project flags
+CXXFLAGS = $(STANDARD) $(COMPIL_FLAGS)
+LDFLAGS = -lpthread
+DEFINES = -DDATADIR=\"$(DATADIR)\"
 
-# Compilation
-CXXFLAGS = $(STANDARD) $(COMPIL_FLAGS) `pkg-config --cflags sfml-graphics`
-LDFLAGS = `pkg-config --libs sfml-graphics` -lpthread -ldw
-DEFINES = -DDATADIR=\"$(DATADIR)\" -DBACKWARD_HAS_DW=1
+# Lib SFML https://www.sfml-dev.org/index-fr.php
+CXXFLAGS += `pkg-config --cflags sfml-graphics`
+LDFLAGS += `pkg-config --libs sfml-graphics`
 
-# File dependencies
+# Pretty print the stack trace https://github.com/bombela/backward-cpp
+# You can comment these lines if backward-cpp is not desired
+CXXFLAGS += -g -O0
+LDFLAGS += -ldw
+DEFINES += -DBACKWARD_HAS_DW=1
+OBJS_DEBUG += backward.o
+
+# Header file dependencies
 DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
-# Object files
+# Desired compiled files
 OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
-OBJS_UTILS = backward.o Collide.o
+OBJS_UTILS = $(OBJS_DEBUG) Collide.o
 OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
 OBJS_SENSORS = Radar.o
 OBJS_TRAJECTORY = Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
@@ -70,12 +81,14 @@ OBJS_SELFPARKING = SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfPar
 
 OBJS = $(OBJS_UTILS) $(OBJS_VEHICLE) $(OBJS_SENSORS) $(OBJS_TRAJECTORY) $(OBJS_SELFPARKING) $(OBJS_SIMULATION) main.o
 
+# Verbosity control
 ifeq ($(VERBOSE),1)
 Q :=
 else
 Q := @
 endif
 
+# Compile the target
 all: $(TARGET_BIN) $(TARGET_LIB)
 
 # Link the target
@@ -100,7 +113,8 @@ $(TARGET_LIB): $(LIB_OBJS)
 	$(Q)$(CXX) $(DEPFLAGS) $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
 	@$(POSTCOMPILE)
 
-# Install
+# Install the project
+.PHONY: install
 install: $(TARGET_BIN) $(TARGET_LIB)
 	@echo "Installing $(TARGET_BIN)"
 	$(Q)mkdir -p $(BINDIR)
@@ -110,10 +124,33 @@ install: $(TARGET_BIN) $(TARGET_LIB)
 	cp $(BUILD)/$(TARGET_LIB) $(LIBDIR)
 	cp -r data $(DATADIR)/..
 
+# Do unit tests and code coverage
+.PHONY: check
+check:
+	@echo "Compiling unit tests"
+	$(Q)$(MAKE) -C tests check
+
+# Create the documentation
+.PHONY: doc
+doc:
+	$(Q)doxygen Doxyfile
+
+# Create the tarball
+.PHONY: tarball
+tarball:
+	$(Q)./.targz.sh $(PWD) $(TARGET_BIN)
+
 # Delete compiled files
 .PHONY: clean
 clean:
-	-rm -fr $(BUILD)
+	$(Q)-rm -fr $(BUILD)
+
+# Delete compiled files and backup files
+.PHONY: veryclean
+veryclean: clean
+	$(Q)-rm -fr *~ .*~
+	$(Q)find src -name "*~" -print -delete
+	$(Q)-rm -fr doc/html
 
 # Create the directory before compiling sources
 $(OBJS): | $(BUILD)
@@ -124,4 +161,5 @@ $(BUILD):
 $(BUILD)/%.d: ;
 .PRECIOUS: $(BUILD)/%.d
 
+# Header file dependencies
 -include $(patsubst %,$(BUILD)/%.d,$(basename $(OBJS)))

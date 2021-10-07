@@ -37,6 +37,8 @@ static constexpr size_t MAX_MANEUVERS = 16u;
 bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const entering)
 {
     // More the steering angle is great more the turning radius is short
+    // ../../../doc/pics/TurninRadius.png
+    // ../../../doc/pics/LeavingCondition.png
     TurningRadius radius(car.dim, car.dim.max_steering_angle);
     Remin = radius.external;
     Rimin = radius.internal;
@@ -70,9 +72,11 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     // have to add the back overhang.
     if (parking.dim.length >= Lmin)
     {
+        // TODO
     }
     else
     {
+        // ../../../doc/pics/ParallelManeuversEq.png
         m_maneuvers = computePath(car, parking);
         if ((m_maneuvers > 0u) && (m_maneuvers < MAX_MANEUVERS))
         {
@@ -128,6 +132,7 @@ size_t ParallelTrajectory::computePath(Car const& car, Parking const& parking)
         // Initial iteration: the ego car is touching the rear car parked.
         // The ego car is driving forward while turning to the left until
         // touching the front car parked.
+        // ../../../doc/pics/ParallelStep1.png
         else if (i == 0u)
         {
             std::cout << "#############################" << std::endl;
@@ -152,6 +157,7 @@ size_t ParallelTrajectory::computePath(Car const& car, Parking const& parking)
 
         // Even iteration: The ego car is driving forward while turning to the
         // left until touching the front car parked.
+        // ../../../doc/pics/ParallelStep1.png
         else if ((i & 1) == 0)
         {
             std::cout << "#############################" << std::endl;
@@ -176,6 +182,8 @@ size_t ParallelTrajectory::computePath(Car const& car, Parking const& parking)
 
         // Odd iteration: The ego car is driving backward while turning to the
         // right until touching the rear car parked.
+        // ../../../doc/pics/ParallelStep2.png
+        // ../../../doc/pics/Rrg.png
         else // if ((i & 1) == 1)
         {
             std::cout << "#############################" << std::endl;
@@ -201,6 +209,7 @@ size_t ParallelTrajectory::computePath(Car const& car, Parking const& parking)
             // Can the ego car escape from the parking spot ? Meaning if the
             // Y position of the colliding point with the front parked car is
             // greater than the width of the parking spot ?
+            // ../../../doc/pics/ParallelLeavingCondition.png
             float w = POW2(Remin) - POW2(C[i-1].x - parking.dim.length / 2.0f);
             std::cout << "Can leave ? " << (C[i-1].y + sqrtf(w)) << " > "
                       << parking.dim.width << "?" << std::endl;
@@ -214,6 +223,7 @@ size_t ParallelTrajectory::computePath(Car const& car, Parking const& parking)
 
     // Last turn for leaving the parking spot and last turn to
     // horizontalize to the road.
+    // ../../../doc/pics/ParallelFinalStep.png
     std::cout << "#############################" << std::endl;
     std::cout << "Final iteration: Two last final turns" << std::endl;
     C[i].x = 2.0f * Em[i].x - C[i - 1].x;

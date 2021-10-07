@@ -155,8 +155,8 @@ private:
 };
 
 // ****************************************************************************
-//! \brief Class defining a car with its dimension, physics, controler and
-//! knowin how to park by itself.
+//! \brief Class defining a car with its dimension, physics, controler.
+//! ../../doc/design/car.png
 // ****************************************************************************
 class Car
 {
@@ -403,7 +403,7 @@ protected:
     //! \brief Car blueprint.
     CarShape m_shape;
     //! \brief Car Physics.
-    CarKinematic m_kinematic;
+    TricycleKinematic m_kinematic;
     //! \brief Car cruise control.
     CarControl m_control;
     //! \brief List of trailers attached to the car

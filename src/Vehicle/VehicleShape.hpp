@@ -157,6 +157,7 @@ protected:
 
 // *****************************************************************************
 //! \brief A vehicle shape specialized for trailer with 2 wheels.
+//! See ../../doc/pics/CarDefinition.png
 // *****************************************************************************
 class TrailerShape: public VehicleShape<TrailerDimension>
 {

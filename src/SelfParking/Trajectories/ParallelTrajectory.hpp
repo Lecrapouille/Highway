@@ -31,10 +31,10 @@
 
 #  include "SelfParking/Trajectories/Trajectory.hpp"
 
-// *************************************************************************
-//! \brief Compute the trajectory allowing the car to park. For parallel
-//! parking only!
-// *************************************************************************
+// *****************************************************************************
+//! \brief Compute the trajectory allowing the car to park. For parallel parking
+//! only!
+// *****************************************************************************
 class ParallelTrajectory: public CarTrajectory
 {
 public:
@@ -44,18 +44,29 @@ public:
 
 private:
 
+    //--------------------------------------------------------------------------
+    //! \brief Compute the trajectory path when the car needs N maneuvers
+    //! Loop:
+    //! - Step 1:  ../../../doc/pics/ParallelStep1.png
+    //! - Step 2:  ../../../doc/pics/ParallelStep2.png
+    //! - Leaving loop condition: ../../../doc/pics/ParallelLeavingCondition.png
+    //! - Final Step: ../../../doc/pics/ParallelFinalStep.png
+    //! Equations: ../../../doc/pics/ParallelManeuversEq.png
+    //--------------------------------------------------------------------------
     size_t computePath(Car const& car, Parking const& parking);
+
+
     void generateReferences(Car const& car, Parking const& parking,
                             float const VMAX, float const ADES);
 private:
 
-    //! \brief Minimal turning radius for the internal point of the ego car.
+    //! \brief Minimal turning radius for the internal point of the car.
     float Rimin;
-    //! \brief Minimal turning radius for the external point of the ego car.
+    //! \brief Minimal turning radius for the external point of the car.
     float Remin;
-    //! \brief Minimal turning radius for the external point of the ego car.
+    //! \brief Minimal turning radius for the external point of the car.
     float Rwmin;
-    //! \brief Minimal turning radius for the external point of the ego car.
+    //! \brief Minimal turning radius for the external point of the car.
     float Lmin;
     //! \brief Number needed of maneuvers for parking the car (change of gear)
     size_t m_maneuvers = 0u;
@@ -63,22 +74,9 @@ private:
     std::vector<sf::Vector2f> Em;
     //! \brief X-Y world coordinates of the immedite center of rotations.
     std::vector<sf::Vector2f> C;
-    //! \brief X-Y world coordinates of the initial position of the middle of
-    //! rear axle of the ego car.
-    float Xi, Yi;
-    //! \brief X-Y world coordinates of the starting position of the middle of
-    //! rear axle of the ego car for doing the first turning.
-    float Xs, Ys;
-    //! \brief X-Y world coordinates of the starting position of the middle of
-    //! rear axle of the ego car at the end of the maneuver.
-    float Xf, Yf;
-    //! \brief X-Y world coordinates of the tangential point of the two final
-    //! turns.
-    float Xt, Yt;
-    //! \brief Memorize angles
-    std::vector<float> theta_E, theta_t, theta_s, theta_p, theta_g, theta_sum;
-    //! \brief Memorize Turning radius
-    std::vector<float> Rrg;
+    float Xs, Ys, Xi, Yi, Xf, Yf, Xt, Yt;
+    //! \brief
+    std::vector<float> theta_E, theta_t, theta_s, theta_p, theta_g, theta_sum, Rrg;
 };
 
 #endif

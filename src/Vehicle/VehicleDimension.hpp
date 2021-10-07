@@ -72,12 +72,13 @@ struct TrailerDimension
 };
 
 // *****************************************************************************
-//! \brief Car blueprint
+//! \brief Car blueprint. See picture ../../doc/pics/CarDefinition.png
 // *****************************************************************************
 struct CarDimension
 {
     //--------------------------------------------------------------------------
-    //! \brief Define vehicle constants
+    //! \brief Define vehicle constants:
+    //! See ../../doc/pics/CarDefinition.png
     //! \param[in] l: car length [meter]
     //! \param[in] w: car width [meter]
     //! \param[in] wb: wheelbase length [meter]
@@ -97,6 +98,9 @@ struct CarDimension
         assert(max_steering_angle < DEG2RAD(90.0f));
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Debug purpose only.
+    //--------------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, CarDimension const& dim)
     {
         return os << "  Dim {" << std::endl

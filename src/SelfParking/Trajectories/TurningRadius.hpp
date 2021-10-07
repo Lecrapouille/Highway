@@ -35,12 +35,20 @@
 //! vehicle when it turns with a fixed steering angle. Some formula are given
 //! at http://www.autoturn.ch/giration/standard_r.html
 //! This structure holds these results.
+//! Turning circle:
+//! ../../../doc/pics/TurningCircle.png
+//! Turning radius of internal and external corner of the ego car doing the
+//! parking maneuver:
+//! ../../../doc/pics/TurninRadius.png
 // *****************************************************************************
 struct TurningRadius
 {
     //--------------------------------------------------------------------------
-    //! \brief
-    //! \param[in] steering angle [rad]
+    //! \brief Compute all turning radius information needed for doing parking
+    //! maneuvers. Equations (in where L means e and p means pf in previous picture)
+    //! ../../../doc/pics/TurningRadiusEq.png
+    //! \param[in] dim: the vehicle dimension.
+    //! \param[in] steering: the desired steerin angle [rad].
     //--------------------------------------------------------------------------
     TurningRadius(CarDimension const& dim, float const steering)
     {
@@ -48,13 +56,13 @@ struct TurningRadius
         const float w = dim.width;
         const float p = dim.front_overhang;
 
-        // Rayon de braquage [m] (turning radius)
+        // R: turning radius of the fake front wheel [m]
         middle = e / sinf(steering);
 
-        // Inner radius [m]
+        // Ri: Inner turning radius [m]
         internal = sqrtf(middle * middle - e * e) - (w / 2.0f);
 
-        // Outer radius [m]
+        // Re: External (outer) turning radius [m]
         external = sqrtf((internal + w) * (internal + w) + (e + p) * (e + p));
 
         // Largeur balayee [m]

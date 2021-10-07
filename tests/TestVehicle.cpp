@@ -60,10 +60,10 @@ TEST(TestCarShape, Init)
 }
 
 //--------------------------------------------------------------------------
-TEST(TestCarKinematic, Constructor)
+TEST(TestTricycleKinematic, Constructor)
 {
     CarShape shape(CarDimensions::get("Renault.Twingo"));
-    CarKinematic c(shape);
+    TricycleKinematic c("trycicle", shape);
 
     ASSERT_FLOAT_EQ(c.acceleration(), 0.0f);
     ASSERT_FLOAT_EQ(c.speed(), 0.0f);
@@ -87,10 +87,10 @@ TEST(TestCarKinematic, Constructor)
 }
 
 //--------------------------------------------------------------------------
-TEST(TestCarKinematic, Init)
+TEST(TestTricycleKinematic, Init)
 {
     CarShape shape(CarDimensions::get("Renault.Twingo"));
-    CarKinematic c(shape);
+    TricycleKinematic c("trycicle", shape);
     c.init(sf::Vector2f(100.0f, 50.0f), 2.0f, 3.0f, 4.0f);
 
     ASSERT_FLOAT_EQ(c.acceleration(), 0.0f);

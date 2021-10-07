@@ -33,8 +33,21 @@
 #  include <string>
 
 // *****************************************************************************
-//! \brief Base class for doing kinematic or dynamic on a linked list of
-//! elements.
+//! \brief Base class for computing a set of linked vehicle kinematic or vehicle
+//! dynamic equations.
+//! For example: you can implement on derived class:
+//! - Bicycle kinematics:
+//!   - if the desired position is located at the center of gravity:
+//!     ../../doc/pics/front_axle_bycicle_model.png
+//!   - if the desired position is located at the middle of the front axle:
+//!     ../../doc/pics/cg_bycicle_model.png
+//!   - if the desired position is located at the middle of the rear axle:
+//!     ../../doc/pics/TricycleKinematicEq.png
+//! - Car dynamics:
+//!   - https://github.com/quangnhat185/Self-driving_cars_toronto_coursera
+//! - Trailer kinematics:
+//!   - "Flatness and motion Planning: the Car with n-trailers" by Pierre Rouchon
+//! Linked list of vehicle physics is mainly for attaching trailers.
 //! \tparam S a VehicleShape
 // *****************************************************************************
 class IPhysics
@@ -42,20 +55,21 @@ class IPhysics
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor.
+    //! \param[in] n: the name of the vehicle (debug purpose only).
     //--------------------------------------------------------------------------
     IPhysics(std::string const& n)
         : name(n)
     {}
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Needed because of virtual methods.
     //--------------------------------------------------------------------------
     virtual ~IPhysics() = default;
 
     //--------------------------------------------------------------------------
     //! \brief Join with the given front vehicle.
-    //! \param[inout] physics: the front vehicle.
+    //! \param[inout] front: the front vehicle physic.
     //--------------------------------------------------------------------------
     void attachTo(IPhysics& front)
     {
@@ -66,7 +80,10 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Update the physical model.
+    //! \brief Base method updating the whole link of physical vehicles.
+    //! Call the onUpdate() method to really update physic equations.
+    //! \param[in] control: the cruise control of the head vehicle.
+    //! \param[in] dt: delta time [seconds] from the previous call.
     //--------------------------------------------------------------------------
     void update(CarControl const& control, float const dt)
     {
@@ -78,7 +95,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal acceleration [meter/seconds^2].
+    //! \brief Const getter: return longitudinal acceleration [meter/second^2].
     //--------------------------------------------------------------------------
     inline float acceleration() const
     {
@@ -86,7 +103,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal speed [meter/seconds].
+    //! \brief Const getter: return the longitudinal speed [meter/second].
     //--------------------------------------------------------------------------
     inline float speed() const
     {
@@ -94,21 +111,28 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return position of the middle of the rear axle.
+    //! \brief Const getter: return the position of the middle of the rear axle
+    //! inside the world coordinates.
     //--------------------------------------------------------------------------
     virtual sf::Vector2f position() const = 0;
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading [rad].
+    //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
     virtual float heading() const = 0;
 
 private:
 
+    //--------------------------------------------------------------------------
+    //! \brief Virtual method updating vehicle physics equations.
+    //! \param[in] control: the cruise control of the head vehicle.
+    //! \param[in] dt: delta time [seconds] from the previous call.
+    //--------------------------------------------------------------------------
     virtual void onUpdate(CarControl const& control, float const dt) = 0;
 
 public:
 
+    //! \brief Vehicle name (debug purpose only).
     std::string const& name;
     //! \brief Next joined trailer or vehicle. Please do not manage memory:
     //! this pointer is just a reference.
@@ -119,13 +143,17 @@ public:
 
 protected:
 
+    //! \brief Longitudinal speed [meter / second]
     float m_speed = 0.0f;
+    //! \brief Longitudinal acceleration [meter / second / second]
     float m_acceleration = 0.0f;
+    //! \brief Vehicle yaw angle [radian]
     float m_heading;
 };
 
 // *****************************************************************************
-//! \brief
+//! \brief Class computing the kinematic equation of a trailer.
+//! A trailer can be attached to another trailer or to a tractor vehicle.
 // *****************************************************************************
 class TrailerKinematic: public IPhysics
 {
@@ -143,12 +171,17 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Set initial values needed by trailer kinematic equations.
+    //! \note the position: the (x, y) world coordinated of the middle of the
+    //! rear axle is deduced.
+    //! \param[in] heading: the initial yaw angle of the vehicle [radian]
+    //! \param[in] speed: initial longitudinal speed [meter / second].
     //--------------------------------------------------------------------------
     void init(float const speed, float const heading);
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return position of the middle of the rear axle.
+    //! \brief Const getter: return position of the middle of the rear axle
+    //! inside the world coordinates.
     //--------------------------------------------------------------------------
     virtual inline sf::Vector2f position() const override
     {
@@ -156,7 +189,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading [rad].
+    //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
     virtual inline float heading() const override
     {
@@ -174,7 +207,10 @@ public:
 private:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Concrete method updating vehicle physics equations.
+    //! See "Flatness and motion Planning: the Car with n-trailers" by Pierre Rouchon ...
+    //! \param[in] control: the cruise control of the head vehicle.
+    //! \param[in] dt: delta time [seconds] from the previous call.
     //--------------------------------------------------------------------------
     virtual void onUpdate(CarControl const& control, float const dt) override;
 
@@ -184,32 +220,43 @@ protected:
 };
 
 // *****************************************************************************
-//! \brief
+//! \brief Simple car kinematic using the tricycle kinematic equations.
+//! The position (x, y) of the car is the middle of the rear axle.
+//! ../../doc/pics/TricycleVehicle.png
+//! ../../doc/pics/TricycleKinematicEq.png
 // *****************************************************************************
-class CarKinematic: public IPhysics
+class TricycleKinematic: public IPhysics
 {
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief default constructor: define a name and a shape.
+    //! \param[in] name: the name of the vehicle (debug purpose only).
+    //! \param[in] shape: vahicle dimension.
     //--------------------------------------------------------------------------
-    CarKinematic(std::string const& n, CarShape& shape)
-        : IPhysics(n), m_shape(shape)
+    TricycleKinematic(std::string const& name, CarShape& shape)
+        : IPhysics(name), m_shape(shape)
     {}
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Needed because of virtual methods.
     //--------------------------------------------------------------------------
-    virtual ~CarKinematic() = default;
+    virtual ~TricycleKinematic() = default;
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Set initial values needed by tricycle kinematic equations.
+    //! \param[in] position: the (x, y) world coordinated of the car is the
+    //! middle of the rear axle.
+    //! \param[in] heading: the initial yaw angle of the vehicle [radian]
+    //! \param[in] speed: initial longitudinal speed [meter / second].
+    //! \param[in] steering: initial steering angle [radina].
     //--------------------------------------------------------------------------
     void init(sf::Vector2f const& position, float const heading, float const speed,
               float const steering);
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return position of the middle of the rear axle.
+    //! \brief Const getter: return position of the middle of the rear axle
+    //! inside the world coordinates.
     //--------------------------------------------------------------------------
     virtual inline sf::Vector2f position() const override
     {
@@ -217,7 +264,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading [rad].
+    //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
     virtual inline float heading() const override
     {
@@ -235,7 +282,15 @@ public:
 private:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Update discrete time equations from continuous time equations
+    //! described in these pictures:
+    //! ../../doc/pics/TricycleVehicle.png
+    //! ../../doc/pics/TricycleKinematicEq.png
+    // in where:
+    //  - L is the vehicle wheelbase [meter]
+    //  - v is the vehicle longitudinal speed [meter / second]
+    //  - theta is the car heading (yaw) [radian]
+    //  - delta is the steering angle [radian]
     //--------------------------------------------------------------------------
     virtual void onUpdate(CarControl const& control, float const dt) override;
 

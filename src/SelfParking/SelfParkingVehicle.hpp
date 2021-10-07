@@ -33,7 +33,8 @@
 #  include "SelfParking/Trajectories/Trajectory.hpp"
 
 // ****************************************************************************
-//! \brief Vehicle with Self-Parking system.
+//! \brief Vehicle class with Self-Parking system.
+//! ../../doc/design/car.png
 // ****************************************************************************
 class SelfParkingCar: public Car
 {

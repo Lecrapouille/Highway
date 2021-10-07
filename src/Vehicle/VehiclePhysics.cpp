@@ -113,7 +113,7 @@ void TrailerKinematic::onUpdate(CarControl const& control, float const dt)
 }
 
 //-----------------------------------------------------------------------------
-void CarKinematic::init(sf::Vector2f const& position, float const heading, float const speed,
+void TricycleKinematic::init(sf::Vector2f const& position, float const heading, float const speed,
                         float const steering)
 {
     m_shape.set(position, heading, steering);
@@ -121,7 +121,7 @@ void CarKinematic::init(sf::Vector2f const& position, float const heading, float
 }
 
 //-----------------------------------------------------------------------------
-void CarKinematic::onUpdate(CarControl const& control, float const dt)
+void TricycleKinematic::onUpdate(CarControl const& control, float const dt)
 {
     float steering = control.outputs.steering;
     float heading = m_shape.heading();

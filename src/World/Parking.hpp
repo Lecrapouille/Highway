@@ -29,7 +29,6 @@
 #  define PARKING_HPP
 
 #  include "World/ParkingDimension.hpp"
-#  include <SFML/System/Vector2.hpp>
 #  include <ostream>
 #  include <cassert>
 #  include <new>
@@ -47,6 +46,9 @@ class Parking
 public:
 
     //! \brief Kind of parking
+    //! ../../doc/pics/PerpendicularSpots.gif
+    //! ../../doc/pics/DiagonalSpots.gif
+    //! ../../doc/pics/ParallelSpots.jpg
     enum Type { Parallel, Perpendicular, Diagonal45, Diagonal60, Diagonal75 };
 
     //--------------------------------------------------------------------------

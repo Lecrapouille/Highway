@@ -66,7 +66,8 @@ public:
 private:
 
     //--------------------------------------------------------------------------
-    //! \brief Private static database.
+    //! \brief Private static database. For example:
+    //! ../../doc/pics/Twingo.jpg
     //--------------------------------------------------------------------------
     static std::map<std::string, CarDimension>& database()
     {
@@ -167,11 +168,14 @@ public:
 private:
 
     //--------------------------------------------------------------------------
-    //! \brief Private static database.
+    //! \brief Private static database. For example:
+    //! https://www.virages.com/Blog/Dimensions-Places-De-Parking
+    //! ../../doc/pics/PerpendicularSpots.gif
+    //! ../../doc/pics/DiagonalSpots.gif
+    //! ../../doc/pics/ParallelSpots.jpg
     //--------------------------------------------------------------------------
     static std::map<std::string, ParkingDimension>& database()
     {
-        // https://www.virages.com/Blog/Dimensions-Places-De-Parking
         static std::map<std::string, ParkingDimension> dico = {
             { "epi.0", { 5.0f, 2.0f, 0u } },
             { "epi.45", { 4.8f, 2.2f, 45u } },
