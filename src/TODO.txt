@@ -20,3 +20,5 @@
 - Parallel 2 maneuvres: virer les coordinees relatives au parking
 - Parallel N maneuvres: todo
 - [FAIT] ego voiture collision ne devient pas rouge
+- Arcs de cercles devraient affichees une fleche
+- bug parrallel N path quand N=1 et quand N>2

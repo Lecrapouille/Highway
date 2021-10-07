@@ -53,8 +53,8 @@ private:
     //! - Final Step: ../../../doc/pics/ParallelFinalStep.png
     //! Equations: ../../../doc/pics/ParallelManeuversEq.png
     //--------------------------------------------------------------------------
-    size_t computePath(Car const& car, Parking const& parking);
-
+    size_t computePathNTrials(Car const& car, Parking const& parking);
+    size_t computePath1Trial(Car const& car, Parking const& parking);
 
     void generateReferences(Car const& car, Parking const& parking,
                             float const VMAX, float const ADES);
