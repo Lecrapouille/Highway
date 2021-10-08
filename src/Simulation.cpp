@@ -63,12 +63,18 @@ void Simulation::createWorld(size_t const angle, bool const /*parked*/)
     Car& car1 = addCar("Audi.A6", parking1);
     Car& car2 = addCar("Audi.A6", parking3);
 
-    //addGhost("Renault.Twingo", sf::Vector2f(108.045f, 100.0f), 0.0f);
-    //addGhost("Renault.Twingo", sf::Vector2f(109.121f, 100.130f), DEG2RAD(14.273258f)); // C1, ThetaE1
-    //addGhost("Renault.Twingo", sf::Vector2f(108.363335f, 99.865936f), DEG2RAD(24.659098f)); // C2, ThetaE2+ThetaSum
+    // Debug Renault.Twingo
+    //addGhost("Renault.Twingo", sf::Vector2f(107.994f, 100.0f), 0.0f); // Em0
+    //addGhost("Renault.Twingo", sf::Vector2f(109.275f, 100.193f), 0.300045f); // Em1, ThetaE1
+    //addGhost("Renault.Twingo", sf::Vector2f(108.345f, 99.7811f), 0.300045f + 0.235058f); // Em2, ThetaE1 + ThetaE2
+
+    // Debug QQ
+    //addGhost("QQ", sf::Vector2f(108.405f, 100.0f), 0.0f); // Em0
+    //addGhost("QQ", sf::Vector2f(109.06f, 100.042f), 0.126959f); // Em1, ThetaE1
+    //addGhost("QQ", sf::Vector2f(108.59f, 99.9596f), 0.126959f + 0.0919716f); // Em2, ThetaE1 + ThetaE2
 
     // Self-parking car (dynamic). Always be the last in the container
-    Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f);
+    Car& ego = addEgo("QQ", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f);
 
     // With trailer
     //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));

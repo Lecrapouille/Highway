@@ -80,6 +80,7 @@ private:
             { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
             // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
             { "Audi.A6", { 4.951f, 1.902f, 2.924f, 1.105f, 0.328f, 11.7f } },
+            { "QQ", { 4.951f - 0.2f, 1.902f, 2.924f - 0.2f, 1.105f - 0.2f, 0.328f, 11.7f } },
             { "Mini.Cooper", { 3.62f, 1.68f, 2.46f, 0.58f, 0.328f, 10.7f } },
         };
         return dico;

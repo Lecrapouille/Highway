@@ -117,7 +117,7 @@ public:
     Application(uint32_t const width, uint32_t const height, std::string const& title)
     {
         m_renderer.create(sf::VideoMode(width, height), title);
-        m_renderer.setFramerateLimit(60);
+        m_renderer.setFramerateLimit(120);
     }
 
     //! \brief Return the window width

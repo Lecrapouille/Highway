@@ -30,12 +30,19 @@
 #include "Renderer/Renderer.hpp"
 #include "Vehicle/Vehicle.hpp"
 
-// A maneuver is a chnage of gear: reverse or forward
-static constexpr size_t MAX_MANEUVERS = 16u;
+// Reserve enough memory to store all maneuver states while not information are
+// needed to be saved we keep them for the debug.
+static constexpr size_t MAX_MANEUVERS = 64u;
+static constexpr size_t TWO_LAST_TURNS = 2u;
+static_assert(MAX_MANEUVERS > TWO_LAST_TURNS, "Bad value for MAX_MANEUVERS");
 
 //------------------------------------------------------------------------------
 bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const entering)
 {
+    // We suppose that the parking spot can hold the ego car. This case is
+    // supposed to be checked by the caller function.
+    assert(car.dim.length < parking.dim.length);
+
     // More the steering angle is great more the turning radius is short
     // ../../../doc/pics/TurninRadius.png
     // ../../../doc/pics/LeavingCondition.png
@@ -74,7 +81,7 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     {
         // ../../../doc/pics/ParallelFinalStep.png
         m_maneuvers = computePath1Trial(car, parking);
-        if (m_maneuvers == 2u)
+        if (m_maneuvers == TWO_LAST_TURNS)
         {
             generateReferences(car, parking, VMAX, ADES);
             return true;
@@ -84,13 +91,14 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     {
         // ../../../doc/pics/ParallelManeuversEq.png
         m_maneuvers = computePathNTrials(car, parking);
-        if ((m_maneuvers > 0u) && (m_maneuvers < MAX_MANEUVERS))
+        if ((m_maneuvers >= TWO_LAST_TURNS) && (m_maneuvers < MAX_MANEUVERS))
         {
             generateReferences(car, parking, VMAX, ADES);
             return true;
         }
     }
 
+    m_maneuvers = 0u;
     return false;
 }
 
@@ -180,7 +188,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
 
     // Give extra space to avoid the rear overhang of the ego car collides with
     // the parked car back the ego car.
-    const float MARGIN = 0.0f; // [meter]
+    //const float MARGIN = 0.0f; // [meter]
 
     std::cout << "Parking: " << parking.position().x << " " << parking.position().y << std::endl;
     std::cout << "Xf: " << Xf << " " << Yf << std::endl;
@@ -189,10 +197,10 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     while (true)
     {
         // Too many maneuvers: abort and try to find another parking spot
-        if (i >= MAX_MANEUVERS - 2u)
+        if (i + TWO_LAST_TURNS >= MAX_MANEUVERS)
         {
             std::cerr << "Too many maneuvers " << i << std::endl;
-            return i;
+            return 0u;
         }
 
         // Initial iteration: the ego car is touching the rear car parked.
@@ -206,7 +214,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             C[i].x = Em[i].x;
             C[i].y = Em[i].y + Rwmin;
             theta_t[i] = asinf((parking.dim.length / 2.0f - C[i].x) / Remin);
-            theta_s[i] = asinf((car.dim.length + MARGIN - car.dim.back_overhang) / Remin);
+            theta_s[i] = asinf((car.dim.length - car.dim.back_overhang) / Remin);
             theta_E[i] = theta_t[i] - theta_s[i];
             theta_sum[i] = theta_E[i];
             Em[i + 1].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI3_2);
@@ -231,7 +239,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             C[i].x = 2.0f * Em[i].x - C[i - 1].x;
             C[i].y = 2.0f * Em[i].y - C[i - 1].y;
             theta_t[i] = asinf((parking.dim.length / 2.0f - C[i].x) / Remin);
-            theta_s[i] = asinf((car.dim.length + MARGIN - car.dim.back_overhang) / Remin);
+            theta_s[i] = asinf((car.dim.length - car.dim.back_overhang) / Remin);
             theta_E[i] = theta_t[i] - theta_sum[i - 1] - theta_s[i];
             theta_sum[i] = theta_sum[i - 1] + theta_E[i];
             Em[i + 1].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI3_2);
@@ -242,6 +250,22 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             std::cout << "ThetaT" << i+1 << ": " << theta_t[i] << std::endl;
             std::cout << "ThetaS" << i+1 << ": " << theta_s[i] << std::endl;
             std::cout << "ThetaE" << i+1 << ": " << theta_E[i] << std::endl;
+
+            // Can the ego car escape from the parking spot ? Meaning if the
+            // Y position of the colliding point with the front parked car is
+            // greater than the width of the parking spot ?
+            // ../../../doc/pics/ParallelLeavingCondition.png
+            float x = C[i].x;
+            float y = C[i].y;
+
+            float w = POW2(Remin) - POW2((parking.dim.length / 2.0f) - x);
+            std::cout << "Can leave ? " << (y - sqrtf(w)) << " > " << parking.dim.width << "?" << std::endl;
+            std::cout << "Putain C.x=" << x << ", C.y=" << y << ", Remin=" << Remin << std::endl;
+            if ((w >= 0.0f) && (y - sqrtf(w) > parking.dim.width))
+            {
+                std::cout << "Can leave!!!!" << std::endl;
+                break;
+            }
 
             i += 1u;
         }
@@ -271,21 +295,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             std::cout << "ThetaP" << i+1 << ": " << theta_p[i] << std::endl;
             std::cout << "ThetaG" << i+1 << ": " << theta_g[i] << std::endl;
             std::cout << "ThetaE" << i+1 << ": " << theta_E[i] << std::endl;
-
             i += 1u;
-
-            // Can the ego car escape from the parking spot ? Meaning if the
-            // Y position of the colliding point with the front parked car is
-            // greater than the width of the parking spot ?
-            // ../../../doc/pics/ParallelLeavingCondition.png
-            float w = POW2(Remin) - POW2(C[i-1].x - parking.dim.length / 2.0f);
-            std::cout << "Can leave ? " << (C[i-1].y + sqrtf(w)) << " > "
-                      << parking.dim.width << "?" << std::endl;
-            if ((w >= 0.0f) && (C[i-1].y + sqrtf(w) > parking.dim.width))
-            {
-                std::cout << "Can leave!!!!" << std::endl;
-                break;
-            }
         }
     }
 
@@ -303,12 +313,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     {
         std::cerr << "BBCar is too far away on Y-axis (greater than its turning radius)"
                   << std::endl;
-        for (auto& it: C) // FIXME
-        {
-            it.x += Xf;
-            it.y += Yf;
-        }
-        return 1u;
+        return 0u;
     }
     Xt = C[i].x + sqrtf(d);
     Xs = C[i + 1].x = 2.0f * Xt - C[i].x;
@@ -351,7 +356,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     std::cout << "Angle: " << RAD2DEG(theta_E[2]) << std::endl;
     std::cout << "Final position: " << Xf << " " << Yf << std::endl;
 
-    return i + 2;
+    return i + TWO_LAST_TURNS;
 }
 
 //------------------------------------------------------------------------------
@@ -372,61 +377,72 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
     assert(VMAX > 0.0f);
     assert(ADES > 0.0f);
 
-    // Init reference to idle the car.
+    // Initial reference to be sure the car starts without speed.
     m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
     m_steerings.add(0.0f, DURATION_TO_TURN_WHEELS);
 
-    // Init car position -> position when starting the 1st turn: backward or
-    // forward.
+    // Initial car position: drive to the position for doing the first turn if
+    // Xi > Xs the drive in reverse else drive forward. Note: We suppose Yi = Ys.
     if (Xi > Xs)
     {
-        t = Xi - Xs / VMAX;
+        // Time to drive to destination with VMAX as longitudinal speed and
+        // without turning wheels.
+        t = (Xi - Xs) / VMAX;
         m_speeds.add(-VMAX, t);
         m_steerings.add(0.0f, t);
     }
     else
     {
-        t = Xs - Xi / VMAX;
+        t = (Xs - Xi) / VMAX;
         m_speeds.add(VMAX, t);
         m_steerings.add(0.0f, t);
     }
 
-    // Turning circles
+    // Turning circles: Consome path starting from the latest
     size_t i = m_maneuvers;
     while (i--)
     {
+        // Time to drive along the arc of circle with VMAX as longitudinal speed
         t = ARC_LENGTH(theta_E[i], Rwmin) / VMAX;
+
+        // Lastest turn to make the ego car parallel to the road
         if (i == m_maneuvers - 1u)
         {
             std::cout << "T111: " << t << std::endl;
             m_speeds.add(-VMAX, t);
             m_steerings.add(-car.dim.max_steering_angle, t);
         }
+
+        // Lastest turn to leave the parking spot
         else if (i == m_maneuvers - 2u)
         {
             std::cout << "T222: " << t << std::endl;
             m_speeds.add(-VMAX, t);
             m_steerings.add(car.dim.max_steering_angle, t);
         }
+
+        // Driving forward while turning to the left
         else if ((i & 1) == 0)
         {
             std::cout << "T333: " << t << std::endl;
-            // Turning to the right and move backward
             m_speeds.add(-VMAX, t);
             m_steerings.add(car.dim.max_steering_angle, t);
         }
+
+        // Driving backward while turning to the right
         else
         {
             std::cout << "T444: " << t << std::endl;
-            // Turning to the left and move forward
             m_speeds.add(VMAX, t);
             m_steerings.add(-car.dim.max_steering_angle, t);
         }
+
+        // Stop the car to make turn wheels
         m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
         m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
     }
 
-    // Centering in the parking spot
+    // Centering the car inside its parking spot
     t = std::abs((parking.dim.length - car.dim.length) / 2.0f) / VMAX;
     m_speeds.add(VMAX, t);
     m_steerings.add(0.0f, t);
@@ -437,19 +453,21 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
 }
 
 //------------------------------------------------------------------------------
-// TODO a bouger dans Renderer
 void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    if (m_maneuvers == 2u)
+    if (m_maneuvers < TWO_LAST_TURNS)
+        return ;
+
+    if (m_maneuvers == TWO_LAST_TURNS)
     {
-        // Drive to initial position
+        // Drive to the position for doing the first turn.
         target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
 
-        // Turn 1
+        // Turn 1 for leaving the parking spot
         target.draw(Arc(C[1].x, C[1].y, Rwmin, 90.0f, RAD2DEG(theta_E[0]), sf::Color::Blue), states);
         target.draw(Arrow(C[1].x, C[1].y, Xt, Yt, sf::Color::Blue), states);
 
-        // Turn 2
+        // Turn 2 to make the ego car parallel to the road
         target.draw(Arc(C[0].x, C[0].y, Rwmin, 270.0f, RAD2DEG(theta_E[1]), sf::Color::Red), states);
         target.draw(Arrow(C[0].x, C[0].y, C[0].x, Yf, sf::Color::Red), states);
 
@@ -466,7 +484,8 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
         // Drive to initial position
         target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
 
-        // Two last final turns for leaving the parking spot
+        // Two last final turns for leaving the parking spot and make the ego
+        // car parallel to the road.
         target.draw(Arc(C[i].x, C[i].y, Rwmin, 90.0f, RAD2DEG(theta_E[i]), sf::Color::Blue), states);
         target.draw(Arrow(C[i].x, C[i].y, Xt, Yt, sf::Color::Blue), states);
         i--;
@@ -485,6 +504,7 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
 
             // Drive forward while turning left
             target.draw(Arc(C[i].x, C[i].y, Rwmin, 270.0f, RAD2DEG(theta_E[i]), sf::Color::Cyan), states);
+            //target.draw(Arc(C[i].x, C[i].y, Rwmin, 270.0f, RAD2DEG(theta_t[i]), sf::Color::Cyan), states);
             target.draw(Arrow(C[i].x, C[i].y, Em[i].x, Em[i].y, sf::Color::Cyan), states);
         }
 
@@ -493,6 +513,7 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
         target.draw(Circle(Xi, Yi, ZOOM, sf::Color::Green), states);
         target.draw(Circle(Xs, Ys, ZOOM, sf::Color::Green), states);
         target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Green), states);
+        target.draw(Circle(Xf, Yf, ZOOM, sf::Color::Red), states);
         target.draw(Circle(Em[0].x, Em[0].y, ZOOM, sf::Color::Green), states);
         target.draw(Circle(Em[1].x, Em[1].y, ZOOM, sf::Color::Green), states);
         target.draw(Circle(Em[2].x, Em[2].y, ZOOM, sf::Color::Green), states);
