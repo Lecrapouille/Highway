@@ -1,0 +1,305 @@
+\documentclass[french, a4paper, 10pt]{article}
+\usepackage[french]{babel}
+%\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{rotating}
+\usepackage{fancyhdr}
+\usepackage{amssymb}
+\usepackage{picins}
+\usepackage{multicol}
+\usepackage{footnote}
+%\usepackage{xy}
+%\xyoption{all}
+
+%%
+\setlength{\textwidth}{18cm}
+\setlength{\hoffset}{-3cm}
+\setlength{\voffset}{-4cm}
+\setlength{\textheight}{28cm}
+%%
+
+\newcommand{\dessin}[4]{
+\begin{figure}[htb]
+\centering
+\includegraphics[scale= #2]{#1}
+\caption{#3}
+\label{#4}
+\end{figure}}
+%%
+
+\newcommand{\yinifnt}{\fontencoding{OT1}\fontfamily{yinit}\fontsize{40}{60}\selectfont}
+\newtheorem{remarque}{Remarque} \newcommand{\AAA}{{\mathcal A}}
+\newcommand{\BB}{{\mathcal B}} \newcommand{\CC}{{\mathcal C}}
+\newcommand{\DD}{{\mathcal D}} \newcommand{\EE}{{\mathcal E}}
+\newcommand{\FF}{{\mathcal F}} \newcommand{\GG}{{\mathcal G}}
+\newcommand{\HH}{{\mathcal H}} \newcommand{\II}{{\mathcal I}}
+\newcommand{\JJ}{{\mathcal J}} \newcommand{\KK}{{\mathcal K}}
+\newcommand{\LL}{{\mathcal L}} \newcommand{\MM}{{\mathcal M}}
+\newcommand{\NN}{{\mathcal N}} \newcommand{\OO}{{\mathcal O}}
+\newcommand{\PP}{{\mathcal P}} \newcommand{\QQ}{{\mathcal Q}}
+\newcommand{\RR}{{\mathcal R}} \newcommand{\SSS}{{\mathcal S}}
+\newcommand{\TT}{{\mathcal T}} \newcommand{\UU}{{\mathcal U}}
+\newcommand{\VV}{{\mathcal V}} \newcommand{\WW}{{\mathcal W}}
+\newcommand{\XX}{{\mathcal X}} \newcommand{\ZZ}{{\mathcal Z}}
+\newcommand{\bbR}{{\mathbb R}} \newcommand{\bbD}{{\mathbb D}}
+\newcommand{\bbO}{{\mathbb O}} \newcommand{\bbS}{{\mathbb S}}
+\newcommand{\bbE}{{\mathbb E}} \newcommand{\bbN}{{\mathbb N}}
+\newcommand{\bbM}{{\mathbb M}} \newcommand{\bbV}{{\mathbb V}}
+\newcommand{\bbC}{{\mathbb K}} \newcommand{\bbF}{{\mathbb F}}
+\newcommand{\bbP}{{\mathbb P}}
+\newcommand{\www}{{\mathfrak w \;}} \newcommand{\fff}{{\mathfrak f \;}}
+\newcommand{\nnn}{{\mathfrak n \;}} \newcommand{\aaa}{{\mathfrak a \;}}
+\newcommand{\hhh}{{\mathfrak h \;}}
+%%
+
+\title{Projet d'innovation: Réconcilier connectivisme et symbolisme appliqué à une
+  voiture autonome évoluant dans un parking pour se garer}
+
+\author{QUADRAT Quentin}
+
+\begin{document}
+\maketitle
+%\tableofcontents
+%\newpage
+
+Y. Le Cun (prix Turing) dans son livre \emph{Quand la machine apprend} (édition
+Odile Jacob 2019) à dit : \emph{Qu'est-ce qui permet alors à la plupart des
+humains d'apprendre à conduire en une vingtaine d'heures de pratique et très peu
+de supervision, sans causer ensuite d'accidents (pour la plupart d'entre nous) ?
+L'apprentissage supervisé et l'apprentissage par renforcement n'y suffisent
+pas. Il reste à inventer un nouveau paradigme pour que la machine puisse égaler
+l'apprentissage humain ou animal.}
+
+Le travail de J. C. Eccles (prix nobel de médecine) dans son livre
+\emph{Evolution du cerveau et creation de la conscience}, édition Flammarion
+1989, nous fait penser que le mot \emph{animal} dans la phrase de Le Cun montre
+qu'il n'aurait pas compris que ce \emph{nouveau paradigme} pourrait simplement
+être la logique et le langage. En effet, Eccles montre que la partie droite du
+cerveau des humains serait liée à la reconnaissance de forme et à la
+spatialization des objets alors que la partie gauche serait liée à la logique et
+au langage. En suivant son raisonement on pourrait faire l'analogie entre la
+partie droite du cerveau à l'IA actuelle (reconnaissance de forme,
+spatialisation en utilisant des outils tels que le calcul numérique, gradient
+stochastique, traitement du signal ...), domaine nommé connectivisme mais que
+l'on nommera dans ce document d'IA droite. La partie gauche du cerveau se
+rapprocherait de l'IA années 80 (systèmes experts étudiant le langage naturel
+avec des outils mathématique tel que la logique et des langages de programmation
+comme Prolog et Lisp) et domaine nommé symbolisme mais que l'on nommera dans ce
+document d'IA gauche.
+
+Il ne nous semble pas qu'il y ait eu de réelles tentatives de réunir IA droite
+et IA gauche.
+
+\section{Contexte historique du connectivisme et du logique}
+
+Les tentatives de modélisation de ce que serait l'intelligence artificielle date
+des années 1940.  Le graphique suivant~\ref{ConnectionistSymbolic}, provenant de
+la vidéo de Jean-Luc Parouty intitulée \emph{La controverse des neurones} de sa
+chaîne Youtube \emph{CNRS - Formation FIDLE}, montre l'évolution de l'influence
+académique entre les connectionistes (réseaux de neuronnes) et symbolique
+(logique). Il représente le nombre de publication dans l'un de ces deux domaines
+au cours des années. En 1940 apparaît le premier perceptron linéaire pour
+classifier les différentes espèces d'Iris, mais par la suite il n'y a eu que peu
+de progrès du au fait que les classifieurs non linéaires n'avaient pas été
+encore inventés (il faudra attendre 1986). En 1969 marque le début du mouvement
+symbolique grâce à l'emmergence des ordinateurs et à la création de systèmes
+experts. En conséquence, la logique a remplacé le connexionnisme mais lui aussi
+se heurte a aucun progrès majeur. S'en suit l'annulation et le gel des projets
+de recherche en intelligence artificiel jusqu'à deux innovations majeures en
+1986 et 1989 qui ont réussité les réseaux de neurones: d'abord la
+rétro-propagation par Rumelhart puis l'invention des réseaux de convolution par
+Y. Le Cun. La puissance de calcul des puces modernes ont permis la renaissance
+et l'explosition en popularité du connectivisme.
+
+\dessin{pics/ConnectionistSymbolic}{0.40}{Evolution de
+l'influence académique entre IA droite et IA gauche.}{ConnectionistSymbolic}
+
+\section{Vitesse d'apprentissage entre les singes, les ordinateurs et les humains}
+
+\subsection{Vitesse d'apprentissage entre les singes et les humains}
+
+J. C. Eccles dans son livre \emph{Evolution du cerveau et creation de la
+conscience}, édition Flammarion 1989, page 222 paragraphe 7.5.3 dit \emph{qu'il
+est étonnant qu'il faille jusqu'à 4000 simulations -- 1000 par semaine --, même
+chez un singe intelligent pour qu'il apprenne à associer un signal lumineux à un
+mouvement aussi simple que lever un levier. En effet un jeune enfant (d'âge
+préscolaire) y parvient au bout de quelques essais ... Les chimpanzés sont très
+gênés face à une situation nouvelle et se montrent incapables de traiter par le
+langage une difficulté. L'évolution des hominiens met en relief le rôle énorme
+du langage dans le processus d'évolution. }
+
+\subsection{Evolution du cerveau et développement du langage}
+
+L'évolution du cerveau et du développement du langage chez les humains serait
+arrivée tardivement dans l'évolution:
+
+J. C. Eccles dans son livre \emph{Evolution du cerveau et creation de la
+conscience}, page 121 paragraphe 4.7: \emph{Au cours de l'évolution qui va du
+singe au primate supérieur oui à l'homme aucun changement n'a été relevé au
+niveau des voies auditives jusqu'aux aires auditives primaires et secondaires du
+cortex. Mais ensuite, les différences sont prodigieuses. Rien chez les primates
+supérieures ne correspond à l'aire antérieure du langage découvert par
+Broca. Plus étonnant encore, c'est à peine si l'on détecte dans le cerveau de
+l'orang outan et du gibbon les aires pariétales inférieures et les gyrins
+angulaires et supra-marginal, si vastes chez l'homme.}
+
+Eccles, page 278 paragraphe 9.6, explique la différence entre
+
+\emph{L'hémisphère gauche effectue une synthèse dans l'espace, l'hémisphère
+gauche une analyse dans le temps. Il manque à l'hémisphère droit un analyseur du
+langage et à l'hémisphère gauche un synthétiseur de forme. Le grand succès de
+l'évolution des hominidés a été assuré par l'organisation asymétrique qui a
+potentiellement doublé la capacité du cortex. Ce qui a permis un grand
+accroissement du net-neocortex sans trop d'augmentation des risques dus à la
+naissance d'enfants à la tête de plus en plus grosse.}
+
+Toujours selon les dires d'Eccles
+
+\begin{savenotes}
+\begin{center}
+  \begin{tabular}{|c|c|} \hline
+    Hémisphere dominant (gauche) & Hémisphere mineur (droit) \\ \hline
+    Conscience individuelle & Conscience d'exister \\ \hline
+    Verbal  & Presque non verbal \\ \hline
+    Designation linguistique   & Musical \\ \hline
+    Ideation   & Sens de l'image et de la forme \\ \hline
+    Ressemblance conceptuelle  & Ressemblance visuelle \\ \hline
+    Analyse à long terme & Holiste\footnote{la tendance dans la nature à constituer des ensembles qui sont supérieurs à la somme de leurs parties, au travers de l'évolution créatrice} : Images \\ \hline
+    Opération arithmétique et logique & Opération spatiale et géométrique \\ \hline
+  \end{tabular}
+\end{center}
+\end{savenotes}
+
+\subsection{Différence d'apprentissage entre machine et humain}
+
+\section{Poposition d'amelioration}
+
+IA droite, IA actuelle (reconnaissance de forme : spatiale) outils : numérique,
+gradient stochastique, traitement du signal.  IA gauche, IA années 80 (systèmes
+experts : langage) outils : logique, langage (prolog, lisp).
+
+\section{IA droite: Techniques de spatialization}
+
+\subsection{Segmentation d'images}
+
+L'image suivante provient du simulateur de voiture Carla qui permet de simuler différents
+capteurs de la voiture dont des caméras mais aussi simuler le résultat de réseau de convolution
+de segmentation d'image. La segmentation permet d'obtenir une image en fausse couleur où chaque
+élément est décrit par une couleur servant d'identifiant unique (par exemple rouge pour les piétions,
+jaune pour les panneaux de signalisation ...).
+
+A partir d'une image simple il est difficile d'estimer la profondeur, un capteur de type Lidar peut être
+utilisé mais il reste un capteur volumineux et cher. Une alternative possible est la stéréo-vision.
+
+https://github.com/DidierRLopes/SelfDrivingCars/blob/master/3.%20Visual%20Perception%20for%20Self-Driving%20Cars/1.%20Basics%20of%203D%20Computer%20Vision/z_assignment/Applyin%20Stereo%20Depth%20to%20a%20Driving%20Scenario%20(solution).ipynb
+
+\dessin{pics/segmentation}{0.40}{Segmentation}{segmentation}
+
+
+\dessin{pics/captioning}{0.40}{Captioning}{captioning}
+
+\subsection{State of art for Plannification}
+
+Current way for solving the problematic of self-driving cars an be decomposed
+into hierarchy of sub problems in which each sub problem has its own objective
+function and constraints to be solved.
+
+\begin{itemize}
+\item[$\bullet$] Mission planner
+\item[$\bullet$] Behavioral planner
+\item[$\bullet$] Local Planner
+\item[$\bullet$] Vehicle Control
+\end{itemize}
+
+Mission planner: Since distances are large (> 100 m to kilometers) we often
+ignore aspects of motion planning problems such as obstacles, regulatory
+elements but focus on road connections. Instead, highest level mainly focus on
+map-level navigation are used: from vehicle position to a a given destination,
+and therefore mainly based on graph theory (roads and intersection), Dijkstra
+algorithm (for finding short path).
+
+\dessin{pics/map}{0.40}{}{map}
+
+Behavioral planner: will focus on driving scenario and decide which maneuver to
+execute based on other agents in the workspace and rules of the road, recognize
+which maneuvers are safe to make in a given driving scenario (ie turn at in
+intersection). There is currently no straight algorithm solving this
+problem. This is mainly based on hierarchy state-machine but since
+state-machines quickly grows, some other methods are also used: such as –
+machine-learning or – rule-based languages (PDDL, Prolog ...). The following
+figure depicts how kind of rule-based languages are based on:
+
+Local Planner: based on kinematics equations will focus on generating feasible,
+collision-free paths and comfortable velocity profiles. Then decomposed into
+path planning and profile generation mainly based on trajectory optimization
+(with objective and cost functions such as minimizing the error on trajectory
+deviation ...)
+
+Vehicle Control: is purely law control equations such as PID, MPC
+controllers. They take as input the desired vehicle speed and steering apply
+values to actuators and from sensors observe their own states and minimize the
+error between references and observation.
+
+
+Seul Behavioral planner n'est pas de solution toute faite.
+
+Behavioral planner a besoin de connaitre la carte. Avec la logique pur, la
+voiture en lisant les panneaux pourrait découvrir le bon chemin a parcourir.
+
+\subsection{Plannification}
+
+\dessin{pics/autoroute}{0.40}{}{autoroute}
+
+Some Prolog clauses (in human language) could be:
+\begin{itemize}
+\item[$\bullet$] I'm on the highway
+\item[$\bullet$] I'm in the middle lane.
+\item[$\bullet$] I see a white car in front of me.
+\item[$\bullet$] I see no car on the left lane
+\item[$\bullet$] The highway has 3 lanes
+\item[$\bullet$] There is a white continuous lane on the right
+\item[$\bullet$] To go to "Dan Ryan Expy" is on the 1st lane
+\end{itemize}
+
+Some interrogation on the Prolog database:
+\begin{itemize}
+\item[$\bullet$] Is there a car in front of me ? yes!
+\item[$\bullet$] To which maximal speed can I go ? 120 km/h (since we are on a highway)
+\item[$\bullet$] Can I go to 120 km/h now ? no (because of the presence of the previous car).
+\item[$\bullet$] Can I turn to the right ? no (because of the continuous white lane)
+\item[$\bullet$] Can I turn to the left ? yes (because there is no car on the left)
+\item[$\bullet$] Can I go to "Dan Ryan Expy" ? no (because  of the continuous white lane)
+\end{itemize}
+
+Logic can be converted to law control regulation. For example:
+\begin{itemize}
+\item[$\bullet$] Can I turn to the left ? yes
+\item[$\bullet$] Turn to the left! Activation of the forward path pursuit.
+\end{itemize}
+
+\subsection{Langages de logique}
+
+Prolog
+
+\dessin{pics/parking}{0.40}{}{parking}
+
+\begin{verbatim}
+spot(p1).
+spot(p2).
+spot(p3).
+spot(p4).
+
+parked(v1,p1).
+parked(v2,p2).
+parked(v3,p4).
+
+empty(X) :- spot(X), not(parked(X,Y))
+\end{verbatim}
+
+PDDL
+
+\end{document}

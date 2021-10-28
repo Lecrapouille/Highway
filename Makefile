@@ -73,7 +73,7 @@ POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Desired compiled files
 OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
-OBJS_UTILS = $(OBJS_DEBUG) Collide.o
+OBJS_UTILS = $(OBJS_DEBUG) Collide.o Monitoring.o
 OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
 OBJS_SENSORS = Radar.o
 OBJS_TRAJECTORY = Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
@@ -139,6 +139,11 @@ doc:
 .PHONY: tarball
 tarball:
 	$(Q)./.targz.sh $(PWD) $(TARGET_BIN)
+
+# Compile LaTeX documentation
+.PHONY: latex
+latex:
+	$(Q)cd doc/IA/ && latex IA.tex && latex IA.tex && dvipdf IA.dvi
 
 # Delete compiled files
 .PHONY: clean

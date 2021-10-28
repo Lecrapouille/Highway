@@ -40,3 +40,8 @@ Drive*.tar.gz
 *.out
 *.app
 build
+
+# LaTeX
+*.dvi
+*.log
+*.aux
