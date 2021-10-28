@@ -102,24 +102,6 @@ void GUISimulation::handleInput()
             {
                 m_running = false;
             }
-            else if (event.key.code == sf::Keyboard::Right)
-            {
-                if (m_simulation.m_ego != nullptr)
-                {
-                    std::cout << "TURNING INDICATOR RIGHT: START PARKING" << std::endl;
-                    m_simulation.m_ego->turning_indicator(
-                        false, m_simulation.m_ego->turning_right() ^ true);
-                }
-            }
-            else if (event.key.code == sf::Keyboard::Left)
-            {
-                if (m_simulation.m_ego != nullptr)
-                {
-                    std::cout << "TURNING INDICATOR LEFT: START PARKING" << std::endl;
-                    m_simulation.m_ego->turning_indicator(
-                        m_simulation.m_ego->turning_left() ^ true, false);
-                }
-            }
             else if (event.key.code == sf::Keyboard::A)
             {
                 std::cout << "ENTERING BACKWARD PARALLEL" << std::endl;
@@ -169,6 +151,10 @@ void GUISimulation::handleInput()
             {
                 std::cout << "LEAVING BACKWARD PERPENDICULAR" << std::endl;
                 m_simulation.createWorld(90, false);
+            }
+            else if (m_simulation.m_ego != nullptr)
+            {
+                m_simulation.m_ego->react(event.key.code);
             }
             break;
         default:

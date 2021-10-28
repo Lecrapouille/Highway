@@ -51,7 +51,8 @@ SelfParkingCar::Scan::update(float const dt, SelfParkingCar& car, bool detected,
     case States::IDLE:
         // The car was stopped and now it has to drive along parking spots and
         // scan parked cars to find the first empty parking spot.
-        car.setRefSpeed(15.0f);
+        car.setRefSpeed(2.0f);
+        car.setRefSteering(0.0f);
         m_distance = 0.0f;
         m_state = States::DETECT_FIRST_CAR;
         return Status::IN_PROGRESS;

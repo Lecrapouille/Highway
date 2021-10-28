@@ -34,8 +34,9 @@ void SelfParkingCar::StateMachine::update(float const dt, SelfParkingCar& car)
     bool detected = car.detect();
 
     // Has the driver aborted the auto-parking system ?
-    if (!car.turning_left() && !car.turning_right())
+    if ((m_state != States::IDLE) && (!car.turning_left() && !car.turning_right()))
     {
+        std::cout << "The driver has aborted the auto-parking" << std::endl;
         m_state = States::TRAJECTORY_DONE;
     }
 

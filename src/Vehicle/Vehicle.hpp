@@ -34,6 +34,8 @@
 #  include <memory>
 #  include <deque>
 #  include <atomic>
+#  include <map>
+#  include <functional>
 
 //! \brief Default sf::Color for a car
 #define DEFAULT_VEHICLE_COLOR 178, 174, 174
@@ -160,6 +162,8 @@ private:
 // ****************************************************************************
 class Car
 {
+   typedef std::function<void(Car&)> Callback;
+
 public:
 
     //--------------------------------------------------------------------------
@@ -185,6 +189,29 @@ public:
     //! \brief Needed because of virtual methods.
     //-------------------------------------------------------------------------
     virtual ~Car() = default;
+
+    //-------------------------------------------------------------------------
+    //! \brief Store callbacks for reacting to SFML press events.
+    //-------------------------------------------------------------------------
+    inline void registerCallback(size_t const key, Callback const& cb)
+    {
+        m_callbacks[key] = cb;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Call callbacks when an key was pressed (if the key was registered).
+    //! \return true if the SFML I/O was known, else return false.
+    //-------------------------------------------------------------------------
+    inline bool react(size_t const key)
+    {
+        auto it = m_callbacks.find(key);
+        if (it != m_callbacks.end())
+        {
+            it->second(*this);
+            return true;
+        }
+        return false;
+    }
 
     //-------------------------------------------------------------------------
     //! \brief Initialize first value for the physics.
@@ -428,6 +455,8 @@ protected:
     bool m_turning_left = false;
     //! \brief Truning indicator
     bool m_turning_right = false;
+    //! \brief Callbacks to SFML I/O events
+    std::map<size_t, Callback> m_callbacks;
 };
 
 #endif

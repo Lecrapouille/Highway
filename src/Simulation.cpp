@@ -74,7 +74,29 @@ void Simulation::createWorld(size_t const angle, bool const /*parked*/)
     //addGhost("QQ", sf::Vector2f(108.59f, 99.9596f), 0.126959f + 0.0919716f); // Em2, ThetaE1 + ThetaE2
 
     // Self-parking car (dynamic). Always be the last in the container
-    Car& ego = addEgo("QQ", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f);
+    Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f, 0.0f);
+
+    // Make the car react to some I/O events
+    ego.registerCallback(sf::Keyboard::PageDown, [](Car& ego) {
+        ego.turning_indicator(false, ego.turning_right() ^ true);
+    });
+    ego.registerCallback(sf::Keyboard::PageUp, [](Car& ego) {
+        ego.turning_indicator(ego.turning_left() ^ true, false);
+    });
+    ego.registerCallback(sf::Keyboard::Up, [](Car& ego) {
+        ego.setRefSpeed(1.0f);
+    });
+    ego.registerCallback(sf::Keyboard::Down, [](Car& ego) {
+        ego.setRefSpeed(0.0f);
+    });
+    ego.registerCallback(sf::Keyboard::Right, [](Car& ego) {
+        float ref = ego.getRefSteering() - 0.1f;
+        ego.setRefSteering(constrain(ref, -ego.dim.max_steering_angle, ego.dim.max_steering_angle));
+    });
+    ego.registerCallback(sf::Keyboard::Left, [](Car& ego) {
+        float ref = ego.getRefSteering() + 0.1f;
+        ego.setRefSteering(constrain(ref, -ego.dim.max_steering_angle, ego.dim.max_steering_angle));
+    });
 
     // With trailer
     //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));

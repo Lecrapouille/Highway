@@ -22,3 +22,7 @@
 - [FAIT] ego voiture collision ne devient pas rouge
 - Arcs de cercles devraient affichees une fleche
 - bug parrallel N path quand N=1 et quand N>2
+
+- parking quand la voiture n'est pas a l'horizonale
+- mieux separer les machines a etat "je conduis" / "je me gare" => clignotant pour se garer
+- construire le parking
