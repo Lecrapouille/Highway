@@ -75,7 +75,9 @@ private:
             // https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html
             { "Renault.Twingo", { 3.615f, 1.646f, 2.492f, 0.494f, 0.328f, 10.0f } },
             // https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png
-            { "Citroel.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
+            { "Citroen.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
+            // https://www.bsegfr.com/images/books/5/8/index.47.jpg
+            { "Citroen.C3", { 3.941f, 1.728f, 2.466f, 0.66f, 0.328f, 10.7f } },
             // https://www.vehikit.fr/nissan
             { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
             // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
