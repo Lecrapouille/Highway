@@ -38,6 +38,18 @@ constexpr float RAD2DEG(float const r) { return r * 57.295779513f; }
 constexpr float DEG2RAD(float const d) { return d * 0.01745329251994f; }
 constexpr float POW2(float const x)  { return x * x; }
 
+template<typename T>
+inline T constrain(T const value, T const lower, T const upper)
+{
+    if (value < lower)
+        return lower;
+
+    if (value > upper)
+        return upper;
+
+    return value;
+}
+
 inline float DISTANCE(float const xa, float const ya, float const xb, float const yb)
 {
    return sqrtf(POW2(xb - xa) + POW2(yb - ya));
@@ -48,7 +60,7 @@ inline float DISTANCE(sf::Vector2f const& a, sf::Vector2f const& b)
    return sqrtf(POW2(b.x - a.x) + POW2(b.y - a.y));
 }
 
-constexpr float ARC_LENGTH(float const angle, float const radius)
+constexpr float ARC_LENGTH(float const angle, float const radius) // [rad] * [m]
 {
    return angle * radius;
 }

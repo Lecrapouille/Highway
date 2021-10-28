@@ -30,6 +30,7 @@
 
 #  include "Vehicle/VehicleControl.hpp"
 #  include "Vehicle/VehicleShape.hpp"
+#  include "Utils/Monitoring.hpp"
 #  include <string>
 
 // *****************************************************************************
@@ -297,6 +298,142 @@ private:
 protected:
 
     CarShape& m_shape;
+};
+
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+class PowerTrain
+{
+public:
+
+    //-------------------------------------------------------------------------
+    virtual ~PowerTrain() = default;
+
+    //-------------------------------------------------------------------------
+    float update(float const dt, float const throttle, /*float const brake,*/ float const load)
+    {
+        assert((throttle >= 0.0f) && (throttle <= 1.0f));
+        //assert((brake >= 0.0f) && (brake <= 1.0f));
+
+        // Engine torque
+        m_torque_engine = throttle2Torque(throttle, m_speed_engine);
+
+        // Torque converter (Clutch)
+        float torque_converter = m_gear_ratio * effective_radius * load;
+
+        // Engine angular velocity
+        float acceleration_engine =
+                (m_torque_engine - torque_converter) / m_inertia;
+        m_speed_engine += acceleration_engine * dt;
+
+        // Transmission (gear box)
+
+        // Brake
+        //m_torque_brake = K * brake;
+
+        // Wheels speed
+        return m_gear_ratio * m_speed_engine;
+    }
+
+private:
+
+    //-------------------------------------------------------------------------
+    // Throttle to engine torque using a simplified quadratic model.
+    //-------------------------------------------------------------------------
+    virtual float throttle2Torque(float const throttle, float const speed)
+    {
+        const float C[3] = { 400.0f, 0.1f, -0.0002f };
+        return throttle * (C[0] + C[1] * speed + C[2] * speed * speed);
+    }
+
+    float m_torque_engine = 0.0f;
+    float m_speed_engine = 100.0f;
+    float m_gear_ratio = 0.35f;
+    float m_inertia = 10.0f;
+
+public:
+
+    const float effective_radius = 0.3f;
+};
+
+// *****************************************************************************
+//! \brief
+// *****************************************************************************
+class TricycleDynamic: public IPhysics
+{
+public:
+
+    //-------------------------------------------------------------------------
+    //! \brief default constructor: define a name and a shape.
+    //! \param[in] name: the name of the vehicle (debug purpose only).
+    //! \param[in] shape: vahicle dimension.
+    //-------------------------------------------------------------------------
+    TricycleDynamic(std::string const& name, CarShape& shape)
+        : IPhysics(name), m_shape(shape)
+    {}
+
+    //-------------------------------------------------------------------------
+    //! \brief Needed because of virtual methods.
+    //-------------------------------------------------------------------------
+    virtual ~TricycleDynamic() = default;
+
+    //-------------------------------------------------------------------------
+    //! \brief Set initial values needed by tricycle kinematic equations.
+    //! \param[in] position: the (x, y) world coordinated of the car is the
+    //! middle of the rear axle.
+    //! \param[in] heading: the initial yaw angle of the vehicle [radian]
+    //! \param[in] speed: initial longitudinal speed [meter / second].
+    //! \param[in] steering: initial steering angle [radina].
+    //-------------------------------------------------------------------------
+    void init(sf::Vector2f const& position, float const heading, float const speed,
+              float const steering);
+
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return position of the middle of the rear axle
+    //! inside the world coordinates.
+    //-------------------------------------------------------------------------
+    virtual inline sf::Vector2f position() const override
+    {
+        return m_shape.position();
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return the heading (yaw angle) [rad].
+    //-------------------------------------------------------------------------
+    virtual inline float heading() const override
+    {
+        return m_shape.heading();
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return the shape.
+    //-------------------------------------------------------------------------
+    inline CarShape const& shape() const
+    {
+        return m_shape;
+    }
+
+private:
+
+    //-------------------------------------------------------------------------
+    //! \brief Update discrete time equations from continuous time equations
+    //! described in these pictures:
+    //! ../../doc/pics/TricycleVehicle.png
+    //! ../../doc/pics/TricycleKinematicEq.png
+    // in where:
+    //  - L is the vehicle wheelbase [meter]
+    //  - v is the vehicle longitudinal speed [meter / second]
+    //  - theta is the car heading (yaw) [radian]
+    //  - delta is the steering angle [radian]
+    //-------------------------------------------------------------------------
+    virtual void onUpdate(CarControl const& control, float const dt) override;
+
+protected:
+
+    CarShape& m_shape;
+    PowerTrain m_powertrain;
+    Monitoring m_monitor;
 };
 
 #endif

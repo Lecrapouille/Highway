@@ -47,7 +47,7 @@ bool CarTrajectory::update(CarControl& control, float const dt)
     else
     {
         control.set_acceleration(m_accelerations.get(m_time), dt);
-        control.set_steering_speed(m_steerings.get(m_time), dt);
+        control.set_steering_rate(m_steerings.get(m_time), dt);
 
         return !m_accelerations.end(m_time);
     }

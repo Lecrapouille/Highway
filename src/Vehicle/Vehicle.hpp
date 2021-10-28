@@ -242,7 +242,7 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Set the reference speed.
+    //! \brief Set the reference longitudinal speed [m/s].
     //-------------------------------------------------------------------------
     void setRefSpeed(float const speed)
     {
@@ -250,11 +250,27 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Set the reference steering angle.
+    //! \brief Get the reference longitudinal speed [m/s].
+    //-------------------------------------------------------------------------
+    float getRefSpeed()
+    {
+        return m_control.get_speed();
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Set the reference steering angle [rad].
     //-------------------------------------------------------------------------
     void setRefSteering(float const angle)
     {
         m_control.set_steering(angle);
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Get the current reference steering angle [rad].
+    //-------------------------------------------------------------------------
+    float getRefSteering()
+    {
+        return m_control.get_steering();
     }
 
     //-------------------------------------------------------------------------
@@ -269,7 +285,7 @@ public:
     //! \brief Update the trajectory, cruise control, car physics ...
     //! \param[in] dt: delta time [seconds] from the previous call.
     //-------------------------------------------------------------------------
-    void update(float const dt)
+    virtual void update(float const dt)
     {
         m_control.update(dt);
         m_kinematic.update(m_control, dt);

@@ -289,11 +289,10 @@ public:
     //! \brief Update the trajectory, cruise control, car physics ...
     //! \param[in] dt: delta time [seconds] from the previous call.
     //-------------------------------------------------------------------------
-    void update(float const dt)
+    virtual void update(float const dt) override
     {
         m_statemachine.update(dt, *this);
-        m_control.update(dt);
-        m_kinematic.update(m_control, dt);
+        Car::update(dt);
     }
 
     //-------------------------------------------------------------------------
