@@ -364,7 +364,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
                                             float const VMAX, float const ADES)
 {
     // Duration to turn front wheels to the maximal angle [s]
-    float const DURATION_TO_TURN_WHEELS = 0.0f;
+    float const DURATION_TO_TURN_WHEELS = 0.5f;
     float t;
 
     // Clear internal states
@@ -397,6 +397,10 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
         m_speeds.add(VMAX, t);
         m_steerings.add(0.0f, t);
     }
+
+    // Stop the car to make turn wheels
+    m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
 
     // Turning circles: Consome path starting from the latest
     size_t i = m_maneuvers;
