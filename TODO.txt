@@ -1,0 +1,31 @@
+- Faire que tous les objets de la ville interargissent avec le vehicle. Donne moi la liste des pietons autour de la voiture, que l'on pourrait comparer avec un algo de machine learning: pietons, objets statiques/dynamiques, voitures, parking, route, trottoire, passage a niveau ... Evenement lors des collisions. Faire que les modeles physiques puissent etre changes
+
+
+- [FAIT] creneau: Si car > Xi part dans le mauvais sens
+- trajectoire Time scaling si vitesse voiure != 1m/s
+- Finir toutes les maneuvres: Perp, diag, entree et sortie
+- ajouter la sortie de parking dans la machine a etat
+- Voiture + Trailer: la trajectoire doit se faire sur le trailer et non la vaoiture
+- A partir des points de la trajectoire: automatiser la generation des consignes vitesses, angle volant + ajouter dans confluence
+- maneuvre parallele: Corriger l'offset "Lz" en dur.
+- [NON] Creneau: Entre les 2 cercles ajouter une droite si δmax est tres grand (petit cercle => droite)
+- Ajouter fonction displace_y() et faire un displace_xy() fonction generale
+- [FAIT] dimension et max steering angle
+- Ackerman
+- [FAIT] World class au lieu de Simulation
+- [FAIT] Ajouter les X capteurs et quand on mets le clignotant: activer les capteurs du cote indique par le clignotant et dessiner uniquement eux.
+- Wheels position 3D: add world.altitude()
+- Car sensors: car.detect() retourne un bit field: 1 par capteur et ajouter les 12 capteurs => non retourner la distance
+- Bug machine a etat: faire demarrer la voiture a 5m: ne detecte pas la 1ere voiture: elle se gare direcetement
+- quand on detecte les voitures garees, calculer et memoriser la profondeur.
+- YOLO: pour detecter points du parking
+- Parallel 2 maneuvres: j'ai ajouter un offset pour ne pas cogner la voitur de devant.
+- Parallel 2 maneuvres: virer les coordinees relatives au parking
+- Parallel N maneuvres: todo
+- [FAIT] ego voiture collision ne devient pas rouge
+- Arcs de cercles devraient affichees une fleche
+- bug parrallel N path quand N=1 et quand N>2
+
+- parking quand la voiture n'est pas a l'horizonale
+- mieux separer les machines a etat "je conduis" / "je me gare" => clignotant pour se garer
+- construire le parking

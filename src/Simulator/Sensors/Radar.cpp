@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -26,47 +26,30 @@
 // For more information, please refer to <https://unlicense.org>
 
 #  include "Sensors/Radar.hpp"
-#  include "Utils/Utils.hpp"
-#  include "Utils/Collide.hpp"
+#  include "Math/Collide.hpp"
 #  include <cassert>
 
 //-----------------------------------------------------------------------------
-void SensorShape::set(sf::Vector2f const& p, float const orientation)
+Radar::Radar(RadarBluePrint const& blueprint_)//SensorBluePrint const& blueprint_, float const fov_, float const range_)
+   : SensorShape(blueprint_), blueprint(blueprint_)//, fov(fov_), range(range_), 
+     //m_coverage_area(0.0f, 0.0f, blueprint.range, blueprint.orientation - blueprint.fov, blueprint.orientation + blueprint.fov)
 {
-   obb.setPosition(p);
-   obb.setRotation(orientation);
+   m_obb.setSize(sf::Vector2f(blueprint.range, 0.1f));
+   m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
+   m_obb.setOutlineColor(sf::Color::Blue);
 }
 
 //-----------------------------------------------------------------------------
-void Radar::init(SensorShape& shape, const float range)
+bool Radar::detects(sf::RectangleShape const& shape, sf::Vector2f& p) //const
 {
-   m_shape = &shape;
-   m_shape->obb.setSize(sf::Vector2f(range, 0.1f));
-   m_shape->obb.setOrigin(0.0f, m_shape->obb.getSize().y / 2);
-   m_shape->obb.setFillColor(sf::Color(165, 42, 42));
-   m_shape->obb.setOutlineThickness(ZOOM);
-   m_shape->obb.setOutlineColor(sf::Color::Blue);
-}
-
-//-----------------------------------------------------------------------------
-void Radar::set(sf::Vector2f const& p, float const orientation)
-{
-   assert(m_shape != nullptr);
-   m_shape->set(p, orientation);
-}
-
-//-----------------------------------------------------------------------------
-bool Radar::detects(sf::RectangleShape const& shape, sf::Vector2f& p) const
-{
-   assert(m_shape != nullptr);
-   bool res = ::collide(m_shape->obb, shape, p);
+   bool res = ::collide(m_obb, shape, p);
    if (res)
    {
-      m_shape->obb.setFillColor(sf::Color::Red);
+      m_obb.setFillColor(sf::Color::Red);
    }
    else
    {
-      m_shape->obb.setFillColor(sf::Color::Green);
+      m_obb.setFillColor(sf::Color::Green);
    }
    return res;
 }

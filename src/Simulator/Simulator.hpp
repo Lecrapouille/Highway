@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,33 +25,34 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SIMULATION_HPP
-#  define SIMULATION_HPP
+#ifndef SIMULATOR_HPP
+#  define SIMULATOR_HPP
 
-#  include "SelfParking/SelfParkingVehicle.hpp"
-#  include "World/Parking.hpp"
+#  include "City/City.hpp"
+
+class Renderer;
+
+// TODO:
+// Halt condition: simulation duration, ego speed == 0 ...
+// show grid: https://www.mathworks.com/help/driving/ug/motion-planning-using-dynamic-map.html
 
 // ****************************************************************************
 //! \brief Class managing car simulation.
 // ****************************************************************************
-class Simulation
+class Simulator
 {
-    friend class GUISimulation;
-
 public:
 
-    //-------------------------------------------------------------------------
-    //! \brief Draw the world and its entities (cars, parkings ...)
-    //! \param[in] renderer: SFML renderer (window)
-    //! \param[in] view: SFML view.
-    //-------------------------------------------------------------------------
-    void draw(sf::RenderWindow& renderer, sf::View& view);
+    Simulator(sf::RenderWindow& renderer);
+    //virtual ~Simulator() = default;
 
     //-------------------------------------------------------------------------
-    //! \brief Update the simuation states.
-    //! \param[in] dt: delta time in seconds from the previous call.
+    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position
+    //! [meter].
+    //! \param[in] p: position in the windows [pixel].
+    //! \return position in the world [meter].
     //-------------------------------------------------------------------------
-    void update(const float dt);
+    sf::Vector2f world(sf::Vector2i const& p);
 
     //-------------------------------------------------------------------------
     //! \brief Reset the simulation states, remove entities: parking, cars, ego
@@ -68,146 +69,26 @@ public:
     //! \param[in] parked: set to true to force the ego to be parked inside a
     //! parking spot.
     //-------------------------------------------------------------------------
-    void createWorld(size_t const angle, bool const parked);
+    //virtual void createWorld(size_t const angle, bool const parked) = 0;
 
     //-------------------------------------------------------------------------
-    //! \brief Create or replace the ego vehicle (the autonomous vehicle). The
-    //! instance is hold by the simulation instance.
-    //! \note: Only one ego vehicle is managed for the moment.
-    //! \param[in] model: non NULL string of the mark of the vehicle for its
-    //! dimension.
-    //! \param[in] position: the position of the middle of the rear axle inside
-    //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
-    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
-    //! rad.
-    //! \return the reference of the created vehicle.
+    //! \brief Update the simuation states.
+    //! \param[in] dt: delta time in seconds from the previous call.
     //-------------------------------------------------------------------------
-    SelfParkingCar& addEgo(const char* model, sf::Vector2f const& position,
-                           float const heading, float const speed = 0.0f,
-                           float const steering = 0.0f);
+    void update(const float dt);
 
     //-------------------------------------------------------------------------
-    //! \brief Create or replace the ego vehicle (the autonomous vehicle). The
-    //! instance is hold by the simulation instance.
-    //! \note: Only one ego vehicle is managed for the moment.
-    //! \param[in] dimension: dimension of the vehicule shape.
-    //! \param[in] position: the position of the middle of the rear axle inside
-    //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
-    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
-    //! rad.
-    //! \return the reference of the created vehicle.
+    //! \brief Draw the world and its entities (cars, parkings ...)
+    //! \param[in] renderer: SFML renderer (window)
+    //! \param[in] view: SFML view.
     //-------------------------------------------------------------------------
-    SelfParkingCar& addEgo(CarDimension const& dim, sf::Vector2f const& position,
-                           float const heading, float const speed = 0.0f,
-                           float const steering = 0.0f);
+    void draw(sf::RenderWindow& renderer, sf::View& view);
 
-    //-------------------------------------------------------------------------
-    //! \brief Create a parked car. The car instance is hold by the simulation
-    //! instance.
-    //! \param[in] model: non NULL string of the mark of the vehicle for its
-    //! dimension.
-    //! \param[in] parking: the reference of the parking slot in which the car
-    //! shall be parked in.
-    //! \return the reference of the created vehicle.
-    //-------------------------------------------------------------------------
-    Car& addCar(const char* model, Parking& parking);
+public:
 
-    //-------------------------------------------------------------------------
-    //! \brief Create a vehicle. The instance is hold by the simulation instance.
-    //! \note: Only one ego vehicle is managed for the moment.
-    //! \param[in] model: non NULL string of the mark of the vehicle for its
-    //! dimension.
-    //! \param[in] position: the position of the middle of the rear axle inside
-    //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
-    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
-    //! rad.
-    //! \return the reference of the created vehicle.
-    //-------------------------------------------------------------------------
-    Car& addCar(const char* model, sf::Vector2f const& position, float const heading,
-                float const speed = 0.0f, float const steering = 0.0f);
-
-    //-------------------------------------------------------------------------
-    //! \brief Create a vehicle. The instance is hold by the simulation instance.
-    //! \note: Only one ego vehicle is managed for the moment.
-    //! \param[in] dimension: dimension of the vehicule shape.
-    //! \param[in] position: the position of the middle of the rear axle inside
-    //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
-    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
-    //! rad.
-    //! \return the reference of the created vehicle.
-    //-------------------------------------------------------------------------
-    Car& addCar(CarDimension const& dim, sf::Vector2f const& position,
-                float const heading, float const speed, float const steering);
-
-    //-------------------------------------------------------------------------
-    //! \brief Create a ghost parked car. The car instance is hold by the
-    //! simulation instance. Ghost cars do not intreact with the world, other
-    //! cars. Their goal is purely for display and screenshots.
-    //! \param[in] model: non NULL string of the mark of the vehicle for its
-    //! dimension.
-    //! \param[in] parking: the reference of the parking slot in which the car
-    //! shall be parked in.
-    //! \return the reference of the created vehicle.
-    //-------------------------------------------------------------------------
-    Car& addGhost(const char* model, Parking& parking);
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Car& addGhost(const char* model, sf::Vector2f const& position,
-                  float const heading, float const steering = 0.0f);
-
-    Car& addGhost(CarDimension const& dim, sf::Vector2f const& position,
-                  float const heading, float const steering);
-
-    //-------------------------------------------------------------------------
-    //! \brief Add a parking slot in the world at the given position. The
-    //! parking instance is hold by the simulation instance.
-    //! \param[in] type: non NULL string of the mark of the vehicle for its
-    //! dimension.
-    //! \param[in] position: the position of the middle of the left lane inside
-    //! the world coordinates.
-    //! \return the reference of the created parking.
-    //-------------------------------------------------------------------------
-    Parking& addParking(const char* type, sf::Vector2f const& position);
-
-    //-------------------------------------------------------------------------
-    //! \brief Add a parking slot in the world at the given position. The
-    //! parking instance is hold by the simulation instance.
-    //! \param[in] dimension: dimension of the parking shape.
-    //! \param[in] position: the position of the middle of the left lane inside
-    //! the world coordinates.
-    //! \return the reference of the created parking.
-    //-------------------------------------------------------------------------
-    Parking& addParking(ParkingDimension const& dim, sf::Vector2f const& position);
-
-    //-------------------------------------------------------------------------
-    //! \brief Return the altitude at the given coordinates. TODO
-    //-------------------------------------------------------------------------
-    float altitude(sf::Vector2f const& position)
-    {
-        return 0.0f; // Not implemented yet
-    }
-
-protected:
-
-    //! \brief Container of parked cars
-    std::deque<std::unique_ptr<Car>> m_cars;
-    //! \brief Container of purely displayed cars
-    std::deque<std::unique_ptr<Car>> m_ghosts;
-    //! \brief The autonomous cars (TODO for the moment only one is managed)
-    std::unique_ptr<SelfParkingCar> m_ego = nullptr;
-    //! \brief Container of parking slots
-    std::deque<Parking> m_parkings;
-    // TODO roads and bounding boxes of static objects, pedestrians
+    City city;
+    sf::RenderWindow& m_renderer;
+    // FIXME m_ego
 };
 
 #endif

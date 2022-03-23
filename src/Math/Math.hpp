@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,14 +25,12 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef UTILS_HPP
-#  define UTILS_HPP
+#ifndef FOO_HPP
+#  define FOO_HPP
 
 #  include <SFML/System/Vector2.hpp>
 #  include <SFML/System/Vector3.hpp>
 #  include <cmath>
-
-#  define ZOOM 0.015f
 
 constexpr float RAD2DEG(float const r) { return r * 57.295779513f; }
 constexpr float DEG2RAD(float const d) { return d * 0.01745329251994f; }

@@ -1,4 +1,4 @@
-## 2021 Quentin Quadrat quentin.quadrat@gmail.com
+## 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 ##
 ## This is free and unencumbered software released into the public domain.
 ##
@@ -25,7 +25,7 @@
 ##
 ## For more information, please refer to <https://unlicense.org>
 
-TARGET_BIN = Drive
+TARGET_BIN = AutoPark
 
 # Needed for the command: make install
 DESTDIR ?=
@@ -36,25 +36,28 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Compilation searching files
 BUILD = build
-VPATH = $(BUILD) src src/World src/Vehicle src/Utils src/Sensors src/SelfParking src/SelfParking/Trajectories src/Renderer
-INCLUDES = -Isrc -Iinclude
+VPATH = $(BUILD) src src/Application src/Math src/Simulator/Sensors \
+  src/Simulator src/Simulator/City src/Simulator/Vehicle src/SelfParking \
+  src/Renderer src/Simulator/Vehicle/VehiclePhysicalModels src/Common \
+  src/Simulator/Vehicle/SelfParking/
+INCLUDES = -Isrc -Isrc/Simulator
 
 # C++14 (only because of std::make_unique not present in C++11)
 STANDARD=--std=c++14
 
 # Compilation flags
 COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
-  -Wunused-result -Wunused-parameter -Wtype-limits                  \
+  -Wunused-result -Wunused-parameter -Wtype-limits -Wshadow                 \
   -Wcast-align -Wcast-qual -Wconversion -Wfloat-equal               \
-  -Wpointer-arith -Wswitch-enum -pedantic -Wpacked -Wold-style-cast \
+  -Wpointer-arith -Wswitch-enum -Wpacked -Wold-style-cast \
   -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion
 COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter \
-  -Wno-old-style-cast -Wno-sign-conversion
+  -Wno-old-style-cast -Wno-sign-conversion -Wcast-function-type
 
 # Project flags
 CXXFLAGS = $(STANDARD) $(COMPIL_FLAGS)
 LDFLAGS = -lpthread
-DEFINES = -DDATADIR=\"$(DATADIR)\"
+DEFINES = -DDATADIR=\"$(DATADIR)\" -DZOOM=0.01f
 
 # Lib SFML https://www.sfml-dev.org/index-fr.php
 CXXFLAGS += `pkg-config --cflags sfml-graphics`
@@ -72,14 +75,17 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Desired compiled files
-OBJS_VEHICLE = VehicleControl.o VehiclePhysics.o VehicleShape.o Vehicle.o
-OBJS_UTILS = $(OBJS_DEBUG) Collide.o Monitoring.o
-OBJS_SIMULATION = Renderer.o Parking.o Simulation.o
-OBJS_SENSORS = Radar.o
-OBJS_TRAJECTORY = Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
-OBJS_SELFPARKING = SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
+OBJS += Monitoring.o Collide.o Components.o Drawable.o Renderer.o
+OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
+OBJS += Radar.o
+OBJS += Car.o Trailer.o SelfParkingCar.o
+OBJS += Pedestrian.o Parking.o BluePrints.o City.o
+OBJS += GUIMainMenu.o GUISimulation.o
 
-OBJS = $(OBJS_UTILS) $(OBJS_VEHICLE) $(OBJS_SENSORS) $(OBJS_TRAJECTORY) $(OBJS_SELFPARKING) $(OBJS_SIMULATION) main.o
+OBJS += SelfParkingComponent.o CarParkedScanner.o
+#OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
+#OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
+OBJS += Simulator.o main.o
 
 # Verbosity control
 ifeq ($(VERBOSE),1)

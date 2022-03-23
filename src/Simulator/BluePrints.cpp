@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,34 +25,6 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef PARKING_DIMENSION_HPP
-#  define PARKING_DIMENSION_HPP
+#include "Simulator/BluePrints.hpp"
 
-#  include "Utils/Utils.hpp"
-
-// ****************************************************************************
-//! \brief Class holding parking slot dimensions
-// ****************************************************************************
-struct ParkingDimension
-{
-    //--------------------------------------------------------------------------
-    //! \brief Set parking slot dimensions.
-    //! \param[in] l parking length [meter].
-    //! \param[in] w parking width [meter].
-    //! \param[in] a parking lane angle [deg] (0°: parallel, 90°: perpendicular).
-    //--------------------------------------------------------------------------
-    ParkingDimension(float const l, float const w, size_t const a)
-        : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
-    {}
-
-    //! \brief Vehicle length [meter]
-    float length;
-    //! \brief Vehicle width [meter]
-    float width;
-    //! \brief Orientation [rad]
-    float angle;
-    //! \brief Orientation [deg]
-    size_t deg;
-};
-
-#endif
+std::vector<std::function<void(std::string&)>> BluePrints::m_erase_functions;

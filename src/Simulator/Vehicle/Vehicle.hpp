@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -28,190 +28,59 @@
 #ifndef VEHICLE_HPP
 #  define VEHICLE_HPP
 
-#  include "World/Blueprints.hpp"
-#  include "World/Parking.hpp"
+#  include "Vehicle/Wheel.hpp"
+#  include "Vehicle/VehicleBluePrint.hpp"
 #  include "Vehicle/VehiclePhysics.hpp"
+#  include "Sensors/Radar.hpp"
+#  include "Common/Components.hpp"
 #  include <memory>
-#  include <deque>
-#  include <atomic>
-#  include <map>
-#  include <functional>
 
-//! \brief Default sf::Color for a car
-#define DEFAULT_VEHICLE_COLOR 178, 174, 174
+// TODO faire callback collides
+// TODO faire get actors around the car comme std::functional
 
-// *****************************************************************************
-//! \brief Class defining a trailer with its dimension, physics.
-// *****************************************************************************
-class Trailer
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+template<class BLUEPRINT>
+class Vehicle : public Components
 {
 public:
 
-    //--------------------------------------------------------------------------
-    //! \brief Default constructor: trailer with its dimension. The attitude is
-    //! set with the init() method.
-    //! \param[in] dimension: dimension structure returned by
-    //! TrailerDimensions::get().
-    //! \param[in] front: the front vehicle (car or trailer).
-    //--------------------------------------------------------------------------
-    Trailer(TrailerDimension const& dimension, IPhysics& front)
-        : dim(dimension), m_shape(dim), m_kinematic(name, m_shape, front)
-    {}
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    enum class TurningIndicator { Off, Left, Right, Warnings };
 
-    //--------------------------------------------------------------------------
-    //! \brief Initialize first value for the physics.
-    //! \param[in] speed: initial longitudinal speed [m/s] (usually 0).
-    //! \param[in] heading: initial yaw of the car [rad]
-    //! \note: the position is computed from the front vehicle.
-    //--------------------------------------------------------------------------
-    inline void init(float const speed, float const heading)
-    {
-        m_kinematic.init(speed, heading);
-    }
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    typedef std::function<void()> Callback;
 
-    //--------------------------------------------------------------------------
-    //! \brief Update the physics of the trailer.
-    //--------------------------------------------------------------------------
-    void update(CarControl control, float const dt)
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    Vehicle(BLUEPRINT const& blueprint_, const char* name_, sf::Color const& color_)
+        : blueprint(blueprint_), name(name_), color(color_)
     {
-        m_kinematic.update(control, dt);
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal acceleration [meter/seconds^2].
-    //--------------------------------------------------------------------------
-    inline float acceleration() const
-    {
-        return m_kinematic.acceleration();
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal speed [meter/seconds].
-    //--------------------------------------------------------------------------
-    inline float speed() const
-    {
-        return m_kinematic.speed();
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return position of the middle of the rear axle.
-    //--------------------------------------------------------------------------
-    inline sf::Vector2f position() const
-    {
-        return m_kinematic.position();
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading [rad].
-    //--------------------------------------------------------------------------
-    inline float heading() const
-    {
-        return m_shape.heading();
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the trailer shape.
-    //--------------------------------------------------------------------------
-    inline TrailerShape const& shape() const
-    {
-        return m_shape;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Non const getter: return the kinematic.
-    //--------------------------------------------------------------------------
-    inline TrailerKinematic& kinematic()
-    {
-        return m_kinematic;
+        m_shape = std::make_unique<VehicleShape<BLUEPRINT>>(blueprint);
+        m_control = std::make_unique<VehicleControl>();
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Debug purpose only: show shape information.
+    //! \brief
     //-------------------------------------------------------------------------
-    friend std::ostream& operator<<(std::ostream& os, Trailer const& trailer)
+    Radar& addRadar(RadarBluePrint const& bp)
     {
-        return os << "Trailer " << trailer.name << " {" << std::endl
-                  //TODO << trailer.dim << std::endl
-                  << trailer.m_shape << std::endl
-                  << "}";
-    }
-
-public:
-
-    //! \brief Trailer's read-only dimension.
-    TrailerDimension const dim;
-
-    //! \brief Car's name
-    std::string name = "trailer";
-
-    //! \brief Current car color. Public: to allow to change it for distinguish
-    //! car between them or for showing collisions ...
-    sf::Color color = sf::Color(DEFAULT_VEHICLE_COLOR);
-
-private:
-
-    //! \brief Trailer blueprint.
-    TrailerShape m_shape;
-    //! \brief Trailer Physics.
-    TrailerKinematic m_kinematic;
-};
-
-// ****************************************************************************
-//! \brief Class defining a car with its dimension, physics, controler.
-//! ../../doc/design/car.png
-// ****************************************************************************
-class Car
-{
-   typedef std::function<void(Car&)> Callback;
-
-public:
-
-    //--------------------------------------------------------------------------
-    //! \brief Default constructor: car with its dimension. The attitude is set
-    //! with the init() method.
-    //! \param[in] dimension: dimension structure returned by CarDimensions::get().
-    //--------------------------------------------------------------------------
-    Car(CarDimension const& dimension)
-        : dim(dimension), m_shape(dim), m_kinematic(name, m_shape)
-    {}
-
-    //-------------------------------------------------------------------------
-    //! \brief Default constructor: car with its dimension deduced by the model.
-    //! The car attitude is set with the init() method.
-    //! \param[in] model of the car. Shall be known from CarDimensions and shall
-    //! not be NULL.
-    //-------------------------------------------------------------------------
-    Car(const char* model)
-        : Car(CarDimensions::get(model))
-    {}
-
-    //-------------------------------------------------------------------------
-    //! \brief Needed because of virtual methods.
-    //-------------------------------------------------------------------------
-    virtual ~Car() = default;
-
-    //-------------------------------------------------------------------------
-    //! \brief Store callbacks for reacting to SFML press events.
-    //-------------------------------------------------------------------------
-    inline void registerCallback(size_t const key, Callback const& cb)
-    {
-        m_callbacks[key] = cb;
+        std::shared_ptr<Radar> radar = std::make_shared<Radar>(bp);
+        m_sensors.push_back(radar);
+        m_shape->addSensor(radar);
+        return *radar;
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Call callbacks when an key was pressed (if the key was registered).
-    //! \return true if the SFML I/O was known, else return false.
+    //! \brief
     //-------------------------------------------------------------------------
-    inline bool react(size_t const key)
-    {
-        auto it = m_callbacks.find(key);
-        if (it != m_callbacks.end())
-        {
-            it->second(*this);
-            return true;
-        }
-        return false;
-    }
+    virtual ~Vehicle() = default;
 
     //-------------------------------------------------------------------------
     //! \brief Initialize first value for the physics.
@@ -223,13 +92,31 @@ public:
     virtual void init(sf::Vector2f const& position, float const heading,
                       float const speed = 0.0f, float const steering = 0.0f)
     {
-        m_kinematic.init(position, heading, speed, steering);
-
-        for (auto& it: m_trailers)
-        {
-            it->init(speed, 0.0f); // TODO memorize headings
-        }
+        m_physics->init(0.0f, speed, position, heading);
+        //todo m_control->init(0.0f, speed, position, heading);
+        this->update_wheels(speed, steering);
     }
+
+    //-------------------------------------------------------------------------
+    // External or internal: collides with city and sensor detecs city ???
+    //-------------------------------------------------------------------------
+    virtual void update(float const dt)
+    {
+        m_control->update(dt);
+        m_physics->update(dt);
+        update_wheels(m_physics->speed(), steering());
+        m_shape->update(m_physics->position(), m_physics->heading());
+        for (auto& it: m_sensors)
+            it->update(m_physics->position(), m_physics->heading());
+        m_shape->update(position(), heading()/*, m_wheels*/);
+        if (m_trailer != nullptr)
+            m_trailer->update(dt);
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    virtual void update_wheels(float const speed, float const steering) = 0;
 
     //-------------------------------------------------------------------------
     //! \brief Attach a trailer at the end of the link of trailers. The position
@@ -237,226 +124,263 @@ public:
     //! \param[in] dimension: the dimension of the trailer.
     //! \param[in] heading: the angle between the trailer and the front vehicle.
     //-------------------------------------------------------------------------
-    Trailer& attachTrailer(TrailerDimension const& dimension, const float heading)
+    void track(Vehicle& vehicle)
     {
-        IPhysics* phys;
+        m_trailer = &vehicle;
+        // TODO: update init physic
+    }
 
-        if (m_trailers.empty())
-        {
-            phys = &m_kinematic;
-        }
-        else
-        {
-            phys = &(m_trailers.back()->kinematic());
-        }
+    //--------------------------------------------------------------------------
+    //! \brief Getter: return the const reference of the container holding
+    //! all the wheels.
+    //--------------------------------------------------------------------------
+    inline std::array<Wheel, BLUEPRINT::WheelName::MAX>& wheels()
+    {
+        return m_wheels;
+    }
 
-        m_trailers.push_back(std::make_unique<Trailer>(dimension, *phys));
-        m_trailers.back()->init(speed(), heading);
-        m_trailers.back()->name += std::to_string(m_trailers.size());
-        return *m_trailers.back();
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return the const reference of the container holding
+    //! all the wheels.
+    //-------------------------------------------------------------------------
+    inline std::array<Wheel, BLUEPRINT::WheelName::MAX> const& wheels() const
+    {
+        return m_wheels;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return the const reference of the nth wheel.
+    //--------------------------------------------------------------------------
+    inline Wheel& wheel(size_t const nth)
+    {
+        assert(nth < m_wheels.size());
+        return m_wheels[nth];
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return the car shape.
+    //-------------------------------------------------------------------------
+    inline VehicleShape<BLUEPRINT> const& shape() const
+    {
+        return *m_shape;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return the oriented bounding box of the vehicle.
+    //-------------------------------------------------------------------------
+    inline sf::RectangleShape const& obb() const
+    {
+        return m_shape->obb();
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Const getter: return the oriented bounding box of the nth wheel.
+    //-------------------------------------------------------------------------
+    inline sf::RectangleShape obb_wheel(size_t const nth) const
+    {
+        // Assertion is made inside the obb_wheel() method.
+        return m_shape->obb_wheel(nth, m_wheels[nth].steering);
     }
 
     //-------------------------------------------------------------------------
     //! \brief Check if the car or one of its trailer collides with another
     //! vehicle and one of its trailers.
     //-------------------------------------------------------------------------
-    bool collides(Car const& other) const
+    template<class T>
+    bool collides(Vehicle<T> const& other) const
     {
         sf::Vector2f p;
 
         // TODO: traillers collisions
-        return m_shape.collides(other.shape(), p);
+        // TODO: trigger callback
+        return m_shape->collides(other.obb(), p);
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: return longitudinal acceleration [meter/second^2].
+    //--------------------------------------------------------------------------
+    inline float acceleration() const
+    {
+        return m_physics->acceleration();
     }
 
     //-------------------------------------------------------------------------
     //! \brief Set the reference longitudinal speed [m/s].
     //-------------------------------------------------------------------------
-    void setRefSpeed(float const speed)
+    void refSpeed(float const speed)
     {
-        m_control.set_speed(speed);
+        m_control->set_ref_speed(constrain(speed, -11.0f, 50.f)); // -40 .. +180 km/h
     }
 
     //-------------------------------------------------------------------------
     //! \brief Get the reference longitudinal speed [m/s].
     //-------------------------------------------------------------------------
-    float getRefSpeed()
+    float refSpeed() const
     {
-        return m_control.get_speed();
+        return m_control->get_ref_speed();
     }
 
     //-------------------------------------------------------------------------
     //! \brief Set the reference steering angle [rad].
     //-------------------------------------------------------------------------
-    void setRefSteering(float const angle)
+    void refSteering(float const angle)
     {
-        m_control.set_steering(angle);
+        const float m = blueprint.max_steering_angle;
+        m_control->set_ref_steering(constrain(angle, -m, m));
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Get the current reference steering angle [rad].
+    //! \brief Get the reference steering angle [rad].
     //-------------------------------------------------------------------------
-    float getRefSteering()
+    float refSteering() const
     {
-        return m_control.get_steering();
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Lateral displacement
-    //-------------------------------------------------------------------------
-    //FIXME bool displacement(const float dx, const float dy)
-    //{
-    //    return CarTrajectory::create(dx, dy);
-    //}
-
-    //-------------------------------------------------------------------------
-    //! \brief Update the trajectory, cruise control, car physics ...
-    //! \param[in] dt: delta time [seconds] from the previous call.
-    //-------------------------------------------------------------------------
-    virtual void update(float const dt)
-    {
-        m_control.update(dt);
-        m_kinematic.update(m_control, dt);
+        return m_control->get_ref_steering();
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal acceleration [meter/seconds^2].
-    //--------------------------------------------------------------------------
-    inline float acceleration() const
-    {
-        return m_kinematic.acceleration();
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal speed [meter/seconds].
+    //! \brief Const getter: return the longitudinal speed [meter/second].
     //--------------------------------------------------------------------------
     inline float speed() const
     {
-        return m_kinematic.speed();
+        return m_physics->speed();
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return position of the middle of the rear axle.
+    //! \brief Const getter: return the position of the middle of the rear axle
+    //! inside the world coordinates.
     //--------------------------------------------------------------------------
     inline sf::Vector2f position() const
     {
-        return m_kinematic.position();
+        return m_physics->position();
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading [rad].
+    //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
     inline float heading() const
     {
-        return m_shape.heading();
+        return m_physics->heading();
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return all the wheels.
+    //! \brief Const getter: return the steering angle [rad].
     //--------------------------------------------------------------------------
-    inline std::vector<Wheel> const& wheels() const
+    inline float steering() const
     {
-        return m_shape.wheels();
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the nth wheel.
-    //--------------------------------------------------------------------------
-    inline Wheel const& wheel(CarShape::WheelName const nth) const
-    {
-        return m_shape.wheel(size_t(nth));
+        return m_wheels[0].steering;
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Const getter: return the car shape.
+    //! \brief Store callbacks for reacting to SFML press events.
     //-------------------------------------------------------------------------
-    inline CarShape const& shape() const
+    inline void registerCallback(size_t const key, Callback&& cb)
     {
-        return m_shape;
+        m_callbacks[key] = cb;
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Const getter: return the oriented bounding box.
+    //! \brief Call callbacks when an key was pressed (if the key was registered).
+    //! \return true if the SFML I/O was known, else return false.
     //-------------------------------------------------------------------------
-    inline sf::RectangleShape const& obb() const
+    bool reactTo(size_t const key)
     {
-        return m_shape.obb();
+        auto it = m_callbacks.find(key);
+        if (it != m_callbacks.end())
+        {
+            it->second(*this);
+            return true;
+        }
+        return false;
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Const getter: return all trailers attached to the car in order
-    //! and starting by the one attached to the car.
+    //! \brief Set left and right turning indicators. This is not purely for
+    //! rendering cosmetic but can activate event for a state machine (ie for
+    //! entering or leaving a parking slot).
+    //! turningIndicators(true, false) for indicating turning left.
+    //! turningIndicators(false, true) for indicating turning right.
+    //! turningIndicators(true, true) for indicating warnings.
+    //! turningIndicators(false, false) when not turning or not in fault.
     //-------------------------------------------------------------------------
-    inline std::deque<std::unique_ptr<Trailer>> const& trailers() const
+    void turningIndicator(bool const left, bool const right)
     {
-        return m_trailers;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Trigger the car to find an empty parking spot.
-    //! \note Simulate the event when the driver has activate the flashing light
-    //-------------------------------------------------------------------------
-    inline void turning_indicator(bool const left, bool const right)
-    {
-        assert(!left || !right);
         m_turning_left = left;
         m_turning_right = right;
     }
 
-    //-------------------------------------------------------------------------
-    //! \brief Is the car turning left.
-    //-------------------------------------------------------------------------
-    inline bool turning_left() const
+    void turningIndicator(TurningIndicator const state)
     {
-        return m_turning_left;
+        switch (state)
+        {
+            case TurningIndicator::Warnings:
+               m_turning_left = true;
+               m_turning_right = true;
+            break;
+            case TurningIndicator::Left:
+               m_turning_left = true;
+               m_turning_right = false;
+            break;
+            case TurningIndicator::Right:
+               m_turning_left = false;
+               m_turning_right = true;
+            break;
+            case TurningIndicator::Off:
+               m_turning_left = false;
+               m_turning_right = false;
+            break;
+        }
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Is the car turning right.
+    //! \brief Is the car turning left, rigth, warning or not flashing.
     //-------------------------------------------------------------------------
-    inline bool turning_right() const
+    TurningIndicator turningIndicator() const
     {
-        return m_turning_right;
+        if (m_turning_left)
+        {
+           return m_turning_right ? TurningIndicator::Warnings : TurningIndicator::Left;
+        }
+        return m_turning_right ? TurningIndicator::Right : TurningIndicator::Off;
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Debug purpose only: show shape information.
+    //! \brief
     //-------------------------------------------------------------------------
-    friend std::ostream& operator<<(std::ostream& os, Car const& car)
+    inline std::vector<std::shared_ptr<Radar>> const& sensors() const
     {
-        return os << "Vehicle " << car.name << " {" << std::endl
-                  << car.dim << std::endl
-                  << car.m_shape << std::endl
-                  << "}";
+        return m_sensors;
     }
 
 public:
 
-    //! \brief Car's read-only dimension.
-    CarDimension const dim;
-
+    //! \brief Dimension of the vehicle
+    BLUEPRINT /*const*/ blueprint; // FIXME
     //! \brief Car's name
-    std::string name = "car";
-
+    std::string name;
     //! \brief Current car color. Public: to allow to change it for distinguish
     //! car between them or for showing collisions ...
-    sf::Color color = sf::Color(DEFAULT_VEHICLE_COLOR);
+    sf::Color color;
 
 protected:
 
-    //! \brief Car blueprint.
-    CarShape m_shape;
-    //! \brief Car Physics.
-    TricycleKinematic m_kinematic;
-    //! \brief Car cruise control.
-    CarControl m_control;
-    //! \brief List of trailers attached to the car
-    std::deque<std::unique_ptr<Trailer>> m_trailers;
+    //! \brief 
+    std::vector<std::shared_ptr<Radar>> m_sensors;
+    //! \brief The shape of the vehicle, dimension, wheel positions
+    std::unique_ptr<VehicleShape<BLUEPRINT>> m_shape;
+    //! \brief Kinematic, Dynamic model of the vehicle
+    std::unique_ptr<VehiclePhysics<BLUEPRINT>> m_physics;
+    //! \brief The cruse control
+    std::unique_ptr<VehicleControl> m_control;
+    //! \brief Vehicle's wheels
+    std::array<Wheel, BLUEPRINT::WheelName::MAX> m_wheels;
+    //! \brief The vehicle tracked by this vehicle instance
+    Vehicle* m_trailer = nullptr;
+    //! \brief List of reactions to do when events occured
+    std::map<size_t, Callback> m_callbacks;
     //! \brief Truning indicator
     bool m_turning_left = false;
     //! \brief Truning indicator
     bool m_turning_right = false;
-    //! \brief Callbacks to SFML I/O events
-    std::map<size_t, Callback> m_callbacks;
 };
 
 #endif

@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -26,154 +26,76 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "main.hpp"
-#include "Renderer/Renderer.hpp"
+#include "Application/GUISimulation.hpp"
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
-
-//------------------------------------------------------------------------------
-// Note the view coordinates are
-//   ^ Y
-//   |
-//   +------> X
-// Changed through view.setSize() to follow the same computations than the doc
-// "Estimation et controle pour le pilotage automatique de vehicule" by Sungwoo Choi
-GUISimulation::GUISimulation(Application& application)
-    : IGUIStates("Car Simulation", application.renderer())
-{
-    // SFML view
-    m_view = renderer().getDefaultView();
-    m_view.setSize(float(application.width()), -float(application.height()));
-    m_view.zoom(ZOOM);
-    renderer().setView(m_view);
-}
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 1024
 
 //------------------------------------------------------------------------------
-void GUISimulation::activate()
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+void create_world(City& city, size_t const angle, bool const /*parked*/)
 {
-    // Do nothing: world creation is done through keyboard key pressed events
+    city.reset();
+
+    // Create a road
+    // Road& road1 = addRoad(RoadDimensions::get("road.2ways"), curvature, length);
+
+    // Create parallel or perpendicular or diagnoal parking slots
+    std::string dim = "epi." + std::to_string(angle);
+    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
+    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
+    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
+    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
+    Parking& parking4 = city.addParking(dim.c_str(), parking3.position() + parking3.delta());
+
+    // Add parked cars (static)
+    Car& car0 = city.addCar("Renault.Twingo", parking0);
+    Car& car1 = city.addCar("Renault.Twingo", parking1);
+    Car& car2 = city.addCar("Renault.Twingo", parking3);
+
+    // Debug Renault.Twingo
+    //addGhost("Renault.Twingo", sf::Vector2f(107.994f, 100.0f), 0.0f); // Em0
+    //addGhost("Renault.Twingo", sf::Vector2f(109.275f, 100.193f), 0.300045f); // Em1, ThetaE1
+    //addGhost("Renault.Twingo", sf::Vector2f(108.345f, 99.7811f), 0.300045f + 0.235058f); // Em2, ThetaE1 + ThetaE2
+
+    // Debug QQ
+    //addGhost("QQ", sf::Vector2f(108.405f, 100.0f), 0.0f); // Em0
+    //addGhost("QQ", sf::Vector2f(109.06f, 100.042f), 0.126959f); // Em1, ThetaE1
+    //addGhost("QQ", sf::Vector2f(108.59f, 99.9596f), 0.126959f + 0.0919716f); // Em2, ThetaE1 + ThetaE2
+
+    // Self-parking car (dynamic). Always be the last in the container
+    Car& ego = city.addEgo("QQ", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f, 0.0f);
+
+#if 0
+    // Make the car react to some I/O events
+    ego.registerCallback(sf::Keyboard::PageDown, [](Car& ego) {
+        ego.turningIndicator(false, ego.turning_right() ^ true);
+    });
+    ego.registerCallback(sf::Keyboard::PageUp, [](Car& ego) {
+        ego.turningIndicator(ego.turning_left() ^ true, false);
+    });
+    ego.registerCallback(sf::Keyboard::Up, [](Car& ego) {
+        ego.setRefSpeed(1.0f);
+    });
+    ego.registerCallback(sf::Keyboard::Down, [](Car& ego) {
+        ego.setRefSpeed(0.0f);
+    });
+    ego.registerCallback(sf::Keyboard::Right, [](Car& ego) {
+        float ref = ego.getRefSteering() - 0.1f;
+        ego.setRefSteering(constrain(ref, -ego.dim.max_steering_angle, ego.dim.max_steering_angle));
+    });
+    ego.registerCallback(sf::Keyboard::Left, [](Car& ego) {
+        float ref = ego.getRefSteering() + 0.1f;
+        ego.setRefSteering(constrain(ref, -ego.dim.max_steering_angle, ego.dim.max_steering_angle));
+    });
+
+    // With trailer
+    //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
+    //std::cout << tr << std::endl;
+#endif
 }
-
-//------------------------------------------------------------------------------
-void GUISimulation::deactivate()
-{
-    m_simulation.reset();
-}
-
-//------------------------------------------------------------------------------
-void GUISimulation::handleInput()
-{
-    // Measurement
-    float distance;
-    static sf::Vector2f P1, P2;
-
-    sf::Event event;
-
-    // Get the X,Y mouse coordinates from the simulated word coordinates.
-    m_mouse = world(sf::Mouse::getPosition(renderer()));
-
-    while (m_running && renderer().pollEvent(event))
-    {
-        switch (event.type)
-        {
-        case sf::Event::Closed:
-            m_running = false;
-            break;
-        // Get world's position
-        case sf::Event::MouseButtonPressed:
-            P1 = m_mouse;
-            std::cout << "P1: (" << m_mouse.x << ", "
-                      << m_mouse.y << ") [m]" << std::endl;
-            break;
-        // Measure distances in meters.
-        case sf::Event::MouseButtonReleased:
-            P2 = m_mouse;
-            distance = DISTANCE(P1, P2);
-            if (distance >= 0.001f)
-            {
-                std::cout << "P2: (" << m_mouse.x << ", "
-                          << m_mouse.y << ") [m]" << std::endl;
-                std::cout << "|P1P2| = " << DISTANCE(P1, P2)
-                          << " [m]" << std::endl;
-            }
-            break;
-        case sf::Event::KeyPressed:
-            if (event.key.code == sf::Keyboard::Escape)
-            {
-                m_running = false;
-            }
-            else if (event.key.code == sf::Keyboard::A)
-            {
-                std::cout << "ENTERING BACKWARD PARALLEL" << std::endl;
-                m_simulation.createWorld(0, true);
-            }
-            else if (event.key.code == sf::Keyboard::Z)
-            {
-                std::cout << "LEAVING BACKWARD PARALLEL" << std::endl;
-                m_simulation.createWorld(0, false);
-            }
-            else if (event.key.code == sf::Keyboard::E)
-            {
-                std::cout << "ENTERING BACKWARD DIAGONAL 45" << std::endl;
-                m_simulation.createWorld(45, true);
-            }
-            else if (event.key.code == sf::Keyboard::R)
-            {
-                std::cout << "LEAVING BACKWARD DIAGONAL 45" << std::endl;
-                m_simulation.createWorld(45, false);
-            }
-            else if (event.key.code == sf::Keyboard::T)
-            {
-                std::cout << "ENTERING BACKWARD DIAGONAL 60" << std::endl;
-                m_simulation.createWorld(60, true);
-            }
-            else if (event.key.code == sf::Keyboard::Y)
-            {
-                std::cout << "LEAVING BACKWARD DIAGONAL 60" << std::endl;
-                m_simulation.createWorld(60, false);
-            }
-            else if (event.key.code == sf::Keyboard::U)
-            {
-                std::cout << "ENTERING BACKWARD DIAGONAL 75" << std::endl;
-                m_simulation.createWorld(75, true);
-            }
-            else if (event.key.code == sf::Keyboard::I)
-            {
-                std::cout << "LEAVING BACKWARD DIAGONAL 75" << std::endl;
-                m_simulation.createWorld(75, false);
-            }
-            else if (event.key.code == sf::Keyboard::O)
-            {
-                std::cout << "ENTERING BACKWARD PERPENDICULAR" << std::endl;
-                m_simulation.createWorld(90, true);
-            }
-            else if (event.key.code == sf::Keyboard::P)
-            {
-                std::cout << "LEAVING BACKWARD PERPENDICULAR" << std::endl;
-                m_simulation.createWorld(90, false);
-            }
-            else if (m_simulation.m_ego != nullptr)
-            {
-                m_simulation.m_ego->react(event.key.code);
-            }
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-void GUISimulation::update(const float dt) // FIXME to be threaded
-{
-    m_simulation.update(dt);
-}
-
-//------------------------------------------------------------------------------
-void GUISimulation::draw(const float /*dt*/)
-{
-    m_simulation.draw(renderer(), m_view);
-}
+#pragma GCC diagnostic pop
 
 // -----------------------------------------------------------------------------
 int main()

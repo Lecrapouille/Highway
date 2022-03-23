@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,33 +25,4 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef VEHICLE_WHEEL_HPP
-#  define VEHICLE_WHEEL_HPP
-
-#  include <SFML/System/Vector2.hpp>
-//#  include <SFML/System/Vector3.hpp>
-
-// *****************************************************************************
-//! \brief Vehicle wheel structure
-// *****************************************************************************
-struct Wheel
-{
-    //! \brief Relative position from the car shape position (middle rear axle)
-    sf::Vector2f offset;
-    //! \brief current position and altitude inside the world coordinate.
-    sf::Vector2f position; // TODO: Vector3f
-    //! \brief yaw angle.
-    float steering;
-    //! \brief speed
-    float speed;
-
-    friend std::ostream& operator<<(std::ostream& os, Wheel const& wheel)
-    {
-        return os << "{ position = (" << wheel.position.x
-                  << ", " << wheel.position.y
-                  << ") m, steering = " << RAD2DEG(wheel.steering) << " deg"
-                  << " }";
-    }
-};
-
-#endif
+#include "Application/GUIMainMenu.hpp"

@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -28,29 +28,25 @@
 #ifndef CAR_SENSORS_RADAR_HPP
 #  define CAR_SENSORS_RADAR_HPP
 
-#  include <SFML/Graphics/RectangleShape.hpp>
-#  include <SFML/System/Vector2.hpp>
+#  include "Sensors/SensorShape.hpp"
+#  include "Renderer/Drawable.hpp"
 #  include <cassert>
 
 class Car;
 
-// ****************************************************************************
-//! \brief A sensor shape is just a blue print used inside of the vehicle shape
-//! for orienting automatically the sensor when the vehicle shape is turned.
-// ****************************************************************************
-struct SensorShape
-{
-   //--------------------------------------------------------------------------
-   //! \brief Set the sensor attitude (position and heading orientation)
-   //--------------------------------------------------------------------------
-   void set(sf::Vector2f const& position, float const orientation);
+// TODO https://www.mathworks.com/help/driving/ref/drivingradardatagenerator-system-object.html
 
-   //! \brief Relative position from the car shape position (middle rear axle)
-   sf::Vector2f offset;
-   //! \brief Relative relative orientation
-   float orientation;
-   //! \brief Oriented bounding box
-   sf::RectangleShape obb;
+struct RadarBluePrint: public SensorBluePrint
+{
+   // FIXME: why needed ?
+   RadarBluePrint(sf::Vector2f off, float ori, float f, float r)
+     : SensorBluePrint(off, ori), fov(f), range(r)
+   {}
+
+   //! \brief Field Of View: Angular field of view of radar [deg].
+   float const fov;
+   //! \brief Mmaximum range of radar [meter].
+   float const range;
 };
 
 // ****************************************************************************
@@ -58,7 +54,7 @@ struct SensorShape
 //! not realist for works as a bug entenna and detect oriented boundind boxes
 //! collisions.
 // ****************************************************************************
-class Radar
+class Radar: public SensorShape
 {
 public:
 
@@ -68,12 +64,7 @@ public:
    //! \fixme should be in constructor but since a vehicle has a sensors but its
    //! shape holds SensorShape we had to split it. I dunno how to fix that.
    //--------------------------------------------------------------------------
-   void init(SensorShape& shape, const float range);
-
-   //--------------------------------------------------------------------------
-   //! \brief Set the sensor attitude (position and heading orientation)
-   //--------------------------------------------------------------------------
-   void set(sf::Vector2f const& position, float const orientation);
+   Radar(RadarBluePrint const& blueprint);//SensorBluePrint const& blueprint, float const fov, float const range);
 
    //--------------------------------------------------------------------------
    //! \brief Is the sensor collides to the given bounding box ?
@@ -81,18 +72,26 @@ public:
    //! \param[inout] p the point of collision.
    //! \return true if the sensor has detected a box.
    //--------------------------------------------------------------------------
-   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p) const;
+   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p);// const;
 
-   inline SensorShape const& shape() const
+   Arc const& coverageArea()
    {
-      assert(m_shape != nullptr);
-      return *m_shape;
-   }
+      m_coverage_area.init(m_position.x, m_position.y, blueprint.range,
+                           blueprint.orientation + m_heading - blueprint.fov,
+                           blueprint.orientation + m_heading + blueprint.fov,
+                           sf::Color::Red);
+      return m_coverage_area;
+    }
+
+public:
+
+   //! \brief
+   RadarBluePrint const blueprint;
 
 private:
 
-   // FIXME ideally SensorShape& if possible to replace init() by the constructor!
-   SensorShape* m_shape = nullptr;
+   //! \brief Shape of the radar coverage area.
+   Arc m_coverage_area;
 };
 
 #endif

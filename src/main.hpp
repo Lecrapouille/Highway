@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -27,92 +27,5 @@
 
 #ifndef MAIN_HPP
 #  define MAIN_HPP
-
-#  include "Renderer/GUIStates.hpp"
-#  include "Simulation.hpp"
-
-// ****************************************************************************
-//! \brief Class deriving form SFML GUI States and managing the GUI for the
-//! simulation.
-// ****************************************************************************
-class GUISimulation: public IGUIStates
-{
-public:
-
-    //-------------------------------------------------------------------------
-    //! \brief Default Constructor.
-    //! \param[inout] application the main class managing the stack of GUI
-    //-------------------------------------------------------------------------
-    GUISimulation(Application& application);
-
-    //-------------------------------------------------------------------------
-    //! \brief Destructor. Close the renderer.
-    //-------------------------------------------------------------------------
-    ~GUISimulation()
-    {
-        renderer().close();
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position
-    //! [meter].
-    //! \param[in] p: position in the windows [pixel].
-    //! \return position in the world [meter].
-    //-------------------------------------------------------------------------
-    sf::Vector2f world(sf::Vector2i const& p)
-    {
-        return renderer().mapPixelToCoords(p);
-    }
-
-private: // Derived from IGUIStates
-
-    //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Draw the world and its entities.
-    //-------------------------------------------------------------------------
-    virtual void draw(const float /*dt*/) override;
-
-    //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Update GUI states.
-    //-------------------------------------------------------------------------
-    virtual void /*gui_*/update(const float dt) override;
-
-    // TODO physics_update(const float dt)
-
-    //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Manage mouse and keyboard events.
-    //-------------------------------------------------------------------------
-    virtual void handleInput() override;
-
-    //-------------------------------------------------------------------------
-    //! \brief Inherit from GUI class. Return true if GUI is alive.
-    //-------------------------------------------------------------------------
-    virtual bool isRunning() override
-    {
-        return m_running;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Called when the GUI has been enabled.
-    //-------------------------------------------------------------------------
-    virtual void activate() override;
-
-    //-------------------------------------------------------------------------
-    //! \brief Called when the GUI has been disabled.
-    //-------------------------------------------------------------------------
-    virtual void deactivate() override;
-
-private:
-
-    //! \brief Alive class ?
-    std::atomic<bool> m_running{true};
-    //! \brief For managing zoom and camera displacement
-    sf::View m_view;
-    //! \brief Mouse X,Y position within the world coordinate [meter].
-    //! You directly can measure objects (in meter).
-    sf::Vector2f m_mouse;
-    //! \brief Class managing the simulation
-    Simulation m_simulation;
-    // TODO thread for the physics
-};
 
 #endif

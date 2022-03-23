@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,126 +25,45 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Vehicle/VehiclePhysics.hpp"
+#include "Vehicle/ModelPhysics/TricycleDynamic.hpp"
+#include "Log/Log.hpp"
 
-//-----------------------------------------------------------------------------
-void TrailerKinematic::init(float const speed, float const heading)
+//------------------------------------------------------------------------------
+float PowerTrain::update(float const dt, float const throttle,
+                         /*float const brake,*/ float const load)
 {
-    float x = 0.0f;
-    float y = 0.0f;
+    assert((throttle >= 0.0f) && (throttle <= 1.0f));
+    //assert((brake >= 0.0f) && (brake <= 1.0f));
 
-    m_shape.set(sf::Vector2f(x, y), heading);
-    m_speed = speed;
+    // Engine torque
+    m_torque_engine = throttle2Torque(throttle, m_speed_engine);
 
-    // See "Flatness and motion Planning: the Car with n-trailers" by Pierre Rouchon ...
-    // x0 - sum^{n}_{i=1}(cos(heading_i) d_i)
-    // y0 - sum^{n}_{i=1}(sin(heading_i) d_i)
-    // i: the nth trailer and (x0, y0) middle of the rear axle of the car
-    IPhysics* front = this;
-    while (front != nullptr)
-    {
-       if (front->next == nullptr)
-       {
-           x = front->position().x - x;
-           y = front->position().y - y;
-           std::cout << "car: '" << front->name << "': " << front->position().x << ", " << front->position().y << std::endl;
-           std::cout << "=> " << x << ", " << y << std::endl;
-       }
-       else
-       {
-           TrailerKinematic* f = reinterpret_cast<TrailerKinematic*>(front);
-           float d = f->m_shape.dim.wheelbase;
+    // Torque converter (Clutch)
+    float torque_converter = m_gear_ratio * effective_radius * load;
 
-           std::cout << "Trailer: '" << front->name << "': " << RAD2DEG(f->heading()) << " " << d << std::endl;
-           x = x + cosf(f->heading()) * d;
-           y = y + sinf(f->heading()) * d;
-           std::cout << "=> " << x << ", " << y << std::endl;
-       }
-       front = front->next;
-    }
-    m_shape.set(sf::Vector2f(x, y), heading);
+    // Engine angular velocity
+    float acceleration_engine =
+            (m_torque_engine - torque_converter) / m_inertia;
+    m_speed_engine += acceleration_engine * dt;
+
+    // Transmission (gear box)
+
+    // Brake
+    //m_torque_brake = K * brake;
+
+    // Wheels speed
+    return m_gear_ratio * m_speed_engine;
 }
 
-//-----------------------------------------------------------------------------
-void TrailerKinematic::onUpdate(CarControl const& control, float const dt)
+//------------------------------------------------------------------------------
+float PowerTrain::throttle2Torque(float const throttle, float const speed)
 {
-    std::cout << "Trailer update " << name << std::endl;
-    assert(next != nullptr);
-
-    m_speed = control.outputs.body_speed;
-    float heading = m_shape.heading();
-    float x = 0.0f;
-    float y = 0.0f;
-
-    if (next->next == nullptr)
-    {
-        heading += dt * m_speed * sinf(next->heading() - heading) / m_shape.dim.wheelbase;
-    }
-    else
-    {
-        std::cerr << "not yet managed" << std::endl;
-        exit(1);
-    }
-
-    IPhysics* front = this;
-    while (front != nullptr)
-    {
-       if (front->next == nullptr)
-       {
-           x = front->position().x - x;
-           y = front->position().y - y;
-           std::cout << "car: '" << front->name << "': " << front->position().x << ", " << front->position().y << std::endl;
-           std::cout << "=> " << x << ", " << y << std::endl;
-       }
-       else
-       {
-           TrailerKinematic* f = reinterpret_cast<TrailerKinematic*>(front);
-           float heading = f->heading();
-           float d = f->m_shape.dim.wheelbase;
-
-           std::cout << "Trailer: '" << front->name << "': " << RAD2DEG(heading) << " " << d << std::endl;
-           x = x + cosf(heading) * d;
-           y = y + sinf(heading) * d;
-           std::cout << "=> " << x << ", " << y << std::endl;
-       }
-       front = front->next;
-    }
-    m_shape.set(sf::Vector2f(x, y), heading);
+    const float C[3] = { 400.0f, 0.1f, -0.0002f };
+    return throttle * (C[0] + C[1] * speed + C[2] * speed * speed);
 }
 
-//-----------------------------------------------------------------------------
-void TricycleKinematic::init(sf::Vector2f const& position, float const heading, float const speed,
-                             float const steering)
-{
-    m_shape.set(position, heading, steering);
-    m_speed = speed;
-}
-
-//-----------------------------------------------------------------------------
-void TricycleKinematic::onUpdate(CarControl const& control, float const dt)
-{
-    float steering = control.outputs.steering;
-    float heading = m_shape.heading();
-    sf::Vector2f position = m_shape.position();
-
-    m_speed = control.outputs.body_speed;
-    heading += dt * m_speed * tanf(steering) / m_shape.dim.wheelbase;
-    position.x += dt * m_speed * cosf(heading);
-    position.y += dt * m_speed * sinf(heading);
-    m_shape.set(position, heading, steering);
-}
-
-//-----------------------------------------------------------------------------
-void TricycleDynamic::init(sf::Vector2f const& position, float const heading, float const speed,
-                           float const steering)
-{
-    m_shape.set(position, heading, steering);
-    m_speed = speed;
-}
-
-//-----------------------------------------------------------------------------
-// https://github.com/quangnhat185/Self-driving_cars_toronto_coursera/blob/master/1.%20Introduciton%20to%20Self-driving%20Cars/Longitudinal_Vehicle_Model.ipynb
-void TricycleDynamic::onUpdate(CarControl const& control, float const dt)
+//------------------------------------------------------------------------------
+void TricycleDynamic::update(CarControl const& control, float const dt)
 {
     static float time = 0.0f;
     //float const dt = 0.01f;
@@ -228,5 +147,4 @@ void TricycleDynamic::onUpdate(CarControl const& control, float const dt)
     m_monitor.log(name, time,
                   control.inputs.throttle,
                   m_speed, Fg, Trr, Faero, Fload, m_acceleration);
-
 }

@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -28,19 +28,16 @@
 #ifndef VEHICLE_CONTROL_HPP
 #  define VEHICLE_CONTROL_HPP
 
-class CarControl
+class VehicleControl
 {
 public:
-
-    void set()
-    {}
 
     //----------------------------------------------------------------------
     //! \brief The desired values
     //----------------------------------------------------------------------
     struct References
     {
-        float body_speed = 0.0f;
+        float speed = 0.0f;
         float steering = 0.0f;
     };
 
@@ -58,30 +55,30 @@ public:
     //----------------------------------------------------------------------
     struct Outputs
     {
-        float body_speed = 0.0f;
+        float speed = 0.0f;
         float steering = 0.0f;
     };
 
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_speed(float const speed)
+    void set_ref_speed(float const speed)
     {
-        ref.body_speed = speed;
+        ref.speed = speed;
     }
 
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    float get_speed()
+    float get_ref_speed()
     {
-        return ref.body_speed;
+        return ref.speed;
     }
 
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_steering(float const steering)
+    void set_ref_steering(float const steering)
     {
         ref.steering = steering;
     }
@@ -89,7 +86,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    float get_steering()
+    float get_ref_steering()
     {
         return ref.steering;
     }
@@ -97,15 +94,15 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_acceleration(float const acc, float const dt)
+    void set_ref_acceleration(float const acc, float const dt)
     {
-        ref.body_speed += acc * dt;
+        ref.speed += acc * dt;
     }
 
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_steering_rate(float const steering, float const dt)
+    void set_ref_steering_rate(float const steering, float const dt)
     {
         ref.steering += steering * dt;
     }
@@ -116,7 +113,7 @@ public:
     void update(float const /*dt*/ /*, sensors*/)
     {
         //
-        outputs.body_speed = ref.body_speed;
+        outputs.speed = ref.speed;
         outputs.steering = ref.steering;
     }
 

@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,4 +25,18 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Vehicle/Vehicle.hpp"
+#ifndef WHEEL_HPP
+#  define WHEEL_HPP
+
+// *****************************************************************************
+//! \brief Vehicle wheel structure
+// *****************************************************************************
+struct Wheel
+{
+    //! \brief yaw angle.
+    float steering;
+    //! \brief speed
+    float speed;
+};
+
+#endif

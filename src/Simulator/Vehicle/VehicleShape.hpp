@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,84 +25,64 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef VEHICLE_SHAPE_HPP
-#  define VEHICLE_SHAPE_HPP
+#ifndef VEHICLESHAPE_HPP
+#  define VEHICLESHAPE_HPP
 
-#  include "Utils/Collide.hpp"
-#  include "Vehicle/VehicleDimension.hpp"
-#  include "Vehicle/Wheels.hpp"
-#  include "Sensors/Radar.hpp"
-#  include <iostream>
-
-// Ackermann steering mechanics
-// TODO https://datagenetics.com/blog/december12016/index.html
-// TODO https://www.researchgate.net/publication/349289743_Designing_Variable_Ackerman_Steering_Geometry_for_Formula_Student_Race_Vehicle/link/6028146aa6fdcc37a824e404/download
+#  include "Math/Collide.hpp"
+#  include "Math/Math.hpp"
+#  include "Sensors/SensorShape.hpp"
+#  include <vector>
+#  include <cassert>
+#  include <memory>
 
 // *****************************************************************************
-//! \brief A vehicle shape knows it position, heading, bounding box and the
-//! blueprint of its wheels.
-//! \tparam Dim: a class holding dimension of the shape (ie TrailerDimension,
-//! CarDimension ...)
+//! \brief
 // *****************************************************************************
-template<class Dim>
+template<class BLUEPRINT>
 class VehicleShape
 {
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief Default constructor with the vehicle dimension (ie
-    //! TrailerDimension, CarDimension ...)
+    //! \brief
     //--------------------------------------------------------------------------
-    VehicleShape(Dim const& dimension)
-        : dim(dimension)
-    {}
-
-    //--------------------------------------------------------------------------
-    //! \brief Because of virtual methods.
-    //--------------------------------------------------------------------------
-    virtual ~VehicleShape() = default;
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading [rad].
-    //--------------------------------------------------------------------------
-    inline float heading() const
+    VehicleShape(BLUEPRINT& blueprint/*, std::vector<std::shared_ptr<SensorShape>>& sensors*/)
+        : m_blueprint(blueprint)//, m_sensors(sensors)
     {
-        return DEG2RAD(m_obb.getRotation());
+        // Origin on the middle of the rear wheel axle
+        m_obb.setSize(sf::Vector2f(m_blueprint.length, m_blueprint.width));
+        m_obb.setOrigin(m_blueprint.back_overhang, m_obb.getSize().y / 2);
+
+        // Undefined states
+        update(sf::Vector2f(NAN, NAN), NAN);
+    }
+
+    void addSensor(std::shared_ptr<SensorShape> shape)
+    {
+       m_sensors.push_back(shape);
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return position of the middle of the rear axle.
+    //! \brief
     //--------------------------------------------------------------------------
-    inline sf::Vector2f position() const
+    void update(sf::Vector2f const& position, float const heading)
     {
-        return m_obb.getPosition();
-    }
+        m_position = position;
+        m_heading = heading;
+        m_obb.setPosition(position);
+        m_obb.setRotation(RAD2DEG(heading));
 
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the const reference of the container holding
-    //! all the wheels.
-    //--------------------------------------------------------------------------
-    inline std::vector<Wheel> const& wheels() const
-    {
-        return m_wheels;
-    }
+        size_t i(BLUEPRINT::WheelName::MAX);
+        while (i--)
+        {
+            m_blueprint.wheels[i].position =
+                position + HEADING(m_blueprint.wheels[i].offset, heading);
+        }
 
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the const reference of the nth wheel.
-    //--------------------------------------------------------------------------
-    inline Wheel const& wheel(size_t const nth) const
-    {
-        assert(nth < m_wheels.size());
-        return m_wheels[nth];
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the steering angle of the desired wheel.
-    //--------------------------------------------------------------------------
-    inline float steering(size_t const nth) const
-    {
-        assert(nth < m_wheels.size());
-        return m_wheels[nth].steering;
+        for (auto const& it: m_sensors)
+        {
+            it->update(position, heading);
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -114,114 +94,78 @@ public:
     }
 
     //--------------------------------------------------------------------------
+    //! \brief const getter: return the oriented bounding box (OBB) of the shape.
+    //! \param[in] nth the nth wheel.
+    //! \param[in] heading the heading of the vehicle in radian.
+    //--------------------------------------------------------------------------
+    inline sf::RectangleShape obb_wheel(size_t const nth, float steering) const
+    {
+        assert(nth < m_blueprint.wheels.size());
+        auto const& w = m_blueprint.wheels[nth];
+
+        sf::RectangleShape shape(sf::Vector2f(w.radius * 2.0f, w.width));
+        shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
+        shape.setPosition(w.position);
+        shape.setRotation(RAD2DEG(m_heading + steering));
+        return shape;
+    }
+
+    //--------------------------------------------------------------------------
     //! \brief Check if the shape collides with another vehicle shape.
-    //! \param[out] p: return the minimum translation vector in case of collision
-    //! \return true in case of collision and return the position of the collision.
+    //! \param[out] p: return the minimum translation vector in case of
+    //! collision \return true in case of collision and return the position of
+    //! the collision.
     //--------------------------------------------------------------------------
-    inline bool collides(VehicleShape const& other, sf::Vector2f& p) const
+    inline bool collides(sf::RectangleShape const& other, sf::Vector2f& p) const
     {
-        return collide(obb(), other.obb(), p);
+        return ::collide(m_obb, other, p); // FIXME Can be cached ?
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Debug purpose only: show shape information.
+    //! \brief Const getter: return the position of the middle of the rear axle
+    //! inside the world coordinates.
     //--------------------------------------------------------------------------
-    friend std::ostream& operator<<(std::ostream& os, VehicleShape const& shape)
+    inline sf::Vector2f position() const
     {
-        os << "  Shape {" << std::endl << "    position = ("
-           << shape.position().x << ", " << shape.position().y << ") m,"
-           << std::endl
-           << "    heading = " << RAD2DEG(shape.heading()) << " deg"
-           << std::endl;
-
-        auto i = shape.wheels().size();
-        while (i--)
-        {
-            os << "    wheel[" << i << "] = " << shape.wheel(i) << "," << std::endl;
-        }
-        return os << "  }";
-    }
-
-public:
-
-    //! \brief Const reference to the vehicle's dimension.
-    Dim const& dim;
-
-protected:
-
-    //! \brief Oriented bounding box for attitude and collision
-    sf::RectangleShape m_obb;
-    //! \brief Information on the wheels
-    std::vector<Wheel> m_wheels;
-};
-
-// *****************************************************************************
-//! \brief A vehicle shape specialized for trailer with 2 wheels.
-//! See ../../doc/pics/CarDefinition.png
-// *****************************************************************************
-class TrailerShape: public VehicleShape<TrailerDimension>
-{
-public:
-
-    //--------------------------------------------------------------------------
-    //! \brief Wheel's names: RR: rear right, RL: rear left.
-    //--------------------------------------------------------------------------
-    enum WheelName { RR, RL };
-
-    //--------------------------------------------------------------------------
-    //! \brief Default constructor: trailer shape with its dimension
-    //--------------------------------------------------------------------------
-    TrailerShape(TrailerDimension const& dimension);
-
-    //--------------------------------------------------------------------------
-    //! \brief Set to shape its new attitude
-    //--------------------------------------------------------------------------
-    void set(sf::Vector2f const& position, float const heading);
-};
-
-// *****************************************************************************
-//! \brief A vehicle shape specialized for car with 4 wheels.
-// *****************************************************************************
-class CarShape: public VehicleShape<CarDimension>
-{
-public:
-
-    //--------------------------------------------------------------------------
-    //! \brief Wheel's names: FL: front left, FR: front rigeht, RR: rear right,
-    //! RL: rear left.
-    //--------------------------------------------------------------------------
-    enum WheelName { FL, FR, RR, RL };
-
-    //--------------------------------------------------------------------------
-    //! \brief Default constructor: car shape with its dimension
-    //--------------------------------------------------------------------------
-    CarShape(CarDimension const& dimension);
-
-    //--------------------------------------------------------------------------
-    //! \brief Set to shape its new attitude
-    //--------------------------------------------------------------------------
-    void set(sf::Vector2f const& position, float const heading, float const steering);
-
-    //--------------------------------------------------------------------------
-    //! \brief
-    //--------------------------------------------------------------------------
-    std::vector<SensorShape>& sensors()
-    {
-        return m_sensor_shapes;
+        return m_position;
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
-    std::vector<SensorShape> const& sensors() const
+    inline float heading() const
     {
-        return m_sensor_shapes;
+        return m_heading;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the vehicle blueprint
+    //--------------------------------------------------------------------------
+    inline BLUEPRINT const& blueprint() const
+    {
+        return m_blueprint;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the number of wheels
+    //--------------------------------------------------------------------------
+    inline size_t countWheels() const
+    {
+        return m_blueprint.wheels.size();
     }
 
 private:
 
-    //! \brief Information on the sensors
-    std::vector<SensorShape> m_sensor_shapes;
+    //! \brief
+    BLUEPRINT& m_blueprint;
+    //! \brief Cache information from VehiclePhysics
+    sf::Vector2f m_position;
+    //! \brief Cache information from VehiclePhysics
+    float m_heading;
+    //! \brief Sensors shapes
+    std::vector<std::shared_ptr<SensorShape>> m_sensors;
+    //! \brief Oriented bounding box for attitude and collision
+    sf::RectangleShape m_obb;
 };
 
 #endif

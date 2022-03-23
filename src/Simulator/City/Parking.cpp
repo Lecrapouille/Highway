@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,8 +25,17 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "World/Parking.hpp"
-#include "Vehicle/Vehicle.hpp"
+#include "Math/Math.hpp"
+#include "City/Parking.hpp"
+#include "Vehicle/Car.hpp"
+
+//------------------------------------------------------------------------------
+//template<> std::unordered_map<std::string, std::map<std::string, ParkingBluePrint>> BluePrints::m_databases<ParkingBluePrint>;
+
+//------------------------------------------------------------------------------
+ParkingBluePrint::ParkingBluePrint(float const l, float const w, size_t const a)
+    : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
+{}
 
 //------------------------------------------------------------------------------
 static Parking::Type convert(size_t angle) // [deg]
@@ -50,12 +59,19 @@ static Parking::Type convert(size_t angle) // [deg]
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p)
-    : dim(d), type(convert(d.deg)), m_position(p)
-{}
+Parking::Parking(ParkingBluePrint const& bp, sf::Vector2f const& position)
+    : blueprint(bp), type(convert(bp.deg)), m_shape(sf::Vector2f(bp.length, bp.width))
+{
+    m_shape.setOrigin(sf::Vector2f(0.0f, bp.width / 2.0f));
+    m_shape.setRotation(RAD2DEG(bp.angle));
+    m_shape.setPosition(position);
+    m_shape.setFillColor(sf::Color::White);
+    m_shape.setOutlineThickness(ZOOM);
+    m_shape.setOutlineColor(sf::Color::Black);
+}
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingDimension const& d, sf::Vector2f const& p, Car& car)
+Parking::Parking(ParkingBluePrint const& d, sf::Vector2f const& p, Car& car)
     : Parking(d, p)
 {
     m_car = &car;
@@ -69,10 +85,10 @@ void Parking::bind(Car& car)
     //if (m_car != nullptr)
     //    throw "Car already bound on parking spot";
 
-    float x = car.dim.back_overhang + (dim.length - car.dim.length) / 2.0f;
+    float x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
     sf::Vector2f const offset(x, 0.0f);
+    car.init(position() + HEADING(offset, blueprint.angle), heading(), 0.0f, 0.0f);
 
-    car.init(m_position + HEADING(offset, dim.angle), dim.angle, 0.0f, 0.0f);
     //car.bind();
     m_car = &car;
 }

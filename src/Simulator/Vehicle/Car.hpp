@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,4 +25,23 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Vehicle/VehicleControl.hpp"
+#ifndef CAR_HPP
+#  define CAR_HPP
+
+#  include "Vehicle/Trailer.hpp"
+
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+class Car: public Vehicle<CarBluePrint>
+{
+public:
+
+    Car(const char* name, sf::Color const& color);
+
+private:
+
+    virtual void update_wheels(float const speed, float const steering) override;
+};
+
+#endif

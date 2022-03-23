@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -28,168 +28,91 @@
 #ifndef BLUEPRINTS_HPP
 #  define BLUEPRINTS_HPP
 
-#  include "Vehicle/VehicleDimension.hpp"
-#  include "World/ParkingDimension.hpp"
 #  include <map>
+#  include <unordered_map>
+#  include <vector>
+#  include <functional>
+#  include <cassert>
+#  include <cmath>
+#  include <iostream>
 
-// ****************************************************************************
-//! \brief Database of car dimensions. You can interrogate it and complete it.
-// ****************************************************************************
-class CarDimensions
+// *****************************************************************************
+//! \brief Database of blueprints
+// *****************************************************************************
+class BluePrints
 {
 public:
 
-    //--------------------------------------------------------------------------
-    //! \brief Add a new car dimension in the database.
-    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
-    //! \param[in] dim the car dimension
-    //--------------------------------------------------------------------------
-    static bool add(const char* name, CarDimension const& dim)
+    //----------------------------------------------------------------------
+    //! \brief Init the database with a collection of blueprints.
+    //----------------------------------------------------------------------
+    template<class BLUEPRINT>
+    static void init(std::map<std::string, BLUEPRINT> const& db)
     {
-        assert(name != nullptr);
-        return database().insert(std::map<std::string,
-                                   CarDimension>::value_type(name, dim)).second;
+        database<BLUEPRINT>() = db;
     }
 
-    //--------------------------------------------------------------------------
-    //! \brief Get the car dimension from its name.
+    //----------------------------------------------------------------------
+    //! \brief Add a new car blueprint in the database.
     //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
-    //! \return dim the car dimension (by copy).
+    //! \param[in] dim the car blueprint
+    //----------------------------------------------------------------------
+    template<class BLUEPRINT>
+    static bool add(const char* name, BLUEPRINT const& blueprint)
+    {
+        assert(name != nullptr);
+        if (!database<BLUEPRINT>().insert(
+                typename std::map<std::string, BLUEPRINT>::value_type(name, blueprint)).second)
+        {
+            std::cerr << "Cannot add " << name << " in BluePrints database beause"
+                      << " this entry already exists" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    //----------------------------------------------------------------------
+    //! \brief Get the car blueprint from its name.
+    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
+    //! \return dim the car blueprint by const reference.
     //! \return Throw exception if the car is unknown.
-    //--------------------------------------------------------------------------
-    static CarDimension get(const char* name)
+    //----------------------------------------------------------------------
+    template<class BLUEPRINT>
+    static BLUEPRINT const& get(const char* name)
     {
         assert(name != nullptr);
-        return database().at(name);
+        return database<BLUEPRINT>().at(name);
+    }
+
+
+private:
+
+    template<class BLUEPRINT>
+    static std::map<std::string, BLUEPRINT>& database()
+    {
+        static std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> m_databases;
+
+        auto it = m_databases.find(typeid(BLUEPRINT).name());
+        if (it == std::end(m_databases))
+        {
+            // Hold list of created heterogeneous stacks for their destruction
+            m_erase_functions.emplace_back([](std::string& s)
+            {
+                std::cout << "erase database" << std::endl;
+                m_databases.erase(s);
+            });
+
+            return m_databases[typeid(BLUEPRINT).name()];
+        }
+        return it->second;
     }
 
 private:
 
-    //--------------------------------------------------------------------------
-    //! \brief Private static database. For example:
-    //! ../../doc/pics/Twingo.jpg
-    //--------------------------------------------------------------------------
-    static std::map<std::string, CarDimension>& database()
-    {
-        static std::map<std::string, CarDimension> dico = {
-            // https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html
-            { "Renault.Twingo", { 3.615f, 1.646f, 2.492f, 0.494f, 0.328f, 10.0f } },
-            // https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png
-            { "Citroen.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
-            // https://www.bsegfr.com/images/books/5/8/index.47.jpg
-            { "Citroen.C3", { 3.941f, 1.728f, 2.466f, 0.66f, 0.328f, 10.7f } },
-            // https://www.vehikit.fr/nissan
-            { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
-            // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
-            { "Audi.A6", { 4.951f, 1.902f, 2.924f, 1.105f, 0.328f, 11.7f } },
-            { "QQ", { 4.951f - 0.2f, 1.902f, 2.924f - 0.2f, 1.105f - 0.2f, 0.328f, 11.7f } },
-            { "Mini.Cooper", { 3.62f, 1.68f, 2.46f, 0.58f, 0.328f, 10.7f } },
-        };
-        return dico;
-    }
-};
-
-// ****************************************************************************
-//! \brief Class holding database of trailer dimensions. You can complete the
-//! database.
-// ****************************************************************************
-class TrailerDimensions
-{
-public:
-
-    //--------------------------------------------------------------------------
-    //! \brief Add a new trailer dimension in the database.
-    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
-    //! \param[in] dim the car dimension
-    //--------------------------------------------------------------------------
-    static bool add(const char* name, TrailerDimension const& dim)
-    {
-        assert(name != nullptr);
-        return database().insert(std::map<std::string,
-                                 TrailerDimension>::value_type(name, dim)).second;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Get the trailer dimension from its name.
-    //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
-    //! \return dim the car dimension
-    //! \return Throw exception if the trailer is unknown.
-    //--------------------------------------------------------------------------
-    static TrailerDimension get(const char* name)
-    {
-        assert(name != nullptr);
-        return database().at(name);
-    }
-
-private:
-
-    //--------------------------------------------------------------------------
-    //! \brief Private static database.
-    //--------------------------------------------------------------------------
-    static std::map<std::string, TrailerDimension>& database()
-    {
-        static std::map<std::string, TrailerDimension> dico = {
-            { "generic", { 1.646f, 1.646f, 2.5f, 0.494f, 0.2f } },
-        };
-        return dico;
-    }
-};
-
-
-// ****************************************************************************
-//! \brief Class holding database of parking dimensions. You can complete the
-//! database.
-// ****************************************************************************
-class ParkingDimensions
-{
-public:
-
-    //--------------------------------------------------------------------------
-    //! \brief Add a new parking dimension in the database.
-    //! \param[in] nane: non NULL string of the car "<type>.<angle>"
-    //! \param[in] dim the parking dimension
-    //--------------------------------------------------------------------------
-    static bool add(const char* name, ParkingDimension const& dim)
-    {
-        assert(name != nullptr);
-        return database().insert(std::map<std::string,
-                                 ParkingDimension>::value_type(name, dim)).second;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Get the parking dimension from its name.
-    //! \param[in] nane: non NULL string of the car "<type>.<angle>"
-    //! \return dim the parking dimension
-    //! \return Throw exception if the trailer is unknown.
-    //--------------------------------------------------------------------------
-    static ParkingDimension get(const char* name)
-    {
-        assert(name != nullptr);
-        return database().at(name);
-    }
-
-private:
-
-    //--------------------------------------------------------------------------
-    //! \brief Private static database. For example:
-    //! https://www.virages.com/Blog/Dimensions-Places-De-Parking
-    //! ../../doc/pics/PerpendicularSpots.gif
-    //! ../../doc/pics/DiagonalSpots.gif
-    //! ../../doc/pics/ParallelSpots.jpg
-    //--------------------------------------------------------------------------
-    static std::map<std::string, ParkingDimension>& database()
-    {
-        static std::map<std::string, ParkingDimension> dico = {
-            { "epi.0", { 5.0f, 2.0f, 0u } },
-            { "epi.45", { 4.8f, 2.2f, 45u } },
-            { "epi.60", { 5.15f, 2.25f, 60u } },
-            { "epi.75", { 5.1f, 2.25f, 75u } },
-            { "epi.90", { 5.0f, 2.3f, 90u } },
-            { "creneau", { 5.0f, 2.0f, 0u } },
-            { "bataille", { 5.0f, 2.3f, 90u } },
-        };
-        return dico;
-    }
+    //template<class BLUEPRINT>
+    //static std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> m_databases;
+    static std::vector<std::function<void(std::string&)>> m_erase_functions;
 };
 
 #endif

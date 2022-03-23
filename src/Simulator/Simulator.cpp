@@ -1,4 +1,4 @@
-// 2021 Quentin Quadrat quentin.quadrat@gmail.com
+// 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
 //
 // This is free and unencumbered software released into the public domain.
 //
@@ -25,199 +25,95 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
+#include "Simulator/Simulator.hpp"
 #include "Renderer/Renderer.hpp"
 
-#define DEFAULT_CAR_COLOR DEFAULT_VEHICLE_COLOR
+#define DEFAULT_CAR_COLOR 178, 174, 174
 #define EGO_CAR_COLOR 124, 99, 197
 #define COLISION_COLOR 255, 0, 0
 
 //------------------------------------------------------------------------------
-void Simulation::reset()
+Simulator::Simulator(sf::RenderWindow& renderer)
+    : m_renderer(renderer)
 {
-    m_cars.clear();
-    m_parkings.clear();
+    BluePrints::init<CarBluePrint>(
+        {
+            // https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html
+            { "Renault.Twingo", { 3.615f, 1.646f, 2.492f, 0.494f, 0.328f, 10.0f } },
+            // https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png
+            { "Citroen.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
+            // https://www.bsegfr.com/images/books/5/8/index.47.jpg
+            { "Citroen.C3", { 3.941f, 1.728f, 2.466f, 0.66f, 0.328f, 10.7f } },
+            // https://www.vehikit.fr/nissan
+            { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
+            // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
+            { "Audi.A6", { 4.951f, 1.902f, 2.924f, 1.105f, 0.328f, 11.7f } },
+            //
+            { "QQ", { 3.9876841117376247f, 1.8508483613211535f, 2.6835034227027936f, 0.584285581986275f, 0.328f, 11.7f } },
+            //
+            { "Mini.Cooper", { 3.62f, 1.68f, 2.46f, 0.58f, 0.328f, 10.7f } },
+        });
+
+    BluePrints::init<TrailerBluePrint>(
+        {
+            { "generic", { 1.646f, 1.646f, 2.5f, 0.494f, 0.2f } },
+        });
+
+    //----------------------------------------------------------------------
+    //! \brief Private static database. For example:
+    //! https://www.virages.com/Blog/Dimensions-Places-De-Parking
+    //! ../../doc/pics/PerpendicularSpots.gif
+    //! ../../doc/pics/DiagonalSpots.gif
+    //! ../../doc/pics/ParallelSpots.jpg
+    //----------------------------------------------------------------------
+    BluePrints::init<ParkingBluePrint>(
+        {
+            { "epi.0", { 5.0f, 2.0f, 0u } },
+            { "epi.45", { 4.8f, 2.2f, 45u } },
+            { "epi.60", { 5.15f, 2.25f, 60u } },
+            { "epi.75", { 5.1f, 2.25f, 75u } },
+            { "epi.90", { 5.0f, 2.3f, 90u } },
+            { "creneau", { 5.0f, 2.0f, 0u } },
+            { "bataille", { 5.0f, 2.3f, 90u } },
+        });
 }
 
 //------------------------------------------------------------------------------
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-void Simulation::createWorld(size_t const angle, bool const /*parked*/)
+sf::Vector2f Simulator::world(sf::Vector2i const& p)
 {
-    reset();
-
-    // Create a road
-    // Road& road1 = addRoad(RoadDimensions::get("road.2ways"), curvature, length);
-
-    // Create parallel or perpendicular or diagnoal parking slots
-    std::string d = "epi." + std::to_string(angle);
-    ParkingDimension const& dim = ParkingDimensions::get(d.c_str());
-    Parking& parking0 = addParking(dim, sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
-    Parking& parking1 = addParking(dim, parking0.position() + parking0.delta());
-    Parking& parking2 = addParking(dim, parking1.position() + parking1.delta());
-    Parking& parking3 = addParking(dim, parking2.position() + parking2.delta());
-    Parking& parking4 = addParking(dim, parking3.position() + parking3.delta());
-
-    // Add parked cars (static)
-    Car& car0 = addCar("Renault.Twingo", parking0);
-    Car& car1 = addCar("Audi.A6", parking1);
-    Car& car2 = addCar("Audi.A6", parking3);
-
-    // Debug Renault.Twingo
-    //addGhost("Renault.Twingo", sf::Vector2f(107.994f, 100.0f), 0.0f); // Em0
-    //addGhost("Renault.Twingo", sf::Vector2f(109.275f, 100.193f), 0.300045f); // Em1, ThetaE1
-    //addGhost("Renault.Twingo", sf::Vector2f(108.345f, 99.7811f), 0.300045f + 0.235058f); // Em2, ThetaE1 + ThetaE2
-
-    // Debug QQ
-    //addGhost("QQ", sf::Vector2f(108.405f, 100.0f), 0.0f); // Em0
-    //addGhost("QQ", sf::Vector2f(109.06f, 100.042f), 0.126959f); // Em1, ThetaE1
-    //addGhost("QQ", sf::Vector2f(108.59f, 99.9596f), 0.126959f + 0.0919716f); // Em2, ThetaE1 + ThetaE2
-
-    // Self-parking car (dynamic). Always be the last in the container
-    Car& ego = addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f, 0.0f);
-
-    // Make the car react to some I/O events
-    ego.registerCallback(sf::Keyboard::PageDown, [](Car& ego) {
-        ego.turning_indicator(false, ego.turning_right() ^ true);
-    });
-    ego.registerCallback(sf::Keyboard::PageUp, [](Car& ego) {
-        ego.turning_indicator(ego.turning_left() ^ true, false);
-    });
-    ego.registerCallback(sf::Keyboard::Up, [](Car& ego) {
-        ego.setRefSpeed(1.0f);
-    });
-    ego.registerCallback(sf::Keyboard::Down, [](Car& ego) {
-        ego.setRefSpeed(0.0f);
-    });
-    ego.registerCallback(sf::Keyboard::Right, [](Car& ego) {
-        float ref = ego.getRefSteering() - 0.1f;
-        ego.setRefSteering(constrain(ref, -ego.dim.max_steering_angle, ego.dim.max_steering_angle));
-    });
-    ego.registerCallback(sf::Keyboard::Left, [](Car& ego) {
-        float ref = ego.getRefSteering() + 0.1f;
-        ego.setRefSteering(constrain(ref, -ego.dim.max_steering_angle, ego.dim.max_steering_angle));
-    });
-
-    // With trailer
-    //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
-    //std::cout << tr << std::endl;
-}
-#pragma GCC diagnostic pop
-
-//------------------------------------------------------------------------------
-SelfParkingCar& Simulation::addEgo(CarDimension const& dim, sf::Vector2f const& position,
-                             float const heading, float const speed, float const steering)
-{
-    m_ego = std::make_unique<SelfParkingCar>(dim, m_cars);
-    m_ego->init(position, heading, speed, steering);
-    m_ego->name = "ego";
-    m_ego->color = sf::Color(EGO_CAR_COLOR);
-    std::cout << *m_ego << std::endl << std::endl;
-    return *m_ego;
+    return m_renderer.mapPixelToCoords(p);
 }
 
 //------------------------------------------------------------------------------
-SelfParkingCar& Simulation::addEgo(const char* model, sf::Vector2f const& position,
-                             float const heading, float const speed, float const steering)
+void Simulator::reset()
 {
-    return addEgo(CarDimensions::get(model), position, heading, speed, steering);
+    city.m_cars.clear();
+    city.m_parkings.clear();
+    city.m_ego = nullptr;
 }
 
 //------------------------------------------------------------------------------
-Car& Simulation::addCar(CarDimension const& dim, sf::Vector2f const& position,
-                        float const heading, float const speed, float const steering)
-{
-    static size_t count = 0u;
-
-    m_cars.push_back(std::make_unique<Car>(dim));
-    m_cars.back()->init(position, heading, speed, steering);
-    m_cars.back()->name += std::to_string(count++);
-    std::cout << *m_cars.back() << std::endl << std::endl;
-    return *m_cars.back();
-}
-
-//------------------------------------------------------------------------------
-Car& Simulation::addCar(const char* model, sf::Vector2f const& position, float const heading,
-                        float const speed, float const steering)
-{
-    return addCar(CarDimensions::get(model), position, heading, speed, steering);
-}
-
-//------------------------------------------------------------------------------
-Car& Simulation::addCar(const char* model, Parking& parking)
-{
-    Car& car = addCar(CarDimensions::get(model), sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f, 0.0f);
-    parking.bind(car);
-    return car;
-}
-
-//------------------------------------------------------------------------------
-Car& Simulation::addGhost(CarDimension const& dim, sf::Vector2f const& position,
-                          float const heading, float const steering)
-{
-    static size_t count = 0u;
-    static float speed = 0.0f;
-
-    m_ghosts.push_back(std::make_unique<Car>(dim));
-    m_ghosts.back()->init(position, heading, speed, steering);
-    m_ghosts.back()->name += std::to_string(count++);
-    m_ghosts.back()->color = sf::Color::White;
-    std::cout << *m_ghosts.back() << std::endl << std::endl;
-    return *m_ghosts.back();
-}
-
-//------------------------------------------------------------------------------
-Car& Simulation::addGhost(const char* model, sf::Vector2f const& position, float const heading,
-                          float const steering)
-{
-    return addGhost(CarDimensions::get(model), position, heading, steering);
-}
-
-//------------------------------------------------------------------------------
-Car& Simulation::addGhost(const char* model, Parking& parking)
-{
-    Car& car = addGhost(CarDimensions::get(model), sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f);
-    parking.bind(car);
-    return car;
-}
-
-
-//------------------------------------------------------------------------------
-Parking& Simulation::addParking(ParkingDimension const& dim, sf::Vector2f const& position) //TODO , count)
-{
-    // TODO i = count; while (i--)
-    m_parkings.push_back(Parking(dim, position));
-    return m_parkings.back();
-}
-
-//------------------------------------------------------------------------------
-Parking& Simulation::addParking(const char* type, sf::Vector2f const& position)
-{
-    return addParking(ParkingDimensions::get(type), position);
-}
-
-//------------------------------------------------------------------------------
-void Simulation::update(const float dt)
+void Simulator::update(const float dt)
 {
     // Update car physics
-    for (auto& it: m_cars)
+    for (auto& it: city.m_cars)
     {
         it->update(dt);
     }
 
-    if (m_ego != nullptr)
+    if (city.m_ego != nullptr)
     {
         // Update the Ego's car physics
-        m_ego->update(dt);
+        city.m_ego->update(dt);
 
         // Collide with other car ?
-        m_ego->color = sf::Color(EGO_CAR_COLOR);
-        for (auto& it: m_cars)
+        city.m_ego->color = sf::Color(EGO_CAR_COLOR);
+        for (auto& it: city.m_cars)
         {
-            if (m_ego->collides(*it))
+            if (city.m_ego->collides(*it))
             {
                 it->color = sf::Color(COLISION_COLOR);
-                m_ego->color = sf::Color(COLISION_COLOR);
+                city.m_ego->color = sf::Color(COLISION_COLOR);
             }
             else
             {
@@ -228,35 +124,35 @@ void Simulation::update(const float dt)
 }
 
 //------------------------------------------------------------------------------
-void Simulation::draw(sf::RenderWindow& renderer, sf::View& view)
+void Simulator::draw(sf::RenderWindow& renderer, sf::View& view)
 {
     // Make the camera follows the self-parking car
-    if (m_ego != nullptr)
+    if (city.m_ego != nullptr)
     {
-        view.setCenter(m_ego->position());
-        renderer.setView(view);
+        view.setCenter(city.m_ego->position());
+        m_renderer.setView(view);
     }
 
     // Draw the world
-    for (auto const& it: m_parkings)
+    for (auto const& it: city.m_parkings)
     {
-        Renderer::draw(it, renderer);
+        Renderer::draw(it, m_renderer);
     }
 
     // Draw cars
-    for (auto const& it: m_cars)
+    for (auto const& it: city.m_cars)
     {
-        Renderer::draw(*it, renderer);
+        Renderer::draw(*it, m_renderer);
     }
 
     // Draw cars
-    for (auto const& it: m_ghosts)
+    for (auto const& it: city.m_ghosts)
     {
-        Renderer::draw(*it, renderer);
+        Renderer::draw(*it, m_renderer);
     }
 
-    if (m_ego != nullptr)
+    if (city.m_ego != nullptr)
     {
-        Renderer::draw(*m_ego, renderer);
+        Renderer::draw(*city.m_ego, m_renderer);
     }
 }

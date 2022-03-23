@@ -5,7 +5,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
-#include "Utils/Collide.hpp"
+#include "Math/Collide.hpp"
 
 using RectVertexArray = std::array<sf::Vector2f, 4>;
 const float TOLERANCE = 0.0001f;
