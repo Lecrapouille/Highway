@@ -1,0 +1,23 @@
+@startuml
+
+[*] --> ScanningParkingSlot: \n--\ndistance := 0 m\nstatus := SEARCHING
+
+state ScanningParkingSlot {
+[*] --> DetectingRearOfFirstCar
+DetectingRearOfFirstCar --> DetectingFrontOfFirstCar : sensor detected\n--\n
+DetectingFrontOfFirstCar --> DetectingHole: car not detected\n--\nslot length := 0 m\n
+DetectingHole --> DetectingRearOfSecondCar: car not detected\n[slot length > car length]\n--\nstatus := SLOT_FOUND
+DetectingHole --> DetectingRearOfFirstCar: car not detected\n[slot length <= car length]\n--\n
+DetectingRearOfSecondCar --> [*]: [distance + 1 m]\n--\n
+
+DetectingRearOfFirstCar: Do: reference speed := 1 m/s\nDo: distance += dt * car speed
+DetectingFrontOfFirstCar: Do: reference speed := 1 m/s\nDo: distance += dt * car speed
+DetectingHole: Do: reference speed := 1 m/s\nDo: distance += dt * car speed\nslot length += dt * car speed
+DetectingRearOfSecondCar: Do: distance += dt * car speed
+}
+
+ScanningParkingSlot -> ScanningParkingSlot: risk of collision\n--\nEntering: reference speed := 0 m/s\nLeaving: reference speed := 1 m/s
+ScanningParkingSlot --> [*] : [distance > 25 m]\n--\nreference speed := 0 m/s\nstatus := SLOT_NOT_FOUND
+ScanningParkingSlot --> [*] : [status == SLOT_FOUND]\n--\nreference speed := 0 m/s\nstatus := SLOT_FOUND
+
+@enduml

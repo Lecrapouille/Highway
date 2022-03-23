@@ -1,0 +1,41 @@
+@startuml
+
+class Parking<ParkingBluePrint>
+
+BluePrints -> "*" BluePrint
+ParkingBluePrint --|> BluePrint
+WheelBluePrint --|> BluePrint
+VehicleBluePrint --|> BluePrint
+CarBluePrint --|> VehicleBluePrint
+TrailerBluePrint --|> VehicleBluePrint
+WheelBluePrint "2..4" <- VehicleBluePrint
+
+
+class VehicleShape<VehicleBluePrint>
+VehicleShape "1" <-- Vehicle
+Vehicle -> "1" VehicleControl
+VehiclePhysics "1" <- Vehicle
+
+TricycleKinematic --|> VehiclePhysics
+VehicleDynamic --|> VehiclePhysics
+
+Vehicle <|-- Car
+Vehicle <|-- Trailer
+Car .> Trailer: "0..1"
+Car <|-- AutonomousCar
+
+City -> "*" Road
+Road -> "*" Parking
+City --> "*" Vehicle 
+
+Simulation --> "1" City
+Simulation <. Renderer: "render"
+
+Renderer "1" <- Application
+GUI "*" <- Application
+GUI --> "1" Renderer
+
+GUI <|-- SimulationGUI
+SimulationGUI -> "1" Simulation
+
+@enduml
