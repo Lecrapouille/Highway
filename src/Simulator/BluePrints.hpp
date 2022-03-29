@@ -43,20 +43,25 @@ class BluePrints
 {
 public:
 
-    //----------------------------------------------------------------------
-    //! \brief Init the database with a collection of blueprints.
-    //----------------------------------------------------------------------
+    //-------------------------------------------------------------------------
+    //! \brief Init the database with a collection of predefined blueprints.
+    //-------------------------------------------------------------------------
+    static void init();
+
+    //-------------------------------------------------------------------------
+    //! \brief Init the database with a collection of predefined blueprints.
+    //-------------------------------------------------------------------------
     template<class BLUEPRINT>
     static void init(std::map<std::string, BLUEPRINT> const& db)
     {
         database<BLUEPRINT>() = db;
     }
 
-    //----------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     //! \brief Add a new car blueprint in the database.
     //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
     //! \param[in] dim the car blueprint
-    //----------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     template<class BLUEPRINT>
     static bool add(const char* name, BLUEPRINT const& blueprint)
     {
@@ -72,12 +77,12 @@ public:
         return true;
     }
 
-    //----------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     //! \brief Get the car blueprint from its name.
     //! \param[in] nane: non NULL string of the car "<maker>.<variant>"
     //! \return dim the car blueprint by const reference.
     //! \return Throw exception if the car is unknown.
-    //----------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     template<class BLUEPRINT>
     static BLUEPRINT const& get(const char* name)
     {
@@ -88,6 +93,9 @@ public:
 
 private:
 
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
     template<class BLUEPRINT>
     static std::map<std::string, BLUEPRINT>& database()
     {

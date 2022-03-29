@@ -87,7 +87,7 @@ void Parking::bind(Car& car)
 
     float x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
     sf::Vector2f const offset(x, 0.0f);
-    car.init(position() + HEADING(offset, blueprint.angle), heading(), 0.0f, 0.0f);
+    car.init(0.0f, 0.0f, position() + HEADING(offset, blueprint.angle), heading(), 0.0f);
 
     //car.bind();
     m_car = &car;

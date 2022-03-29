@@ -25,7 +25,7 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Vehicle/SelfParking/SelfParkingComponent.hpp"
+#include "Simulation/SelfParking/SelfParkingComponent.hpp"
 #include <iostream>
 
 SelfParkingComponent::SelfParkingComponent()

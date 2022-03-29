@@ -89,10 +89,11 @@ public:
     //! \param[in] speed: initial longitudinal speed [m/s] (usually 0).
     //! \param[in] steering: initial front wheels orientation [rad] (usually 0).
     //-------------------------------------------------------------------------
-    virtual void init(sf::Vector2f const& position, float const heading,
-                      float const speed = 0.0f, float const steering = 0.0f)
+    virtual void init(float const acceleration, float const speed,
+                      sf::Vector2f const& position, float const heading,
+                      float const steering = 0.0f)
     {
-        m_physics->init(0.0f, speed, position, heading);
+        m_physics->init(acceleration, speed, position, heading);
         //todo m_control->init(0.0f, speed, position, heading);
         this->update_wheels(speed, steering);
     }
@@ -104,11 +105,10 @@ public:
     {
         m_control->update(dt);
         m_physics->update(dt);
-        update_wheels(m_physics->speed(), steering());
+        update_wheels(m_physics->speed(), m_control->get_steering());
         m_shape->update(m_physics->position(), m_physics->heading());
         for (auto& it: m_sensors)
             it->update(m_physics->position(), m_physics->heading());
-        m_shape->update(position(), heading()/*, m_wheels*/);
         if (m_trailer != nullptr)
             m_trailer->update(dt);
     }
@@ -178,6 +178,7 @@ public:
     //-------------------------------------------------------------------------
     inline sf::RectangleShape obb_wheel(size_t const nth) const
     {
+std::cout << "obb_wheel " << nth << ": " << m_wheels[nth].steering << std::endl;
         // Assertion is made inside the obb_wheel() method.
         return m_shape->obb_wheel(nth, m_wheels[nth].steering);
     }
@@ -287,7 +288,7 @@ public:
         auto it = m_callbacks.find(key);
         if (it != m_callbacks.end())
         {
-            it->second(*this);
+            it->second();
             return true;
         }
         return false;
@@ -363,7 +364,7 @@ public:
 
 protected:
 
-    //! \brief 
+    //! \brief
     std::vector<std::shared_ptr<Radar>> m_sensors;
     //! \brief The shape of the vehicle, dimension, wheel positions
     std::unique_ptr<VehicleShape<BLUEPRINT>> m_shape;

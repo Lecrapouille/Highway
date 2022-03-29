@@ -28,109 +28,63 @@
 #include "City/City.hpp"
 #include <iostream>
 
-#define COLISION_COLOR 255, 0, 0
-#define CAR_COLOR 178, 174, 174
-#define EGO_CAR_COLOR 124, 99, 197
+#define COLISION_COLOR sf::Color(255, 0, 0)
+#define CAR_COLOR sf::Color(178, 174, 174)
+#define EGO_CAR_COLOR sf::Color(124, 99, 197)
 
 //------------------------------------------------------------------------------
 void City::reset()
 {
+    m_car_id = m_ego_id = m_ghost_id = 0u;
+
+    //m_ghosts.clear();
     m_cars.clear();
     m_parkings.clear();
 }
 
 //------------------------------------------------------------------------------
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-void City::createWorld(size_t const angle, bool const /*parked*/)
+Car* City::get(const char* name)
 {
-    reset();
+   for (auto& it: m_cars)
+   {
+      if (it->name == name)
+         return &(*it);
+   }
 
-    // Create a road
-    // Road& road1 = addRoad(RoadDimensions::get("road.2ways"), curvature, length);
-
-    // Create parallel or perpendicular or diagnoal parking slots
-    std::string d = "epi." + std::to_string(angle);
-    ParkingBluePrint const& dim = BluePrints::get<ParkingBluePrint>(d.c_str());
-    Parking& parking0 = addParking(dim, sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
-    Parking& parking1 = addParking(dim, parking0.position() + parking0.delta());
-    Parking& parking2 = addParking(dim, parking1.position() + parking1.delta());
-    Parking& parking3 = addParking(dim, parking2.position() + parking2.delta());
-    Parking& parking4 = addParking(dim, parking3.position() + parking3.delta());
-
-    // Add parked cars (static)
-    Car& car0 = addCar("Renault.Twingo", parking0);
-    Car& car1 = addCar("Renault.Twingo", parking1);
-    Car& car2 = addCar("Renault.Twingo", parking3);
-
-    // Debug Renault.Twingo
-    //addGhost("Renault.Twingo", sf::Vector2f(107.994f, 100.0f), 0.0f); // Em0
-    //addGhost("Renault.Twingo", sf::Vector2f(109.275f, 100.193f), 0.300045f); // Em1, ThetaE1
-    //addGhost("Renault.Twingo", sf::Vector2f(108.345f, 99.7811f), 0.300045f + 0.235058f); // Em2, ThetaE1 + ThetaE2
-
-    // Debug QQ
-    //addGhost("QQ", sf::Vector2f(108.405f, 100.0f), 0.0f); // Em0
-    //addGhost("QQ", sf::Vector2f(109.06f, 100.042f), 0.126959f); // Em1, ThetaE1
-    //addGhost("QQ", sf::Vector2f(108.59f, 99.9596f), 0.126959f + 0.0919716f); // Em2, ThetaE1 + ThetaE2
-
-    // Self-parking car (dynamic). Always be the last in the container
-    Car& ego = addEgo("Citroen.C3", parking0.position() + sf::Vector2f(0.0f, 5.0f), 0.0f, 0.0f);
-
-#if 0
-    // Make the car react to some I/O events
-    ego.registerCallback(sf::Keyboard::PageDown, [](Car& ego) {
-        ego.turningIndicators(false, ego.rightTurningIndicator() ^ true);
-    });
-    ego.registerCallback(sf::Keyboard::PageUp, [](Car& ego) {
-        ego.turningIndicators(ego.leftTurningIndicator() ^ true, false);
-    });
-    ego.registerCallback(sf::Keyboard::Up, [](Car& ego) {
-        ego.refSpeed(ego.refSpeed() + 1.0f);
-    });
-    ego.registerCallback(sf::Keyboard::Down, [](Car& ego) {
-        ego.refSpeed(ego.refSpeed() - 1.0f);
-    });
-    ego.registerCallback(sf::Keyboard::Right, [](Car& ego) {
-        ego.refSteering(ego.refSteering() + 1.0f);
-    });
-    ego.registerCallback(sf::Keyboard::Left, [](Car& ego) {
-        ego.refSteering(ego.refSteering() - 1.0f);
-    });
-#endif
-
-    // With trailer
-    //Trailer& tr = ego.attachTrailer(TrailerDimensions::get("generic"), DEG2RAD(30.0f));
-    //std::cout << tr << std::endl;
+   return nullptr;
 }
-#pragma GCC diagnostic pop
+
+//------------------------------------------------------------------------------
+Parking& City::addParking(const char* type, sf::Vector2f const& position)
+{
+    m_parkings.push_back(std::make_unique<Parking>(BluePrints::get<ParkingBluePrint>(type), position));
+    return *m_parkings.back();
+}
 
 //------------------------------------------------------------------------------
 SelfParkingCar& City::addEgo(const char* model, sf::Vector2f const& position,
-                             float const heading, float const speed, float const steering)
+                             float const heading, float const speed)
 {
-    m_ego = std::make_unique<SelfParkingCar>(model, sf::Color(CAR_COLOR)/*m_cars*/);
-    m_ego->init(position, heading, speed, steering);
-    m_ego->name = "ego";
-    m_ego->color = sf::Color(EGO_CAR_COLOR);
-    return *m_ego;
+    std::string name = "ego" + std::to_string(m_ego_id++);
+
+    return createCar<SelfParkingCar>(model, name.c_str(), EGO_CAR_COLOR, 0.0f, speed,
+        position, heading, 0.0f);
 }
 
 //------------------------------------------------------------------------------
 Car& City::addCar(const char* model, sf::Vector2f const& position, float const heading,
                   float const speed, float const steering)
 {
-    static size_t count = 0u;
+    std::string name = "car" + std::to_string(m_car_id++);
 
-    m_cars.push_back(std::make_unique<Car>(model, sf::Color(CAR_COLOR)));
-    m_cars.back()->init(position, heading, speed, steering);
-    m_cars.back()->name += std::to_string(count++);
-    return *m_cars.back();
+    return createCar<Car>(model, name.c_str(), CAR_COLOR, 0.0f, speed, position,
+       heading, steering);
 }
 
 //------------------------------------------------------------------------------
 Car& City::addCar(const char* model, Parking& parking)
 {
-    Car& car = addCar(model, sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f, 0.0f);
+    Car& car = addCar(model, sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f);
     parking.bind(car);
     return car;
 }
@@ -139,33 +93,8 @@ Car& City::addCar(const char* model, Parking& parking)
 Car& City::addGhost(const char* model, sf::Vector2f const& position, float const heading,
                     float const steering)
 {
-    static size_t count = 0u;
-    static float speed = 0.0f;
+    std::string name = "ghost" + std::to_string(m_ghost_id++);
 
-    m_ghosts.push_back(std::make_unique<Car>(model, sf::Color(CAR_COLOR)));
-    m_ghosts.back()->init(position, heading, speed, steering);
-    m_ghosts.back()->name += std::to_string(count++);
-    m_ghosts.back()->color = sf::Color::White;
-    return *m_ghosts.back();
-}
-
-//------------------------------------------------------------------------------
-Car& City::addGhost(const char* model, Parking& parking)
-{
-    Car& car = addGhost(model, sf::Vector2f(0.0f, 0.0f), 0.0f, 0.0f);
-    parking.bind(car);
-    return car;
-}
-
-//------------------------------------------------------------------------------
-Parking& City::addParking(ParkingBluePrint const& dim, sf::Vector2f const& position)
-{
-    m_parkings.push_back(Parking(dim, position));
-    return m_parkings.back();
-}
-
-//------------------------------------------------------------------------------
-Parking& City::addParking(const char* type, sf::Vector2f const& position)
-{
-    return addParking(BluePrints::get<ParkingBluePrint>(type), position);
+    return createCar<Car>(model, name.c_str(), sf::Color::White, 0.0f, 0.0f, position,
+       heading, steering);
 }

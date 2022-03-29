@@ -43,8 +43,39 @@ class Simulator
 {
 public:
 
+    typedef std::function<SelfParkingCar&(City&)> CreateCity;
+    typedef std::function<bool(Simulator const&)> HaltCondition;
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
     Simulator(sf::RenderWindow& renderer);
-    //virtual ~Simulator() = default;
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    void createSimulation(CreateCity&& create, HaltCondition&& halt)
+    {
+       m_create_city = create;
+       m_halt_condition = halt;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    void reactTo(size_t key)
+    {
+       if (m_ego != nullptr)
+         m_ego->reactTo(key);
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    inline sf::Time elapsedTime() const
+    {
+        return m_time.getElapsedTime();
+    }
 
     //-------------------------------------------------------------------------
     //! \brief Convert Window's X-Y position [pixel] to world's X-Y position
@@ -52,24 +83,45 @@ public:
     //! \param[in] p: position in the windows [pixel].
     //! \return position in the world [meter].
     //-------------------------------------------------------------------------
-    sf::Vector2f world(sf::Vector2i const& p);
+    inline sf::Vector2f pixel2world(sf::Vector2i const& p)
+    {
+        return m_renderer.mapPixelToCoords(p);
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    void activate();
 
     //-------------------------------------------------------------------------
     //! \brief Reset the simulation states, remove entities: parking, cars, ego
     //! car ...
     //-------------------------------------------------------------------------
-    void reset();
+    void deactivate();
 
     //-------------------------------------------------------------------------
-    //! \brief Create a predefined parking world (work in progress).
-    //! \param[in] angle: the type of parking slots. Accepted values:
-    //! - 0: parallel slots,
-    //! - 90: perpendicular slots,
-    //! - 45, 60, 75: diagonal slots.
-    //! \param[in] parked: set to true to force the ego to be parked inside a
-    //! parking spot.
+    //! \brief
     //-------------------------------------------------------------------------
-    //virtual void createWorld(size_t const angle, bool const parked) = 0;
+    inline void follow(Car* car)
+    {
+       m_follow = car;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    inline sf::Vector2f const& camera() const
+    {
+       return m_camera;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    inline bool isRunning() const
+    {
+       return m_halt_condition(*this);
+    }
 
     //-------------------------------------------------------------------------
     //! \brief Update the simuation states.
@@ -82,13 +134,29 @@ public:
     //! \param[in] renderer: SFML renderer (window)
     //! \param[in] view: SFML view.
     //-------------------------------------------------------------------------
-    void draw(sf::RenderWindow& renderer, sf::View& view);
+    void draw(); // FIXME const
 
-public:
+private:
 
-    City city;
+void showCollisions(Car& ego);
+
+protected:
+
+    //! \brief
     sf::RenderWindow& m_renderer;
-    // FIXME m_ego
+    //! \brief
+    City m_city;
+    //! \brief Make the camera follow the given car
+    Car* m_follow = nullptr;
+SelfParkingCar* m_ego = nullptr;
+    //! \brief Camera position
+    sf::Vector2f m_camera;
+    //! \brief Simulation time
+    sf::Clock m_time;
+    //! \brief
+    CreateCity m_create_city;
+    //! \brief
+    HaltCondition m_halt_condition;
 };
 
 #endif

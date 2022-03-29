@@ -44,13 +44,13 @@ GUISimulation::GUISimulation(Application& application)
 //------------------------------------------------------------------------------
 void GUISimulation::activate()
 {
-    create_world(m_simulator.city, 0, false);
+    m_simulator.activate();
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::deactivate()
 {
-    m_simulator.reset();
+    m_simulator.deactivate();
 }
 
 //------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void GUISimulation::handleInput()
     sf::Event event;
 
     // Get the X,Y mouse coordinates from the simulated word coordinates.
-    m_mouse = m_simulator.world(sf::Mouse::getPosition(renderer()));
+    m_mouse = m_simulator.pixel2world(sf::Mouse::getPosition(renderer()));
 
     while (m_running && renderer().pollEvent(event))
     {
@@ -91,64 +91,15 @@ void GUISimulation::handleInput()
             }
             break;
         case sf::Event::KeyPressed:
+            // Leaving the GUI
             if (event.key.code == sf::Keyboard::Escape)
             {
                 m_running = false;
             }
-            else if (event.key.code == sf::Keyboard::A)
+            else // propagate the key press to the simulator
             {
-                std::cout << "ENTERING BACKWARD PARALLEL" << std::endl;
-                create_world(m_simulator.city, 0, true);
+                m_simulator.reactTo(event.key.code);
             }
-            else if (event.key.code == sf::Keyboard::Z)
-            {
-                std::cout << "LEAVING BACKWARD PARALLEL" << std::endl;
-                create_world(m_simulator.city, 0, false);
-            }
-            else if (event.key.code == sf::Keyboard::E)
-            {
-                std::cout << "ENTERING BACKWARD DIAGONAL 45" << std::endl;
-                create_world(m_simulator.city, 45, true);
-            }
-            else if (event.key.code == sf::Keyboard::R)
-            {
-                std::cout << "LEAVING BACKWARD DIAGONAL 45" << std::endl;
-                create_world(m_simulator.city, 45, false);
-            }
-            else if (event.key.code == sf::Keyboard::T)
-            {
-                std::cout << "ENTERING BACKWARD DIAGONAL 60" << std::endl;
-                create_world(m_simulator.city, 60, true);
-            }
-            else if (event.key.code == sf::Keyboard::Y)
-            {
-                std::cout << "LEAVING BACKWARD DIAGONAL 60" << std::endl;
-                create_world(m_simulator.city, 60, false);
-            }
-            else if (event.key.code == sf::Keyboard::U)
-            {
-                std::cout << "ENTERING BACKWARD DIAGONAL 75" << std::endl;
-                create_world(m_simulator.city, 75, true);
-            }
-            else if (event.key.code == sf::Keyboard::I)
-            {
-                std::cout << "LEAVING BACKWARD DIAGONAL 75" << std::endl;
-                create_world(m_simulator.city, 75, false);
-            }
-            else if (event.key.code == sf::Keyboard::O)
-            {
-                std::cout << "ENTERING BACKWARD PERPENDICULAR" << std::endl;
-                create_world(m_simulator.city, 90, true);
-            }
-            else if (event.key.code == sf::Keyboard::P)
-            {
-                std::cout << "LEAVING BACKWARD PERPENDICULAR" << std::endl;
-                create_world(m_simulator.city, 90, false);
-            }
-            /*TODO else if (m_simulator.m_ego != nullptr)
-            {
-                m_simulator.m_ego->reactTo(event.key.code);
-            }*/
             break;
         default:
             break;
@@ -165,5 +116,9 @@ void GUISimulation::update(const float dt) // FIXME to be threaded
 //------------------------------------------------------------------------------
 void GUISimulation::draw()
 {
-    m_simulator.draw(renderer(), m_view);
+    m_simulator.draw();
+
+    // Make the camera follows the car
+    m_view.setCenter(m_simulator.camera());
+    renderer().setView(m_view);
 }

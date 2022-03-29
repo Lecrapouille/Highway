@@ -34,6 +34,7 @@
 #  include <vector>
 #  include <cassert>
 #  include <memory>
+#include <iostream>
 
 // *****************************************************************************
 //! \brief
@@ -106,6 +107,7 @@ public:
         sf::RectangleShape shape(sf::Vector2f(w.radius * 2.0f, w.width));
         shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
         shape.setPosition(w.position);
+std::cout << "steering " << steering << std::endl;
         shape.setRotation(RAD2DEG(m_heading + steering));
         return shape;
     }

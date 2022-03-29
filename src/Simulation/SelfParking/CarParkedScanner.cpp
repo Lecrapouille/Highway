@@ -25,7 +25,7 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Vehicle/SelfParking/CarParkedScanner.hpp"
+#include "Simulation/SelfParking/CarParkedScanner.hpp"
 
 // -----------------------------------------------------------------------------
 void CarParkedScanner::enteringStateDetectingRearOfFirstCar()

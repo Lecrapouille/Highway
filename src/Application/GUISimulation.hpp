@@ -93,7 +93,7 @@ private: // Derived from Application::GUI
     //-------------------------------------------------------------------------
     virtual bool isRunning() override
     {
-        return m_running;
+        return m_running && m_simulator.isRunning();
     }
 
     //-------------------------------------------------------------------------

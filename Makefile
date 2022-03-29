@@ -37,9 +37,9 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 # Compilation searching files
 BUILD = build
 VPATH = $(BUILD) src src/Application src/Math src/Simulator/Sensors \
-  src/Simulator src/Simulator/City src/Simulator/Vehicle src/SelfParking \
+  src/Simulator src/Simulator/City src/Simulator/Vehicle \
   src/Renderer src/Simulator/Vehicle/VehiclePhysicalModels src/Common \
-  src/Simulator/Vehicle/SelfParking/
+  src/Simulation src/Simulation/SelfParking
 INCLUDES = -Isrc -Isrc/Simulator
 
 # C++14 (only because of std::make_unique not present in C++11)
@@ -85,7 +85,7 @@ OBJS += GUIMainMenu.o GUISimulation.o
 OBJS += SelfParkingComponent.o CarParkedScanner.o
 #OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
 #OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
-OBJS += Simulator.o main.o
+OBJS += Simulator.o Simulation.o main.o
 
 # Verbosity control
 ifeq ($(VERBOSE),1)

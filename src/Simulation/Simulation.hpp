@@ -25,25 +25,17 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SELF_PARKING_CAR_HPP
-#  define SELF_PARKING_CAR_HPP
+#ifndef SIMULATION_HPP
+#  define SIMULATION_HPP
 
-#  include "Vehicle/Car.hpp"
-#  include "Vehicle/SelfParking/SelfParkingComponent.hpp"
+class Simulator;
+class City;
+class SelfParkingCar;
 
 // ****************************************************************************
 //! \brief
 // ****************************************************************************
-class SelfParkingCar: public Car
-{
-public:
-
-    SelfParkingCar(const char* name, sf::Color const& color);
-    virtual void update(float const dt) override;
-
-protected:
-
-    SelfParkingComponent& m_auto_park;
-};
+SelfParkingCar& onCreateWorld(City& city);
+bool simulationHaltsWhen(Simulator const& simulator);
 
 #endif

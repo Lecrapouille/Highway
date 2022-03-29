@@ -36,123 +36,85 @@
 Simulator::Simulator(sf::RenderWindow& renderer)
     : m_renderer(renderer)
 {
-    BluePrints::init<CarBluePrint>(
-        {
-            // https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html
-            { "Renault.Twingo", { 3.615f, 1.646f, 2.492f, 0.494f, 0.328f, 10.0f } },
-            // https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png
-            { "Citroen.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
-            // https://www.bsegfr.com/images/books/5/8/index.47.jpg
-            { "Citroen.C3", { 3.941f, 1.728f, 2.466f, 0.66f, 0.328f, 10.7f } },
-            // https://www.vehikit.fr/nissan
-            { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
-            // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
-            { "Audi.A6", { 4.951f, 1.902f, 2.924f, 1.105f, 0.328f, 11.7f } },
-            //
-            { "QQ", { 3.9876841117376247f, 1.8508483613211535f, 2.6835034227027936f, 0.584285581986275f, 0.328f, 11.7f } },
-            //
-            { "Mini.Cooper", { 3.62f, 1.68f, 2.46f, 0.58f, 0.328f, 10.7f } },
-        });
-
-    BluePrints::init<TrailerBluePrint>(
-        {
-            { "generic", { 1.646f, 1.646f, 2.5f, 0.494f, 0.2f } },
-        });
-
-    //----------------------------------------------------------------------
-    //! \brief Private static database. For example:
-    //! https://www.virages.com/Blog/Dimensions-Places-De-Parking
-    //! ../../doc/pics/PerpendicularSpots.gif
-    //! ../../doc/pics/DiagonalSpots.gif
-    //! ../../doc/pics/ParallelSpots.jpg
-    //----------------------------------------------------------------------
-    BluePrints::init<ParkingBluePrint>(
-        {
-            { "epi.0", { 5.0f, 2.0f, 0u } },
-            { "epi.45", { 4.8f, 2.2f, 45u } },
-            { "epi.60", { 5.15f, 2.25f, 60u } },
-            { "epi.75", { 5.1f, 2.25f, 75u } },
-            { "epi.90", { 5.0f, 2.3f, 90u } },
-            { "creneau", { 5.0f, 2.0f, 0u } },
-            { "bataille", { 5.0f, 2.3f, 90u } },
-        });
+    BluePrints::init();
 }
 
 //------------------------------------------------------------------------------
-sf::Vector2f Simulator::world(sf::Vector2i const& p)
+void Simulator::activate()
 {
-    return m_renderer.mapPixelToCoords(p);
+    m_ego = &m_create_city(m_city);
+    follow(m_city.get("ego0"));
+    m_time.restart();
 }
 
 //------------------------------------------------------------------------------
-void Simulator::reset()
+void Simulator::deactivate()
 {
-    city.m_cars.clear();
-    city.m_parkings.clear();
-    city.m_ego = nullptr;
+    m_city.reset();
 }
 
 //------------------------------------------------------------------------------
-void Simulator::update(const float dt)
+inline static bool isEgo(Car const& car)
 {
-    // Update car physics
-    for (auto& it: city.m_cars)
+    return car.name[0] == 'e' && car.name[1] == 'g' && car.name[2] == 'o';
+}
+
+//------------------------------------------------------------------------------
+void Simulator::showCollisions(Car& ego)
+{
+    ego.color = sf::Color(EGO_CAR_COLOR);
+    for (auto& it: m_city.cars())
     {
-        it->update(dt);
-    }
-
-    if (city.m_ego != nullptr)
-    {
-        // Update the Ego's car physics
-        city.m_ego->update(dt);
-
-        // Collide with other car ?
-        city.m_ego->color = sf::Color(EGO_CAR_COLOR);
-        for (auto& it: city.m_cars)
+        if ((&*it != &ego) && (ego.collides(*it)))
         {
-            if (city.m_ego->collides(*it))
-            {
-                it->color = sf::Color(COLISION_COLOR);
-                city.m_ego->color = sf::Color(COLISION_COLOR);
-            }
-            else
-            {
-                it->color = sf::Color(DEFAULT_CAR_COLOR);
-            }
+            it->color = sf::Color(COLISION_COLOR);
+            ego.color = sf::Color(COLISION_COLOR);
+        }
+        else
+        {
+            it->color = sf::Color(DEFAULT_CAR_COLOR);
         }
     }
 }
 
 //------------------------------------------------------------------------------
-void Simulator::draw(sf::RenderWindow& renderer, sf::View& view)
+void Simulator::update(const float dt)
 {
-    // Make the camera follows the self-parking car
-    if (city.m_ego != nullptr)
+    // Update physics ...
+    for (auto& it: m_city.cars())
     {
-        view.setCenter(city.m_ego->position());
-        m_renderer.setView(view);
+        it->update(dt);
+        if (isEgo(*it))
+        {
+           showCollisions(*it);
+        }
     }
 
-    // Draw the world
-    for (auto const& it: city.m_parkings)
+    // Make the camera follows the car
+    if (m_follow != nullptr)
     {
-        Renderer::draw(it, m_renderer);
+       m_camera = m_follow->position();
     }
+}
 
-    // Draw cars
-    for (auto const& it: city.m_cars)
+//------------------------------------------------------------------------------
+void Simulator::draw()
+{
+    // Draw the city
+    for (auto const& it: m_city.parkings())
     {
         Renderer::draw(*it, m_renderer);
     }
 
-    // Draw cars
-    for (auto const& it: city.m_ghosts)
+    // Draw vehicle and ego
+    for (auto const& it: m_city.cars())
     {
         Renderer::draw(*it, m_renderer);
     }
 
-    if (city.m_ego != nullptr)
+    // Draw ghost cars
+    /*for (auto const& it: m_city.ghosts())
     {
-        Renderer::draw(*city.m_ego, m_renderer);
-    }
+        Renderer::draw(*it, m_renderer);
+    }*/
 }

@@ -25,7 +25,25 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef MAIN_HPP
-#  define MAIN_HPP
+#ifndef SELF_PARKING_CAR_HPP
+#  define SELF_PARKING_CAR_HPP
+
+#  include "Vehicle/Car.hpp"
+#  include "Simulation/SelfParking/SelfParkingComponent.hpp"
+
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+class SelfParkingCar: public Car
+{
+public:
+
+    SelfParkingCar(const char* name, sf::Color const& color);
+    virtual void update(float const dt) override;
+
+protected:
+
+    SelfParkingComponent& m_auto_park;
+};
 
 #endif
