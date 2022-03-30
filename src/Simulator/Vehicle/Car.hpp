@@ -28,7 +28,7 @@
 #ifndef CAR_HPP
 #  define CAR_HPP
 
-#  include "Vehicle/Trailer.hpp"
+#  include "Vehicle/Vehicle.hpp"
 
 // ****************************************************************************
 //! \brief

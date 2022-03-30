@@ -32,7 +32,9 @@
 #  include "Renderer/Drawable.hpp"
 #  include <cassert>
 
-class Car;
+// FIXME class Sensor: Observer { detect() => notify } utiliser la lib gtk + forward declaration
+
+class Car; // FIXME: publi Sensor
 
 // TODO https://www.mathworks.com/help/driving/ref/drivingradardatagenerator-system-object.html
 

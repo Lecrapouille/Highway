@@ -25,19 +25,76 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation/Simulation.hpp"
-#include "City/City.hpp"
-#include "Simulator.hpp"
+#include "Simulation.h"
+#include "ECUs/AutoParkECU/AutoParkECU.hpp"
 
 //-----------------------------------------------------------------------------
-bool simulationHaltsWhen(Simulator const& simulator)
+const char* simulation_name()
 {
-    return simulator.elapsedTime() <= sf::seconds(30.0f);
+    return "Parking simulation";
 }
 
 //-----------------------------------------------------------------------------
-SelfParkingCar& onCreateWorld(City& city)
+bool halt_simulation_when(Simulator const& simulator)
 {
+    return simulator.elapsedTime() > sf::seconds(30.0f);
+}
+
+//-----------------------------------------------------------------------------
+static Car& customize(Car& car)
+{
+    // Add sensors
+    //car.addRadar(Radar(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f), 90.0f, 20.0f, 2.0f));
+#if 0
+    car.addRadar({ .offset = sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f),
+               .orientation = 90.0f,
+               .fov = 20.0f,
+               .range = 2.0f/*174.0f*/ });
+#endif
+
+    // Add behaviors
+    car.addECU<AutoParkECU>(car); // FIXME how to avoid adding car ?
+
+    // Add reactions from keyboard
+    car.registerCallback(sf::Keyboard::PageDown, [&car]()
+    {
+        //car.turningIndicator(false, m_turning_right ^ true);
+    });
+
+    car.registerCallback(sf::Keyboard::PageUp, [&car]()
+    {
+        //car.turningIndicator(m_turning_left ^ true, false);
+    });
+
+    car.registerCallback(sf::Keyboard::Up, [&car]()
+    {
+        car.refSpeed(1.0f);
+    });
+
+    car.registerCallback(sf::Keyboard::Down, [&car]()
+    {
+        car.refSpeed(0.0f);
+    });
+
+    car.registerCallback(sf::Keyboard::Right, [&car]()
+    {
+        car.refSteering(car.refSteering() - 0.1f);
+    });
+
+    car.registerCallback(sf::Keyboard::Left, [&car]()
+    {
+        car.refSteering(car.refSteering() + 0.1f);
+    });
+
+    return car;
+}
+
+//-----------------------------------------------------------------------------
+Car& create_city(City& city)
+{
+    std::cout << "Creating city for " << simulation_name() << std::endl;
+
+    BluePrints::init(); // FIXME
     city.reset();
 
     // Create parallel or perpendicular or diagnoal parking slots
@@ -55,6 +112,5 @@ SelfParkingCar& onCreateWorld(City& city)
     city.addCar("Renault.Twingo", parking3);
 
     // Self-parking car (dynamic). Always be the last in the container
-    SelfParkingCar& ego = city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f));
-    return ego;
+    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
 }

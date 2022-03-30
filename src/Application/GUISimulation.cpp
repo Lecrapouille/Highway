@@ -29,28 +29,39 @@
 
 //------------------------------------------------------------------------------
 GUISimulation::GUISimulation(Application& application)
-    : Application::GUI("GUI Simulation", application.renderer()),
-      m_simulator(application.renderer())
+    : Application::GUI(application.renderer(), "GUI Simulation", sf::Color::White),
+      simulator(application.renderer())
 {
     // SFML view: change the world coordinated to follow the same computations
     // than the doc "Estimation et controle pour le pilotage automatique de
     // vehicule" by Sungwoo Choi.
     m_view = renderer().getDefaultView();
     m_view.setSize(float(application.width()), -float(application.height()));
-    m_view.zoom(ZOOM);
-    renderer().setView(m_view);
+    zoom(ZOOM);
+
+    // TODO Load fonts
+    // m_fonts = ...
+    // m_message_bar.setFont(m_font);
+}
+
+//------------------------------------------------------------------------------
+void GUISimulation::zoom(float const value)
+{
+    m_zoom = value;
+    m_view.zoom(m_zoom);
+    m_renderer.setView(m_view);
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::activate()
 {
-    m_simulator.activate();
+    simulator.activate();
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::deactivate()
 {
-    m_simulator.deactivate();
+    simulator.deactivate();
 }
 
 //------------------------------------------------------------------------------
@@ -63,7 +74,7 @@ void GUISimulation::handleInput()
     sf::Event event;
 
     // Get the X,Y mouse coordinates from the simulated word coordinates.
-    m_mouse = m_simulator.pixel2world(sf::Mouse::getPosition(renderer()));
+    m_mouse = simulator.pixel2world(sf::Mouse::getPosition(renderer()));
 
     while (m_running && renderer().pollEvent(event))
     {
@@ -90,15 +101,29 @@ void GUISimulation::handleInput()
                           << " [m]" << std::endl;
             }
             break;
+        case sf::Event::MouseWheelMoved:
+            zoom(m_zoom + float(event.mouseWheel.delta) / 0.1f);
+            break;
         case sf::Event::KeyPressed:
             // Leaving the GUI
             if (event.key.code == sf::Keyboard::Escape)
             {
                 m_running = false;
             }
+            else if (event.key.code == sf::Keyboard::F1)
+            {
+                if (simulator.reload())
+                {
+                    m_message_bar.setText("Simulation reloaded");
+                }
+                else
+                {
+                    m_message_bar.setText("Simulation faield reloaded");
+                }
+            }
             else // propagate the key press to the simulator
             {
-                m_simulator.reactTo(event.key.code);
+                simulator.reactTo(event.key.code);
             }
             break;
         default:
@@ -110,15 +135,22 @@ void GUISimulation::handleInput()
 //------------------------------------------------------------------------------
 void GUISimulation::update(const float dt) // FIXME to be threaded
 {
-    m_simulator.update(dt);
+    simulator.update(dt);
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::draw()
 {
-    m_simulator.draw();
+    // FIXME not good !
+    if (!isRunning())
+    {
+        m_message_bar.setText("Simulation has ended");
+    }
 
     // Make the camera follows the car
-    m_view.setCenter(m_simulator.camera());
+    m_view.setCenter(simulator.camera());
     renderer().setView(m_view);
+
+    // Draw the simulation
+    simulator.draw();
 }

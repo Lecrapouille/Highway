@@ -25,17 +25,29 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SIMULATION_HPP
-#  define SIMULATION_HPP
+#ifndef ECU_HPP
+#  define ECU_HPP
 
-class Simulator;
-class City;
-class SelfParkingCar;
+#  include "Common/Components.hpp"
 
 // ****************************************************************************
 //! \brief
 // ****************************************************************************
-SelfParkingCar& onCreateWorld(City& city);
-bool simulationHaltsWhen(Simulator const& simulator);
+class ECU: public Component
+{
+public:
+
+   COMPONENT_CLASSTYPE(ECU, Component);
+
+public:
+
+   virtual void update(float const dt) = 0;
+};
+
+// ****************************************************************************
+// Forward declaration of ECUs
+// ****************************************************************************
+
+class AutoParkECU;
 
 #endif

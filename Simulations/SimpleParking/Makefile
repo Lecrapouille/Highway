@@ -25,8 +25,7 @@
 ##
 ## For more information, please refer to <https://unlicense.org>
 
-TARGET_BIN = CarSimulator
-TARGET_LIB = libcarsimulator.so
+TARGET_LIB = simpleparking.so
 
 # Needed for the command: make install
 DESTDIR ?=
@@ -37,11 +36,8 @@ DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
 
 # Compilation searching files
 BUILD = build
-VPATH = $(BUILD) src src/Application src/Math src/Simulator/Sensors \
-  src/Simulator src/Simulator/City src/Simulator/Vehicle \
-  src/Renderer src/Simulator/Vehicle/VehiclePhysicalModels src/Common \
-  src/ECUs/AutoParkECU
-INCLUDES = -Isrc -Isrc/Simulator
+VPATH = $(BUILD)
+INCLUDES = -I.. -I../../src -I../../src/Simulator
 
 # C++14 (only because of std::make_unique not present in C++11)
 STANDARD=--std=c++14
@@ -51,48 +47,23 @@ COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
   -Wunused-result -Wunused-parameter -Wtype-limits -Wshadow                 \
   -Wcast-align -Wcast-qual -Wconversion -Wfloat-equal               \
   -Wpointer-arith -Wswitch-enum -Wpacked -Wold-style-cast \
-  -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion
+  -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion -Wno-unknown-warning-option
 COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter \
   -Wno-old-style-cast -Wno-sign-conversion -Wcast-function-type
 
 # Project flags
 CXXFLAGS += $(STANDARD) $(COMPIL_FLAGS)
 LDFLAGS += -lpthread
-DEFINES += -DDATADIR=\"$(DATADIR)\"
 DEFINES += -DZOOM=0.01f
-
-# Lib SFML https://www.sfml-dev.org/index-fr.php
-CXXFLAGS += `pkg-config --cflags sfml-graphics`
-LDFLAGS += `pkg-config --libs sfml-graphics`
-
-## Pretty print the stack trace https://github.com/bombela/backward-cpp
-## You can comment these lines if backward-cpp is not desired
-# CXXFLAGS += -g -O0
-# LDFLAGS += -ldw
-# DEFINES += -DBACKWARD_HAS_DW=1
-# OBJS_DEBUG += backward.o
-
-# dlopen() ...
-LDFLAGS += -ldl
+CXXFLAGS +=
+LDFLAGS += -L$(abspath ../../build) -lcarsimulator
 
 # Header file dependencies
 DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
-# Desired compiled files for the shared library
-LIB_OBJS += Collide.o Monitoring.o Components.o Drawable.o Renderer.o
-LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
-LIB_OBJS += Radar.o
-LIB_OBJS += Car.o Trailer.o
-LIB_OBJS += Pedestrian.o Parking.o BluePrints.o City.o
-LIB_OBJS += GUIMainMenu.o GUISimulation.o
-LIB_OBJS += AutoParkECU.o CarParkedScanner.o
-#LIB_OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
-#LIB_OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
-LIB_OBJS += Simulator.o
-
-# Desired compiled files for the standalone application
-OBJS += main.o
+# Desired compiled files
+OBJS += SimpleParking.o
 
 # Verbosity control
 ifeq ($(VERBOSE),1)
@@ -102,17 +73,12 @@ Q := @
 endif
 
 # Compile the target
-all: $(TARGET_BIN) $(TARGET_LIB)
-
-# Link the target
-$(TARGET_BIN): $(LIB_OBJS) $(OBJS)
-	@echo "Linking $@"
-	$(Q)cd $(BUILD) && $(CXX) $(INCLUDES) -o $(TARGET_BIN) $(LIB_OBJS) $(OBJS) $(LDFLAGS)
+all: $(TARGET_LIB)
 
 # Create the shared library
-$(TARGET_LIB): $(LIB_OBJS)
+$(TARGET_LIB): $(OBJS)
 	@echo "Library $@"
-	$(Q)cd $(BUILD) && $(CXX) -shared -o $(TARGET_LIB) $(LIB_OBJS) $(LDFLAGS)
+	$(Q)cd $(BUILD) && $(CXX) -shared -o $(TARGET_LIB) $(OBJS) $(LDFLAGS)
 
 # Compile C++ source files
 %.o : %.cpp $(BUILD)/%.d Makefile
@@ -126,51 +92,13 @@ $(TARGET_LIB): $(LIB_OBJS)
 	$(Q)$(CXX) $(DEPFLAGS) -fPIC $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
 	@$(POSTCOMPILE)
 
-# Install the project
-.PHONY: install
-install: $(TARGET_BIN) $(TARGET_LIB)
-	@echo "Installing $(TARGET_BIN)"
-	$(Q)mkdir -p $(BINDIR)
-	$(Q)mkdir -p $(LIBDIR)
-	$(Q)mkdir -p $(DATADIR)
-	cp $(BUILD)/$(TARGET_BIN) $(BINDIR)
-	cp $(BUILD)/$(TARGET_LIB) $(LIBDIR)
-
-# Do unit tests and code coverage
-.PHONY: check
-check:
-	@echo "Compiling unit tests"
-	$(Q)$(MAKE) -C tests check
-
-# Create the documentation
-.PHONY: doc
-doc:
-	$(Q)doxygen Doxyfile
-
-# Create the tarball
-.PHONY: tarball
-tarball:
-	$(Q)./.targz.sh $(PWD) $(TARGET_BIN)
-
-# Compile LaTeX documentation
-.PHONY: latex
-latex:
-	$(Q)cd IA/Planning/doc && latex IA.tex && latex IA.tex && dvipdf IA.dvi
-
 # Delete compiled files
 .PHONY: clean
 clean:
 	$(Q)-rm -fr $(BUILD)
 
-# Delete compiled files and backup files
-.PHONY: veryclean
-veryclean: clean
-	$(Q)-rm -fr *~ .*~
-	$(Q)find src -name "*~" -print -delete
-	$(Q)-rm -fr doc/html
-
 # Create the directory before compiling sources
-$(LIB_OBJS) $(OBJS): | $(BUILD)
+$(OBJS): | $(BUILD)
 $(BUILD):
 	@mkdir -p $(BUILD)
 
@@ -179,4 +107,4 @@ $(BUILD)/%.d: ;
 .PRECIOUS: $(BUILD)/%.d
 
 # Header file dependencies
--include $(patsubst %,$(BUILD)/%.d,$(basename $(LIB_OBJS) $(OBJS)))
+-include $(patsubst %,$(BUILD)/%.d,$(basename $(OBJS)))

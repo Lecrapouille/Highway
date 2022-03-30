@@ -25,25 +25,36 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SELF_PARKING_CAR_HPP
-#  define SELF_PARKING_CAR_HPP
-
-#  include "Vehicle/Car.hpp"
-#  include "Simulation/SelfParking/SelfParkingComponent.hpp"
+#ifndef __USER_SIMULATION_H__
+#  define __USER_SIMULATION_H__
 
 // ****************************************************************************
-//! \brief
+//! \file Simulations are C++ code that is compiled as shared library and the
+//! following functions will be loaded by the simulator application and run.
 // ****************************************************************************
-class SelfParkingCar: public Car
-{
-public:
 
-    SelfParkingCar(const char* name, sf::Color const& color);
-    virtual void update(float const dt) override;
+#  include "City/City.hpp"
+#  include "Simulator/Simulator.hpp"
 
-protected:
-
-    SelfParkingComponent& m_auto_park;
-};
-
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+//! \brief Function returning the simulation name.
+const char* simulation_name();
+
+//! \brief Function taking the Simulator as input and returns true when
+//! the simulation shall halt.
+bool halt_simulation_when(Simulator const& simulator);
+
+//! \brief C fonction taking a City as input and allows to create the
+//! desired city. This function returns the ego car.
+Car& create_city(City& city);
+
+// TODO faire un struct simulation { .simulation_name
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __USER_SIMULATION_H__ */

@@ -26,21 +26,113 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "Application/GUISimulation.hpp"
-#include "Simulation/Simulation.hpp"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 1024
 
-// -----------------------------------------------------------------------------
-int main()
+//-----------------------------------------------------------------------------
+//! \brief simple demo of simulation.
+static Car& customize(Car& car)
 {
-    Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-    GUISimulation gui(app);
-    gui.bgColor = sf::Color(255,255,255,255);
-    gui.simulator().createSimulation(onCreateWorld, simulationHaltsWhen);
+    // Add reactions from keyboard
+    car.registerCallback(sf::Keyboard::PageDown, [&car]()
+    {
+        //car.turningIndicator(false, m_turning_right ^ true);
+    });
 
+    car.registerCallback(sf::Keyboard::PageUp, [&car]()
+    {
+        //car.turningIndicator(m_turning_left ^ true, false);
+    });
+
+    car.registerCallback(sf::Keyboard::Up, [&car]()
+    {
+        car.refSpeed(1.0f);
+    });
+
+    car.registerCallback(sf::Keyboard::Down, [&car]()
+    {
+        car.refSpeed(0.0f);
+    });
+
+    car.registerCallback(sf::Keyboard::Right, [&car]()
+    {
+        car.refSteering(car.refSteering() - 0.1f);
+    });
+
+    car.registerCallback(sf::Keyboard::Left, [&car]()
+    {
+        car.refSteering(car.refSteering() + 0.1f);
+    });
+
+    return car;
+}
+
+//-----------------------------------------------------------------------------
+//! \brief simple demo of simulation.
+static bool haltConditions(Simulator const& simulator)
+{
+    return simulator.elapsedTime() > sf::seconds(30.0f);
+}
+
+//-----------------------------------------------------------------------------
+//! \brief simple demo of simulation.
+static Car& createWorld(City& city)
+{
+    city.reset();
+
+    // Create parallel or perpendicular or diagnoal parking slots
+    const int angle = 0u;
+    std::string dim = "epi." + std::to_string(angle);
+    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
+    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
+    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
+    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
+    city.addParking(dim.c_str(), parking3.position() + parking3.delta());
+
+    // Add parked cars (static)
+    city.addCar("Renault.Twingo", parking0);
+    city.addCar("Renault.Twingo", parking1);
+    city.addCar("Renault.Twingo", parking3);
+
+    // Self-parking car (dynamic). Always be the last in the container
+    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
+}
+
+//-----------------------------------------------------------------------------
+//! \brief simple demo of simulation.
+static void simple_simulation_demo(Simulator& simulator)
+{
+    // Set callbacks implemented in Simulation/Simulation.cpp and needed for
+    // creating the simulation.
+    simulator.createSimulation(createWorld, haltConditions);
+}
+
+// -----------------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
     try
     {
+        Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
+        GUISimulation gui(app);
+
+        // No argument: load an ultra basic simulation
+        if (argc == 1)
+        {
+            simple_simulation_demo(gui.simulator);
+        }
+        // Single argument: load a shared library file holding functions for custom
+        // simulation.
+        else
+        {
+            if (!gui.simulator.load(argv[1]))
+            {
+                std::cerr << "Fatal: failed loading a simulation file. Aborting ..."
+                          << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
         app.push(gui);
         app.loop();
     }

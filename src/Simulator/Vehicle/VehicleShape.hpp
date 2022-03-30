@@ -34,10 +34,13 @@
 #  include <vector>
 #  include <cassert>
 #  include <memory>
-#include <iostream>
 
 // *****************************************************************************
-//! \brief
+//! \brief A vehicle shape is an oriented bounding box of the body (rectangle knowing its
+//! position and orientation (here in a 2D world: the heading aka yaw). The shape
+//! is used for the rendering process and the collision detection.
+//! \tparam BLUEPRINT struct holding dimension of the shape (ie CarBluePrint,
+//! TrailerBluePrint ... see VehicleBlueprint.hpp).
 // *****************************************************************************
 template<class BLUEPRINT>
 class VehicleShape
@@ -45,10 +48,11 @@ class VehicleShape
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor with the vehicle dimension (ie CarBluePrint,
+    //! TrailerBluePrint ... see Vehiclem_blueprint.hpp).
     //--------------------------------------------------------------------------
-    VehicleShape(BLUEPRINT& blueprint/*, std::vector<std::shared_ptr<SensorShape>>& sensors*/)
-        : m_blueprint(blueprint)//, m_sensors(sensors)
+    VehicleShape(BLUEPRINT& blueprint)
+        : m_blueprint(blueprint)
     {
         // Origin on the middle of the rear wheel axle
         m_obb.setSize(sf::Vector2f(m_blueprint.length, m_blueprint.width));
@@ -58,21 +62,27 @@ public:
         update(sf::Vector2f(NAN, NAN), NAN);
     }
 
-    void addSensor(std::shared_ptr<SensorShape> shape)
+    //--------------------------------------------------------------------------
+    //! \brief Add the shape of the sensor: when the shape is rotationg, sensor
+    //! orientation will also be updated (mimic a scene graph hierarchy).
+    //--------------------------------------------------------------------------
+    void addSensorShape(std::shared_ptr<SensorShape> shape)
     {
        m_sensors.push_back(shape);
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Refresh the position and heading of shape and child shapes (ie
+    //! sensor shapes).
     //--------------------------------------------------------------------------
     void update(sf::Vector2f const& position, float const heading)
     {
-        m_position = position;
-        m_heading = heading;
+        // Update body shape
         m_obb.setPosition(position);
         m_obb.setRotation(RAD2DEG(heading));
+        m_heading = heading;
 
+        // Update wheel shape
         size_t i(BLUEPRINT::WheelName::MAX);
         while (i--)
         {
@@ -80,6 +90,7 @@ public:
                 position + HEADING(m_blueprint.wheels[i].offset, heading);
         }
 
+        // Update sensor shape
         for (auto const& it: m_sensors)
         {
             it->update(position, heading);
@@ -87,7 +98,15 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief const getter: return the oriented bounding box (OBB) of the shape.
+    //! \brief Return the vehicle blueprint
+    //--------------------------------------------------------------------------
+    inline BLUEPRINT const& blueprint() const
+    {
+        return m_blueprint;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief const getter: return the oriented bounding box (OBB) of the body.
     //--------------------------------------------------------------------------
     inline sf::RectangleShape const& obb() const
     {
@@ -95,8 +114,9 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief const getter: return the oriented bounding box (OBB) of the shape.
-    //! \param[in] nth the nth wheel.
+    //! \brief const getter: return the oriented bounding box (OBB) of the nth
+    //! wheel.
+    //! \param[in] nth the nth wheel: shall be < BLUEPRINT::WheelName::MAX.
     //! \param[in] heading the heading of the vehicle in radian.
     //--------------------------------------------------------------------------
     inline sf::RectangleShape obb_wheel(size_t const nth, float steering) const
@@ -107,7 +127,6 @@ public:
         sf::RectangleShape shape(sf::Vector2f(w.radius * 2.0f, w.width));
         shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
         shape.setPosition(w.position);
-std::cout << "steering " << steering << std::endl;
         shape.setRotation(RAD2DEG(m_heading + steering));
         return shape;
     }
@@ -120,16 +139,16 @@ std::cout << "steering " << steering << std::endl;
     //--------------------------------------------------------------------------
     inline bool collides(sf::RectangleShape const& other, sf::Vector2f& p) const
     {
-        return ::collide(m_obb, other, p); // FIXME Can be cached ?
+        return ::collide(m_obb, other, p);
     }
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the position of the middle of the rear axle
-    //! inside the world coordinates.
+    //! inside the world coordinates [meter].
     //--------------------------------------------------------------------------
     inline sf::Vector2f position() const
     {
-        return m_position;
+        return  m_obb.getPosition();
     }
 
     //--------------------------------------------------------------------------
@@ -141,33 +160,24 @@ std::cout << "steering " << steering << std::endl;
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Return the vehicle blueprint
-    //--------------------------------------------------------------------------
-    inline BLUEPRINT const& blueprint() const
-    {
-        return m_blueprint;
-    }
-
-    //--------------------------------------------------------------------------
     //! \brief Return the number of wheels
     //--------------------------------------------------------------------------
     inline size_t countWheels() const
     {
-        return m_blueprint.wheels.size();
+        return BLUEPRINT::WheelName::MAX;
     }
 
 private:
 
-    //! \brief
-    BLUEPRINT& m_blueprint;
-    //! \brief Cache information from VehiclePhysics
-    sf::Vector2f m_position;
-    //! \brief Cache information from VehiclePhysics
-    float m_heading;
+    //! \brief Dimension of the vehicle
+    BLUEPRINT m_blueprint;
     //! \brief Sensors shapes
     std::vector<std::shared_ptr<SensorShape>> m_sensors;
     //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_obb;
+    //! \brief Cache m_obb::getOrientation() in radian: avoid to convert from degree
+    //! since SFML uses radians.
+    float m_heading;
 };
 
 #endif

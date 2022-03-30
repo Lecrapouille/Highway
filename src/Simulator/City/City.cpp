@@ -62,12 +62,11 @@ Parking& City::addParking(const char* type, sf::Vector2f const& position)
 }
 
 //------------------------------------------------------------------------------
-SelfParkingCar& City::addEgo(const char* model, sf::Vector2f const& position,
-                             float const heading, float const speed)
+Car& City::addEgo(const char* model, sf::Vector2f const& position, float const heading, float const speed)
 {
     std::string name = "ego" + std::to_string(m_ego_id++);
 
-    return createCar<SelfParkingCar>(model, name.c_str(), EGO_CAR_COLOR, 0.0f, speed,
+    return createCar<Car>(model, name.c_str(), EGO_CAR_COLOR, 0.0f, speed,
         position, heading, 0.0f);
 }
 

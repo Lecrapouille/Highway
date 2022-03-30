@@ -25,6 +25,7 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
+#  include "Simulator/BluePrints.hpp"
 #  include "Vehicle/Car.hpp"
 #  include "Vehicle/VehiclePhysicalModels/TricycleKinematic.hpp"
 

@@ -25,15 +25,10 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation/SelfParking/SelfParkingComponent.hpp"
-#include <iostream>
+#ifndef VEHICLES_HPP
+#  define VEHICLES_HPP
 
-SelfParkingComponent::SelfParkingComponent()
-{
-   //std::cout << "SelfParkingComponent" << std::endl;
-}
+#  include "Vehicle/Car.hpp"
+#  include "Vehicle/Trailer.hpp"
 
-void SelfParkingComponent::update()
-{
-   //std::cout << "SelfParkingComponent update" << std::endl;
-}
+#endif

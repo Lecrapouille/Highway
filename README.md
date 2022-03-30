@@ -33,13 +33,50 @@ This code depends on:
 commenting some lines inside the Makefile).
 - Google tests for unit tests.
 
+Standalone application:
 ```sh
+git clone git@github.com:Lecrapouille/Drive.git --depth=1
 make clean
 make -j8
-./build/AutoPark
+sudo make install
 ```
 
-Other commands:
+Run the standalone application:
+```sh
+CarSimulator
+```
+
+Compile simulation file:
+```sh
+cd Simulations/SimpleParking/
+make clean
+make -j8
+```
+
+The simulation file is in `Simulations/SimpleParking/build/simpleparking.so`.
+You can create more simulation files. For the moment implement these fonctions:
+
+```C++
+//! \brief Function returning the simulation name.
+const char* simulation_name();
+
+//! \brief Function taking the Simulator as input and returns true when
+//! the simulation shall halt.
+bool halt_simulation_when(Simulator const& simulator);
+
+//! \brief C fonction taking a City as input and allows to create the
+//! desired city. This function returns the ego car.
+Car& create_city(City& city);
+```
+
+## Standalone application command line
+
+Run the standalone application:
+```sh
+CarSimulator simpleparking.so
+```
+
+## Other commands:
 ```sh
 make tarball
 ```

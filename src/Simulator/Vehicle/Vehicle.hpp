@@ -31,9 +31,10 @@
 #  include "Vehicle/Wheel.hpp"
 #  include "Vehicle/VehicleBluePrint.hpp"
 #  include "Vehicle/VehiclePhysics.hpp"
+#  include "Vehicle/ECU.hpp"
 #  include "Sensors/Radar.hpp"
-#  include "Common/Components.hpp"
 #  include <memory>
+#  include <functional>
 
 // TODO faire callback collides
 // TODO faire get actors around the car comme std::functional
@@ -59,28 +60,17 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
+    virtual ~Vehicle() = default;
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
     Vehicle(BLUEPRINT const& blueprint_, const char* name_, sf::Color const& color_)
         : blueprint(blueprint_), name(name_), color(color_)
     {
         m_shape = std::make_unique<VehicleShape<BLUEPRINT>>(blueprint);
         m_control = std::make_unique<VehicleControl>();
     }
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Radar& addRadar(RadarBluePrint const& bp)
-    {
-        std::shared_ptr<Radar> radar = std::make_shared<Radar>(bp);
-        m_sensors.push_back(radar);
-        m_shape->addSensor(radar);
-        return *radar;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    virtual ~Vehicle() = default;
 
     //-------------------------------------------------------------------------
     //! \brief Initialize first value for the physics.
@@ -99,10 +89,43 @@ public:
     }
 
     //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    Radar& addRadar(RadarBluePrint const& bp)
+    {
+        std::shared_ptr<Radar> radar = std::make_shared<Radar>(bp);
+        m_sensors.push_back(radar);
+        m_shape->addSensor(radar);
+        return *radar;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Add a new ECU to the vehicle. Pass arguments to its constructor.
+    //! \pre do not call during the update() method since iterator for m_ecu
+    //! will be errneous.
+    //-------------------------------------------------------------------------
+    template<class T, typename... Args>
+    T& addECU(Args&&... args)
+    {
+        // Create an or replace the old ECU
+        T& ecu = addComponent<T>(/**this,*/ std::forward<Args>(args)...); // FIXME: *this is Vehicle while when calling it is Car
+
+        // Refresh the list of ECUs owned by the vehicle
+        m_ecus = getComponents<ECU>();
+        return ecu;
+    }
+
+    //-------------------------------------------------------------------------
     // External or internal: collides with city and sensor detecs city ???
     //-------------------------------------------------------------------------
     virtual void update(float const dt)
     {
+        for (auto& it: m_ecus)
+        {
+            assert(it != nullptr && "nullptr ECU");
+            it->update(dt);
+        }
+
         m_control->update(dt);
         m_physics->update(dt);
         update_wheels(m_physics->speed(), m_control->get_steering());
@@ -178,7 +201,6 @@ public:
     //-------------------------------------------------------------------------
     inline sf::RectangleShape obb_wheel(size_t const nth) const
     {
-std::cout << "obb_wheel " << nth << ": " << m_wheels[nth].steering << std::endl;
         // Assertion is made inside the obb_wheel() method.
         return m_shape->obb_wheel(nth, m_wheels[nth].steering);
     }
@@ -364,6 +386,8 @@ public:
 
 protected:
 
+    //! \brief
+    std::vector<ECU*> m_ecus;
     //! \brief
     std::vector<std::shared_ptr<Radar>> m_sensors;
     //! \brief The shape of the vehicle, dimension, wheel positions

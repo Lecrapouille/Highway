@@ -40,15 +40,15 @@
 #  include <cassert>
 
 // *****************************************************************************
-//! \brief Manage a stack of GUI instances, which shall deriving from the
-//! interface Application::GUI class. Since we desire to manage a very simple
+//! \brief Manage a stack of GUI instances (GUI which shall deriving from the
+//! interface Application::GUI class). Since we desire to manage a very simple
 //! application, GUIs are simply pushed and poped in a stack and only the GUI on
 //! the top of the stack is active, reacts to IO events (mouse, keyboard ...)
-//! and is rendered by the SFML library. Others GUIs in the stack are inactive
-//! until they reached the top position in the stack. Therefore a GUI pushing a
+//! and rendered by the SFML library. Others stacked GUIs are inactive until
+//! they reached the top position in the stack where they become active. Therefore a GUI pushing a
 //! child GUI in the stack will be in pause until the child GUI is closed.
 //! Finally, note that poped GUI have not their memory released: the stack does
-//! not hold GUIs but just refer them by raw pointer.
+//! not hold GUIs but just refer them by raw pointers.
 // *****************************************************************************
 class Application
 {
@@ -56,9 +56,8 @@ public:
 
     // *************************************************************************
     //! \brief Interface class for drawing a GUI and handling mouse and keyboard
-    //! events. The application is not released by this class and shall be
-    //! destroy after the destruction of this class.
-    //!
+    //! events. This instance does not knows the Application instance knowing it.
+    //! \note GUIs are not released by Application.
     //! \pre This class is dependent from the SFML library.
     // *************************************************************************
     class GUI
@@ -71,11 +70,13 @@ public:
         //----------------------------------------------------------------------
         //! \brief Default constructor. No actions are made except initializing
         //! internal states.
+        //! \param[inout] renderer: SFML renderer. FIXME Application instead of renderer ?
         //! \param[in] name: Name of the GUI.
-        //! \param[inout] renderer: SFML renderer.
+        //! \param[in] color: Background color.
         //----------------------------------------------------------------------
-        GUI(const char* name, sf::RenderWindow& render)
-            : bgColor(0, 0, 100, 255), m_render(render), m_name(name)
+        GUI(sf::RenderWindow& renderer, const char* name, sf::Color const& color
+                = sf::Color::White)
+            : background_color(color), m_renderer(renderer), m_name(name)
         {}
 
         //----------------------------------------------------------------------
@@ -88,15 +89,23 @@ public:
         //----------------------------------------------------------------------
         inline sf::RenderWindow& renderer()
         {
-            return m_render;
+            return m_renderer;
         }
 
         //----------------------------------------------------------------------
-        //! \brief Return then GUI name (debug purpose)
+        //! \brief Return then GUI name (debug purpose).
         //----------------------------------------------------------------------
         inline std::string const& name() const
         {
             return m_name;
+        }
+
+        //----------------------------------------------------------------------
+        //! \brief Change the windows title.
+        //----------------------------------------------------------------------
+        inline void title(std::string const& name)
+        {
+            return m_renderer.setTitle(name);
         }
 
     private:
@@ -142,12 +151,12 @@ public:
     public:
 
         //! \brief the background color
-        sf::Color bgColor;
+        sf::Color background_color;
 
     protected:
 
         //! \brief the FSML renderer
-        sf::RenderWindow& m_render;
+        sf::RenderWindow& m_renderer;
 
     private:
 
@@ -167,6 +176,17 @@ public:
     {
         m_renderer.create(sf::VideoMode(width, height), title);
         m_renderer.setFramerateLimit(120);
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    ~Application()
+    {
+        // Clear the satck
+        std::stack<Application::GUI*>().swap(m_guis);
+        // Stop the SFML renderer
+        m_renderer.close();
     }
 
     //--------------------------------------------------------------------------
@@ -236,7 +256,7 @@ public:
             float dt = clock.restart().asSeconds();
             gui = peek();
             assert(gui != nullptr);
-            m_renderer.clear(gui->bgColor);
+            m_renderer.clear(gui->background_color);
             gui->handleInput();
             gui->update(dt);
             gui->draw();

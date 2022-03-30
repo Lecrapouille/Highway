@@ -25,19 +25,30 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SELF_PARKING_COMPONENT_HPP
-#  define SELF_PARKING_COMPONENT_HPP
+#ifndef AUTO_PARK_ECU_HPP
+#  define AUTO_PARK_ECU_HPP
 
-#  include "Common/Components.hpp"
+#  include "Vehicle/ECU.hpp"
+#  include "ECUs/AutoParkECU/CarParkedScanner.hpp"
 
-class SelfParkingComponent: public Component
+// ****************************************************************************
+//! \brief ECU controling the ego car for doing autonomous parking maneuvers
+// ****************************************************************************
+class AutoParkECU: public ECU
 {
 public:
 
-   SelfParkingComponent();
-   COMPONENT_CLASSTYPE(SelfParkingComponent, Component);
+   AutoParkECU(Car& car);
+   COMPONENT_CLASSTYPE(AutoParkECU, ECU);
 
-   void update();
+public:
+
+   virtual void update(float const dt) override;
+
+private:
+
+    Car& m_ego;
+    CarParkedScanner m_scanner;
 };
 
 #endif

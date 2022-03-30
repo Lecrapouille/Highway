@@ -28,13 +28,13 @@
 #ifndef CITY_HPP
 #  define CITY_HPP
 
+// #  include "City/Drivers.hpp" FIXME TBD
 #  include "City/Parking.hpp"
 #  include "City/Road.hpp"
 #  include "City/Pedestrian.hpp"
-// #  include "City/Drivers.hpp" FIXME TBD
-#  include "Simulation/SelfParkingCar.hpp"
-
+#  include "Vehicle/Vehicles.hpp"
 #  include <vector>
+#  include <memory>
 
 // TODO:https://www.mathworks.com/help/driving/ug/create-driving-scenario-interactively-and-generate-synthetic-detections.html
 
@@ -74,8 +74,8 @@ public:
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
-    SelfParkingCar& addEgo(const char* model, sf::Vector2f const& position,
-                           float const heading = 0.0f, float const speed = 0.0f);
+    Car& addEgo(const char* model, sf::Vector2f const& position,
+                float const heading = 0.0f, float const speed = 0.0f);
 
     //-------------------------------------------------------------------------
     //! \brief Create or replace the ego vehicle (the autonomous vehicle). The

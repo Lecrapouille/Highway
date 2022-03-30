@@ -25,7 +25,7 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation/SelfParking/CarParkedScanner.hpp"
+#include "ECUs/AutoParkECU/CarParkedScanner.hpp"
 
 // -----------------------------------------------------------------------------
 void CarParkedScanner::enteringStateDetectingRearOfFirstCar()
@@ -141,6 +141,8 @@ void CarParkedScanner::event_detection(bool detection)
 // -----------------------------------------------------------------------------
 CarParkedScanner::Status CarParkedScanner::update(float dt)
 {
+    std::cout << "CarParkedScanner update" << std::endl;
+
     // Estimate the travelled distance and abort if the car made too long travel
     m_distance += m_ego.speed() * dt;
     if (m_distance >= 25.0f)

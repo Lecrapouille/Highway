@@ -67,7 +67,7 @@ public:
 // *****************************************************************************
 #  define COMPONENT_CLASSTYPE(CLASS, PARENT)                                \
     public:                                                                 \
-       virtual bool isClassType(const std::size_t classType) const {        \
+       virtual bool isClassType(const std::size_t classType) const override {        \
           return (classType == CLASS::type)                                 \
                 ? true : PARENT::isClassType(classType);                    \
        }                                                                    \

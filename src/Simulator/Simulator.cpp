@@ -40,10 +40,63 @@ Simulator::Simulator(sf::RenderWindow& renderer)
 }
 
 //------------------------------------------------------------------------------
+bool Simulator::load(const char* lib_name)
+{
+    try
+    {
+        m_simulation.load(lib_name);
+        createSimulation(m_simulation);
+    }
+    catch(std::logic_error &e)
+    {
+        std::cerr << "Exception: "<< e.what() << std::endl;
+        createSimulation(nullptr, nullptr);
+        return false;
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool Simulator::reload()
+{
+    try
+    {
+        m_simulation.reload();
+        createSimulation(m_simulation);
+        activate(); // FIXME: bof
+    }
+    catch(std::logic_error &e)
+    {
+        std::cerr << "Exception: "<< e.what() << std::endl;
+        createSimulation(nullptr, nullptr);
+        return false;
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+void Simulator::createSimulation(DynamicLoader& simulation)
+{
+    // Load function for the simulation name
+    auto const simulation_name =
+            simulation.prototype<const char* (void)>("simulation_name");
+    std::cout << "Loading simulation name: " << simulation_name()
+              << std::endl;
+    m_renderer.setTitle(simulation_name());
+
+    // Load function for creating the city
+    CreateCity create = simulation.prototype<Car& (City&)>("create_city");
+    HaltCondition halt = simulation.prototype<bool (Simulator const&)>("halt_simulation_when");
+    createSimulation(std::move(create), std::move(halt));
+}
+
+//------------------------------------------------------------------------------
 void Simulator::activate()
 {
     m_ego = &m_create_city(m_city);
-    follow(m_city.get("ego0"));
+    follow(*m_ego);
     m_time.restart();
 }
 
@@ -86,14 +139,14 @@ void Simulator::update(const float dt)
         it->update(dt);
         if (isEgo(*it))
         {
-           showCollisions(*it);
+            showCollisions(*it);
         }
     }
 
     // Make the camera follows the car
     if (m_follow != nullptr)
     {
-       m_camera = m_follow->position();
+        m_camera = m_follow->position();
     }
 }
 

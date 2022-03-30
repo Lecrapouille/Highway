@@ -27,7 +27,7 @@
 
 #include "Vehicle/VehicleBluePrint.hpp"
 #include "Math/Math.hpp"
-#include <iostream>
+#include <cassert>
 
 constexpr float WHEEL_WIDTH = 0.1f;
 

@@ -29,16 +29,10 @@
 #  define VEHICLE_BLUEPRINT_HPP
 
 #  include <SFML/Graphics.hpp>
-
-#  include <map>
-#  include <unordered_map>
-#  include <vector>
-#  include <functional>
-#  include <cassert>
-#  include <cmath>
+#  include <array>
 
 // *************************************************************************
-//! \brief Car blueprint. See picture ../../doc/pics/CarDefinition.png
+//! \brief Wheel blueprint.
 // *************************************************************************
 struct WheelBluePrint
 {
@@ -92,8 +86,6 @@ struct CarBluePrint
     float max_steering_angle;
     //! \brief Blue prints for the wheels
     std::array<WheelBluePrint, WheelName::MAX> wheels;
-    //! \brief Blue prints for sensors
-    
 };
 
 // *****************************************************************************

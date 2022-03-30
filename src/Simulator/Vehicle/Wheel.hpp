@@ -29,13 +29,14 @@
 #  define WHEEL_HPP
 
 // *****************************************************************************
-//! \brief Vehicle wheel structure
+//! \brief Vehicle's wheel. Note that the shape is defined by WheelBluePrint in
+//! VehicleBluePrint.hpp
 // *****************************************************************************
 struct Wheel
 {
-    //! \brief yaw angle.
+    //! \brief Yaw angle [rad].
     float steering;
-    //! \brief speed
+    //! \brief Angular speed [meter / second]
     float speed;
 };
 

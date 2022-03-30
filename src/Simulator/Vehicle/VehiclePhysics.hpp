@@ -33,7 +33,7 @@
 #  include <SFML/System/Vector2.hpp>
 
 // *****************************************************************************
-//! \brief
+//! \brief Base class for computing the vhecile physic (kinematic, dynamics ...)
 // *****************************************************************************
 template<class BLUEPRINT>
 class VehiclePhysics
@@ -41,19 +41,24 @@ class VehiclePhysics
 public:
 
     //--------------------------------------------------------------------------
+    //! \brief Default constructor: aggregation of the vehicle shape and its
+    //! control.
+    //--------------------------------------------------------------------------
     VehiclePhysics(VehicleShape<BLUEPRINT> const& shape, VehicleControl const& control)
         : m_shape(shape), m_control(control)
     {}
 
     //--------------------------------------------------------------------------
+    //! \brief Needed beause of virtual methods.
+    //--------------------------------------------------------------------------
     virtual ~VehiclePhysics() = default;
 
     //--------------------------------------------------------------------------
-    //! \brief Set initial values needed by tricycle kinematic equations.
-    //! \param[in] position: the (x, y) world coordinated of the car is the
-    //!   middle of the rear axle.
+    //! \brief Set initial state values needed by physical equations.
+    //! \param[in] position: the (x, y) world coordinated of the car (can be the
+    //!   middle of the rear axle).
     //! \param[in] acceleration: initial longitudinal acceleration [meter /
-    //!   second^2].
+    //!   second / second].
     //! \param[in] speed: initial longitudinal speed [meter / second].
     //! \param[in] position: initial world position of the car (its center of
     //!   the rear axle) [meter].
@@ -68,15 +73,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Update discrete time equations from continuous time equations
-    //! described in these pictures:
-    //! ../../doc/pics/TricycleVehicle.png
-    //! ../../doc/pics/TricycleKinematicEq.png
-    //! in where:
-    //!  - L is the vehicle wheelbase [meter].
-    //!  - v is the vehicle longitudinal speed [meter / second].
-    //!  - theta is the car heading (yaw) [radian].
-    //!  - delta is the steering angle [radian].
+    //! \brief Update discrete time equations from continuous time equations.
     //--------------------------------------------------------------------------
     virtual void update(float const dt) = 0;
 
@@ -119,7 +116,7 @@ protected:
     VehicleShape<BLUEPRINT> const& m_shape;
     //! \brief 
     VehicleControl const& m_control;
-    //! \brief Longitudinal acceleration [meter / second^2].
+    //! \brief Longitudinal acceleration [meter / second / second].
     float m_acceleration;
     //! \brief Longitudinal speed [meter / second].
     float m_speed;

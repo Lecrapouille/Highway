@@ -30,10 +30,8 @@
 
 #  include "Application/Application.hpp"
 #  include "Simulator/Simulator.hpp"
+#  include "Renderer/MessageBar.hpp"
 #  include <atomic>
-
-// Defined in main.cpp FIXME: mouve this out
-extern void create_world(City& city, size_t const angle, bool const parked);
 
 // ****************************************************************************
 //! \brief Concrete SFML Application::GUI managing the GUI for the car
@@ -50,26 +48,14 @@ public:
 
     //-------------------------------------------------------------------------
     //! \brief Default Constructor.
-    //! \param[inout] application the main class managing the stack of GUI.
-
+    //! \param[inout] application: the main class managing the stack of GUI.
     //-------------------------------------------------------------------------
     GUISimulation(Application& application);
 
     //-------------------------------------------------------------------------
-    //! \brief Destructor. Close the renderer.
+    //! \brief Apply the zoom value.
     //-------------------------------------------------------------------------
-    ~GUISimulation()
-    {
-        renderer().close();
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Return the simulator.
-    //-------------------------------------------------------------------------
-    inline Simulator& simulator()
-    {
-        return m_simulator;
-    }
+    inline void zoom(float const value);
 
 private: // Derived from Application::GUI
 
@@ -93,7 +79,7 @@ private: // Derived from Application::GUI
     //-------------------------------------------------------------------------
     virtual bool isRunning() override
     {
-        return m_running && m_simulator.isRunning();
+        return m_running && simulator.isRunning();
     }
 
     //-------------------------------------------------------------------------
@@ -108,18 +94,24 @@ private: // Derived from Application::GUI
 
 private:
 
-    //! \brief Closed GUI ?
+    //! \brief Halting the GUI ?
     std::atomic<bool> m_running{true};
     //! \brief For managing world coordinates, zoom and camera displacement.
     sf::View m_view;
-    //! \brief Mouse X,Y position within the world coordinate [meter].  You
-    //! directly can measure objects (in meter) by clicking with mouse int the
-    //! window .
+    //! \brief Camera zoom
+    float m_zoom;
+    //! \brief Mouse X,Y position within the world coordinate [meter]. You
+    //! directly can measure objects [meter] by clicking with mouse in the
+    //! window.
     sf::Vector2f m_mouse;
-    //! \brief The car simulation. TODO Simulation m_simulation(Simulator&); ???
-    // Simulator simulate the city and the simulation is the client code
-    // interacting with the simulator
-    Simulator m_simulator;
+    //! \brief Display messages
+    MessageBar m_message_bar;
+
+public:
+
+    //! \brief City, cars, pedestrians simulation ... in which we will test the
+    //! ego vehicle.
+    Simulator simulator;
 };
 
 #endif

@@ -25,53 +25,19 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#  include "Simulation/SelfParkingCar.hpp"
+#include "ECUs/AutoParkECU/AutoParkECU.hpp"
+#include <iostream>
 
 //-----------------------------------------------------------------------------
-SelfParkingCar::SelfParkingCar(const char* name_, sf::Color const& color_)
-    : Car(name_, color_), m_auto_park(addComponent<SelfParkingComponent>())
+AutoParkECU::AutoParkECU(Car& car)
+  : ECU(), m_ego(car), m_scanner(m_ego)
 {
-    // Add sensors to the car
-    addRadar({ .offset = sf::Vector2f(blueprint.wheelbase + blueprint.front_overhang, 0.0f),
-               .orientation = 90.0f,
-               .fov = 20.0f,
-               .range = 2.0f/*174.0f*/ });
-
-    // Make the car react to some I/O events
-    registerCallback(sf::Keyboard::PageDown, [&]()
-    {
-        turningIndicator(false, m_turning_right ^ true);
-    });
-
-    registerCallback(sf::Keyboard::PageUp, [&]()
-    {
-        turningIndicator(m_turning_left ^ true, false);
-    });
-
-    registerCallback(sf::Keyboard::Up, [&]()
-    {
-        refSpeed(1.0f);
-    });
-
-    registerCallback(sf::Keyboard::Down, [&]()
-    {
-        refSpeed(0.0f);
-    });
-
-    registerCallback(sf::Keyboard::Right, [&]()
-    {
-        refSteering(refSteering() - 0.1f);
-    });
-
-    registerCallback(sf::Keyboard::Left, [&]()
-    {
-        refSteering(refSteering() + 0.1f);
-    });
+   std::cout << "AutoParkECU" << std::endl;
 }
 
 //-----------------------------------------------------------------------------
-void SelfParkingCar::update(float const dt)
+void AutoParkECU::update(float const dt)
 {
-   m_auto_park.update(/*dt*/);
-   Car::update(dt);
+   std::cout << "AutoParkECU update" << std::endl;
+   m_scanner.update(dt);
 }

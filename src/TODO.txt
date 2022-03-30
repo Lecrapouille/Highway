@@ -1,3 +1,4 @@
+- https://github.com/nasa/trick/
 - [FAIT] creneau: Si car > Xi part dans le mauvais sens
 - trajectoire Time scaling si vitesse voiure != 1m/s
 - Finir toutes les maneuvres: Perp, diag, entree et sortie

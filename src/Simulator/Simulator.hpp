@@ -29,48 +29,69 @@
 #  define SIMULATOR_HPP
 
 #  include "City/City.hpp"
+#  include "Common/DynamicLoader.hpp"
 
 class Renderer;
 
 // TODO:
-// Halt condition: simulation duration, ego speed == 0 ...
 // show grid: https://www.mathworks.com/help/driving/ug/motion-planning-using-dynamic-map.html
 
 // ****************************************************************************
-//! \brief Class managing car simulation.
+//! \brief Class managing the simulation.
 // ****************************************************************************
 class Simulator
 {
 public:
 
-    typedef std::function<SelfParkingCar&(City&)> CreateCity;
+    //! \brief C fonction taking a City as input and allows to create the
+    //! desired city. This function returns the ego car.
+    typedef std::function<Car&(City&)> CreateCity;
+    //! \brief C function taking the Simulator as input and returns true when
+    //! the simulation shall halt.
     typedef std::function<bool(Simulator const&)> HaltCondition;
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor. Take
     //-------------------------------------------------------------------------
     Simulator(sf::RenderWindow& renderer);
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Set callback functions needed for configuring the simulation.
+    //! \param[in] create: a C fonction taking a City as input and allows to
+    //! create the desired city. This function returns the ego car.
+    //! \param[in] halt: a C function taking the Simulator as input and returns
+    //! true when the simulation shall halt.
     //-------------------------------------------------------------------------
     void createSimulation(CreateCity&& create, HaltCondition&& halt)
     {
-       m_create_city = create;
-       m_halt_condition = halt;
+        m_create_city = create;
+        m_halt_condition = halt;
     }
 
+    void createSimulation(DynamicLoader& simulation);
+
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Load a simulation file (a shared library file).
+    //-------------------------------------------------------------------------
+    bool load(const char* lib_name);
+
+    //-------------------------------------------------------------------------
+    //! \brief Reload the simulation file (load() should have been called
+    //! previously).
+    //-------------------------------------------------------------------------
+    bool reload();
+
+    //-------------------------------------------------------------------------
+    //! \brief Make the simulator reacts to the given event ID.
     //-------------------------------------------------------------------------
     void reactTo(size_t key)
     {
-       if (m_ego != nullptr)
-         m_ego->reactTo(key);
+        if (m_ego != nullptr)
+            m_ego->reactTo(key);
     }
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Return the simulation elapsed time.
     //-------------------------------------------------------------------------
     inline sf::Time elapsedTime() const
     {
@@ -89,38 +110,39 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief make the camera follows the given car.
+    //-------------------------------------------------------------------------
+    inline void follow(Car& car)
+    {
+        m_follow = &car;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Return the position of the camera.
+    //-------------------------------------------------------------------------
+    inline sf::Vector2f const& camera() const
+    {
+        return m_camera;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Callback when the GUI has started: create the city, camera ...
     //-------------------------------------------------------------------------
     void activate();
 
     //-------------------------------------------------------------------------
-    //! \brief Reset the simulation states, remove entities: parking, cars, ego
-    //! car ...
+    //! \brief Callback when the GUI has ended. Reset the simulation states,
+    //! remove entities: parking, cars, ego car ...
     //-------------------------------------------------------------------------
     void deactivate();
 
     //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    inline void follow(Car* car)
-    {
-       m_follow = car;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    inline sf::Vector2f const& camera() const
-    {
-       return m_camera;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Callback when the application needs to know if the GUI shall
+    //! halt or continue.
     //-------------------------------------------------------------------------
     inline bool isRunning() const
     {
-       return m_halt_condition(*this);
+        return !m_halt_condition(*this);
     }
 
     //-------------------------------------------------------------------------
@@ -138,7 +160,7 @@ public:
 
 private:
 
-void showCollisions(Car& ego);
+    void showCollisions(Car& ego);
 
 protected:
 
@@ -148,7 +170,7 @@ protected:
     City m_city;
     //! \brief Make the camera follow the given car
     Car* m_follow = nullptr;
-SelfParkingCar* m_ego = nullptr;
+    Car* m_ego = nullptr;
     //! \brief Camera position
     sf::Vector2f m_camera;
     //! \brief Simulation time
@@ -157,6 +179,8 @@ SelfParkingCar* m_ego = nullptr;
     CreateCity m_create_city;
     //! \brief
     HaltCondition m_halt_condition;
+    //! \brief
+    DynamicLoader m_simulation;
 };
 
 #endif
