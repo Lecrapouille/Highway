@@ -25,7 +25,7 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Vehicle/VehicleBluePrint.hpp"
+#include "Simulator/Vehicle/VehicleBluePrint.hpp"
 #include "Math/Math.hpp"
 #include <cassert>
 

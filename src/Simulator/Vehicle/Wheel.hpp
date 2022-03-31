@@ -28,11 +28,13 @@
 #ifndef WHEEL_HPP
 #  define WHEEL_HPP
 
+#  include "Simulator/Actor.hpp"
+
 // *****************************************************************************
 //! \brief Vehicle's wheel. Note that the shape is defined by WheelBluePrint in
 //! VehicleBluePrint.hpp
 // *****************************************************************************
-struct Wheel
+struct Wheel : public DynamicActor
 {
     //! \brief Yaw angle [rad].
     float steering;

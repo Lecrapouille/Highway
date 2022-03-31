@@ -37,9 +37,18 @@
 #  include <memory>
 
 // TODO:https://www.mathworks.com/help/driving/ug/create-driving-scenario-interactively-and-generate-synthetic-detections.html
+// TODO show the grid
+// TODO Binary space partition to faster collisions.
+// TODO search in bsp for getting actors around the ego vehicle.
 
 // ****************************************************************************
-//! \brief Class managing car simulation.
+
+//! \brief Class managing a collection of static actors (roads, parkings), and
+//! dynamic actors (vehicles, pedestrians ...). The city shall be seen as a
+//! container (with binary space partitioning (in gestation) to faster
+//! collision and searching objects) and is passive: it does not perform simulation which is made by
+//! Simulator class.
+
 // ****************************************************************************
 class City
 {
@@ -123,18 +132,22 @@ public:
                   float const steering); // FIXME stored in m_cars or m_ghosts or move it simulator
 
     //-------------------------------------------------------------------------
-    //! \brief Return the car by its name.
+    //! \brief Find and return the address of the desired car from its name.
+    //! return nullptr in case if not found.
     //-------------------------------------------------------------------------
     Car* get(const char* name);
 
     //-------------------------------------------------------------------------
-    //! \brief Return
+    //! \brief Return the list of vehicles.
     //-------------------------------------------------------------------------
     std::vector<std::unique_ptr<Car>>& cars()
     {
         return m_cars;
     }
 
+    //-------------------------------------------------------------------------
+    //! \brief Return the list of parkings.
+    //-------------------------------------------------------------------------
     std::vector<std::unique_ptr<Parking>>& parkings()
     {
         return m_parkings;

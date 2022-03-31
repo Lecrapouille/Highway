@@ -28,6 +28,7 @@
 #ifndef PARKING_HPP
 #  define PARKING_HPP
 
+#  include "Simulator/Actor.hpp"
 #  include "Math/Math.hpp"
 #  include <SFML/Graphics/RectangleShape.hpp>
 #  include <ostream>
@@ -67,7 +68,7 @@ struct ParkingBluePrint
 //! methods for creating the simulation more easily (ie creating a parking
 //! world, place parked cars, get spot coordinates ...)
 // ****************************************************************************
-class Parking
+class Parking: public StaticActor
 {
 public:
 

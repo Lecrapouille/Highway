@@ -89,7 +89,7 @@ LIB_OBJS += GUIMainMenu.o GUISimulation.o
 LIB_OBJS += AutoParkECU.o CarParkedScanner.o
 #LIB_OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
 #LIB_OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
-LIB_OBJS += Simulator.o
+LIB_OBJS += Simulation.o Simulator.o
 
 # Desired compiled files for the standalone application
 OBJS += main.o

@@ -25,23 +25,13 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#  include "Simulator/Vehicle/Trailer.hpp"
-//FIXME#  include "Vehicle/VehiclePhysicalModels/TrailerKinematic.hpp"
+#include "Simulation.hpp"
+#include "Simulator.hpp"
 
-//------------------------------------------------------------------------------
-Trailer::Trailer(const char* name_, sf::Color const& color_)
-    : Vehicle<TrailerBluePrint>(BluePrints::get<TrailerBluePrint>(name_), name_, color_)
+void Simulation::onLoaded()
 {
-    std::cout << "Trailer " << name_ << std::endl;
-    //m_physics = std::make_unique<TrailerKinematic>(*m_shape, *m_control);
-}
-
-//------------------------------------------------------------------------------
-void Trailer::update_wheels(float const speed, float const steering)
-{
-    m_wheels[TrailerBluePrint::WheelName::RL].speed = speed;
-    m_wheels[TrailerBluePrint::WheelName::RR].speed = speed;
-
-    m_wheels[TrailerBluePrint::WheelName::RL].steering = 0.0f;
-    m_wheels[TrailerBluePrint::WheelName::RR].steering = 0.0f;
+    name = prototype<const char* (void)>("simulation_name");
+    create = prototype<Car& (City&)>("create_city");
+    halt = prototype<bool (Simulator const&)>("halt_simulation_when");
+    react = prototype<void(Simulator&, size_t)>("react_to");
 }

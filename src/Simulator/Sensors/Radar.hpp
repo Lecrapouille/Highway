@@ -28,7 +28,8 @@
 #ifndef CAR_SENSORS_RADAR_HPP
 #  define CAR_SENSORS_RADAR_HPP
 
-#  include "Sensors/SensorShape.hpp"
+#  include "Simulator/Actor.hpp"
+#  include "Simulator/Sensors/SensorShape.hpp"
 #  include "Renderer/Drawable.hpp"
 #  include <cassert>
 
@@ -38,7 +39,7 @@ class Car; // FIXME: publi Sensor
 
 // TODO https://www.mathworks.com/help/driving/ref/drivingradardatagenerator-system-object.html
 
-struct RadarBluePrint: public SensorBluePrint
+struct RadarBluePrint: public DynamicActor, public SensorBluePrint
 {
    // FIXME: why needed ?
    RadarBluePrint(sf::Vector2f off, float ori, float f, float r)

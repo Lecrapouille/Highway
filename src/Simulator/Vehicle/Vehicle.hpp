@@ -28,11 +28,12 @@
 #ifndef VEHICLE_HPP
 #  define VEHICLE_HPP
 
-#  include "Vehicle/Wheel.hpp"
-#  include "Vehicle/VehicleBluePrint.hpp"
-#  include "Vehicle/VehiclePhysics.hpp"
-#  include "Vehicle/ECU.hpp"
-#  include "Sensors/Radar.hpp"
+#  include "Simulator/Actor.hpp"
+#  include "Simulator/Vehicle/Wheel.hpp"
+#  include "Simulator/Vehicle/VehicleBluePrint.hpp"
+#  include "Simulator/Vehicle/VehiclePhysics.hpp"
+#  include "Simulator/Vehicle/ECU.hpp"
+#  include "Simulator/Sensors/Radar.hpp"
 #  include <memory>
 #  include <functional>
 
@@ -43,7 +44,7 @@
 //! \brief
 // ****************************************************************************
 template<class BLUEPRINT>
-class Vehicle : public Components
+class Vehicle : public DynamicActor, public Components
 {
 public:
 
@@ -294,9 +295,9 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Store callbacks for reacting to SFML press events.
+    //! \brief Register a callback for reacting to SFML press events.
     //-------------------------------------------------------------------------
-    inline void registerCallback(size_t const key, Callback&& cb)
+    inline void callback(size_t const key, Callback&& cb)
     {
         m_callbacks[key] = cb;
     }

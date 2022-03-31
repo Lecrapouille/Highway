@@ -28,6 +28,8 @@
 #include "Simulation.h"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
 
+// FIXME: ajouter bool checkCity(City&) si pas de soucis => ou mieux en interne (par exemple >= 1 voiture ego)
+
 //-----------------------------------------------------------------------------
 const char* simulation_name()
 {
@@ -37,10 +39,21 @@ const char* simulation_name()
 //-----------------------------------------------------------------------------
 bool halt_simulation_when(Simulator const& simulator)
 {
-    return simulator.elapsedTime() > sf::seconds(30.0f);
+    HALT_SIMULATION_WHEN((simulator.elapsedTime() > sf::seconds(60.0f)), "Time simulation slipped");
+    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0f), "Ego car is outside the parking");
+
+    return CONTINUE_SIMULATION;
 }
 
 //-----------------------------------------------------------------------------
+void react_to(Simulator& simulator, size_t key)
+{
+    // Allow the ego car to react to callbacks set with Vehicle::callback()
+    simulator.ego().reactTo(key);
+}
+
+//-----------------------------------------------------------------------------
+// FIXME Ajouter:Car& ego_specialisation(Car&) qui est appellé par City::createEgo() { return ego_specialisation(new Car()); }
 static Car& customize(Car& car)
 {
     // Add sensors
@@ -56,32 +69,32 @@ static Car& customize(Car& car)
     car.addECU<AutoParkECU>(car); // FIXME how to avoid adding car ?
 
     // Add reactions from keyboard
-    car.registerCallback(sf::Keyboard::PageDown, [&car]()
+    car.callback(sf::Keyboard::PageDown, [&car]()
     {
         //car.turningIndicator(false, m_turning_right ^ true);
     });
 
-    car.registerCallback(sf::Keyboard::PageUp, [&car]()
+    car.callback(sf::Keyboard::PageUp, [&car]()
     {
         //car.turningIndicator(m_turning_left ^ true, false);
     });
 
-    car.registerCallback(sf::Keyboard::Up, [&car]()
+    car.callback(sf::Keyboard::Up, [&car]()
     {
         car.refSpeed(1.0f);
     });
 
-    car.registerCallback(sf::Keyboard::Down, [&car]()
+    car.callback(sf::Keyboard::Down, [&car]()
     {
         car.refSpeed(0.0f);
     });
 
-    car.registerCallback(sf::Keyboard::Right, [&car]()
+    car.callback(sf::Keyboard::Right, [&car]()
     {
         car.refSteering(car.refSteering() - 0.1f);
     });
 
-    car.registerCallback(sf::Keyboard::Left, [&car]()
+    car.callback(sf::Keyboard::Left, [&car]()
     {
         car.refSteering(car.refSteering() + 0.1f);
     });

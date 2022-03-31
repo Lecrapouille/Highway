@@ -26,8 +26,8 @@
 // For more information, please refer to <https://unlicense.org>
 
 #  include "Simulator/BluePrints.hpp"
-#  include "Vehicle/Car.hpp"
-#  include "Vehicle/VehiclePhysicalModels/TricycleKinematic.hpp"
+#  include "Simulator/Vehicle/Car.hpp"
+#  include "Simulator/Vehicle/VehiclePhysicalModels/TricycleKinematic.hpp"
 
 //------------------------------------------------------------------------------
 Car::Car(const char* name_, sf::Color const& color_)

@@ -28,6 +28,11 @@
 #ifndef ROAD_HPP
 #  define ROAD_HPP
 
+#  include "Simulator/Actor.hpp"
 
+class Road: public StaticActor
+{
+// TODO
+};
 
 #endif

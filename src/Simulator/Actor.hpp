@@ -25,23 +25,14 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#  include "Simulator/Vehicle/Trailer.hpp"
-//FIXME#  include "Vehicle/VehiclePhysicalModels/TrailerKinematic.hpp"
+#ifndef ACTOR_HPP
+#  define ACTOR_HPP
 
-//------------------------------------------------------------------------------
-Trailer::Trailer(const char* name_, sf::Color const& color_)
-    : Vehicle<TrailerBluePrint>(BluePrints::get<TrailerBluePrint>(name_), name_, color_)
-{
-    std::cout << "Trailer " << name_ << std::endl;
-    //m_physics = std::make_unique<TrailerKinematic>(*m_shape, *m_control);
-}
+//! \brief Dummy class just for giving strong types.
+class Actor {};
+//! \brief Roads, parkings, zebras, obstacles, traffic lights, zebras, sensors ...
+class StaticActor {};
+//! \brief Vehicle, Pedestrian, sensors ...
+class DynamicActor {}; // TODO TBD: add physic such as in Carla ?
 
-//------------------------------------------------------------------------------
-void Trailer::update_wheels(float const speed, float const steering)
-{
-    m_wheels[TrailerBluePrint::WheelName::RL].speed = speed;
-    m_wheels[TrailerBluePrint::WheelName::RR].speed = speed;
-
-    m_wheels[TrailerBluePrint::WheelName::RL].steering = 0.0f;
-    m_wheels[TrailerBluePrint::WheelName::RR].steering = 0.0f;
-}
+#endif

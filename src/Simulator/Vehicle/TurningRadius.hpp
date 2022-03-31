@@ -28,7 +28,7 @@
 #ifndef TURNING_RADIUS_HPP
 #  define TURNING_RADIUS_HPP
 
-#  include "Vehicle/VehicleBluePrint.hpp"
+#  include "Simulator/Vehicle/VehicleBluePrint.hpp"
 
 // *****************************************************************************
 //! \brief The turning radius is the radius of the circle created by a

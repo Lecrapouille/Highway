@@ -51,6 +51,15 @@ bool halt_simulation_when(Simulator const& simulator);
 //! desired city. This function returns the ego car.
 Car& create_city(City& city);
 
+void react_to(Simulator& simulator, size_t key);
+
+#define CONTINUE_SIMULATION false
+#define HALT_SIMULATION_WHEN(condition, txt) \
+   if (condition) { \
+      simulator.messagebox(txt); \
+      return true; \
+   }
+
 // TODO faire un struct simulation { .simulation_name
 
 #ifdef __cplusplus

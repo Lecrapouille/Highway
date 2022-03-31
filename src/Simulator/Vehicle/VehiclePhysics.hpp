@@ -28,8 +28,8 @@
 #ifndef VEHICLE_PHYSICS_HPP
 #  define VEHICLE_PHYSICS_HPP
 
-#  include "Vehicle/VehicleShape.hpp"
-#  include "Vehicle/VehicleControl.hpp"
+#  include "Simulator/Vehicle/VehicleShape.hpp"
+#  include "Simulator/Vehicle/VehicleControl.hpp"
 #  include <SFML/System/Vector2.hpp>
 
 // *****************************************************************************
@@ -112,9 +112,9 @@ public:
 
 protected:
 
-    //! \brief 
+    //! \brief
     VehicleShape<BLUEPRINT> const& m_shape;
-    //! \brief 
+    //! \brief
     VehicleControl const& m_control;
     //! \brief Longitudinal acceleration [meter / second / second].
     float m_acceleration;

@@ -28,8 +28,8 @@
 #ifndef TRAILER_HPP
 #  define TRAILER_HPP
 
-#  include "Vehicle/Vehicle.hpp"
-#  include "BluePrints.hpp"
+#  include "Simulator/Vehicle/Vehicle.hpp"
+#  include "Simulator/BluePrints.hpp"
 
 // ****************************************************************************
 //! \brief

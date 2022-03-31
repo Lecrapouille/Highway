@@ -28,6 +28,14 @@
 #ifndef PEDESTRIAN_HPP
 #  define PEDESTRIAN_HPP
 
+#  include "Simulator/Actor.hpp"
 
+class Pedestrian: public DynamicActor
+{
+// TODO
+// https://github.com/Stanford-ILIAD/CARLO/blob/master/example_intersection.py#L44
+};
+
+// TODO Driver: public DynamicActor
 
 #endif

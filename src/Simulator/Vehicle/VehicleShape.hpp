@@ -30,7 +30,7 @@
 
 #  include "Math/Collide.hpp"
 #  include "Math/Math.hpp"
-#  include "Sensors/SensorShape.hpp"
+#  include "Simulator/Sensors/SensorShape.hpp"
 #  include <vector>
 #  include <cassert>
 #  include <memory>

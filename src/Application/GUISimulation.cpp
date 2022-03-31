@@ -118,7 +118,7 @@ void GUISimulation::handleInput()
                 }
                 else
                 {
-                    m_message_bar.setText("Simulation faield reloaded");
+                    m_message_bar.setText("Simulation failed reloaded");
                 }
             }
             else // propagate the key press to the simulator

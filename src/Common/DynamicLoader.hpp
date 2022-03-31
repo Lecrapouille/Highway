@@ -28,6 +28,7 @@
 #include <dlfcn.h>
 #include <functional>
 #include <string>
+#include <stdexcept>
 
 // *****************************************************************************
 //! \brief Class allowing to load C functions from a given shared library. This
@@ -46,7 +47,7 @@ public:
     //! \brief Close the shared library.
     //! \note this will invalidate pointer of symbols you have extracted.
     //--------------------------------------------------------------------------
-    ~DynamicLoader()
+    virtual ~DynamicLoader()
     {
         close();
     }
@@ -67,17 +68,28 @@ public:
         {
             set_error(::dlerror());
         }
+        else
+        {
+            try
+            {
+                onLoaded();
+            }
+            catch(std::logic_error &e)
+            {
+                return false;
+            }
+        }
 
         return m_handle != nullptr;
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief 
     //--------------------------------------------------------------------------
-    bool reload(Resolution rt = Resolution::NOW)
-    {
-        return load(m_path.c_str(), rt);
-    }
+    //bool reload(Resolution rt = Resolution::NOW)
+    //{
+    //    return load(m_path.c_str(), rt);
+    //}
 
     //--------------------------------------------------------------------------
     //! \brief Check if the shared library has been opened.
@@ -163,6 +175,13 @@ public:
     }
 
 private:
+
+    //--------------------------------------------------------------------------
+    //! \brief Callback to implement when load() or reload() has ended with
+    //! success.
+    //--------------------------------------------------------------------------
+    virtual void onLoaded()
+    {}
 
     //--------------------------------------------------------------------------
     //! \brief Concat error messages.

@@ -28,7 +28,7 @@
 #ifndef VEHICLES_HPP
 #  define VEHICLES_HPP
 
-#  include "Vehicle/Car.hpp"
-#  include "Vehicle/Trailer.hpp"
+#  include "Simulator/Vehicle/Car.hpp"
+#  include "Simulator/Vehicle/Trailer.hpp"
 
 #endif

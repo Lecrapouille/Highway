@@ -32,35 +32,50 @@
 
 //-----------------------------------------------------------------------------
 //! \brief simple demo of simulation.
+const char* simulation_name()
+{
+    return "Simple simulation demo";
+}
+
+//-----------------------------------------------------------------------------
+//! \brief simple demo of simulation.
+void react_to(Simulator& simulator, size_t key)
+{
+    // Allow the ego car to react to callbacks set with Vehicle::callback()
+    simulator.ego().reactTo(key);
+}
+
+//-----------------------------------------------------------------------------
+//! \brief simple demo of simulation.
 static Car& customize(Car& car)
 {
     // Add reactions from keyboard
-    car.registerCallback(sf::Keyboard::PageDown, [&car]()
+    car.callback(sf::Keyboard::PageDown, [&car]()
     {
         //car.turningIndicator(false, m_turning_right ^ true);
     });
 
-    car.registerCallback(sf::Keyboard::PageUp, [&car]()
+    car.callback(sf::Keyboard::PageUp, [&car]()
     {
         //car.turningIndicator(m_turning_left ^ true, false);
     });
 
-    car.registerCallback(sf::Keyboard::Up, [&car]()
+    car.callback(sf::Keyboard::Up, [&car]()
     {
         car.refSpeed(1.0f);
     });
 
-    car.registerCallback(sf::Keyboard::Down, [&car]()
+    car.callback(sf::Keyboard::Down, [&car]()
     {
         car.refSpeed(0.0f);
     });
 
-    car.registerCallback(sf::Keyboard::Right, [&car]()
+    car.callback(sf::Keyboard::Right, [&car]()
     {
         car.refSteering(car.refSteering() - 0.1f);
     });
 
-    car.registerCallback(sf::Keyboard::Left, [&car]()
+    car.callback(sf::Keyboard::Left, [&car]()
     {
         car.refSteering(car.refSteering() + 0.1f);
     });
@@ -70,15 +85,16 @@ static Car& customize(Car& car)
 
 //-----------------------------------------------------------------------------
 //! \brief simple demo of simulation.
-static bool haltConditions(Simulator const& simulator)
+static bool halt_simulation_when(Simulator const& simulator)
 {
-    return simulator.elapsedTime() > sf::seconds(30.0f);
+    return false; // Always runs
 }
 
 //-----------------------------------------------------------------------------
 //! \brief simple demo of simulation.
-static Car& createWorld(City& city)
+static Car& create_city(City& city)
 {
+    //BluePrints::init(); // FIXME a quel endroit ?
     city.reset();
 
     // Create parallel or perpendicular or diagnoal parking slots
@@ -100,12 +116,20 @@ static Car& createWorld(City& city)
 }
 
 //-----------------------------------------------------------------------------
-//! \brief simple demo of simulation.
+//! \brief Set callbacks implemented in Simulation/Simulation.cpp and needed for
+//! creating the simulation.
 static void simple_simulation_demo(Simulator& simulator)
 {
-    // Set callbacks implemented in Simulation/Simulation.cpp and needed for
-    // creating the simulation.
-    simulator.createSimulation(createWorld, haltConditions);
+    Scenario s = {
+        .name = simulation_name,
+        .create = create_city,
+        .halt = halt_simulation_when,
+        .react = react_to,
+    };
+
+    // FIXME since this is not loaded from .so file not sure there is not side
+    // effects.
+    simulator.load(s);
 }
 
 // -----------------------------------------------------------------------------
