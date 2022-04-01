@@ -28,15 +28,16 @@
 #ifndef VEHICLE_PHYSICS_HPP
 #  define VEHICLE_PHYSICS_HPP
 
+#  include "Simulator/Movable.hpp"
 #  include "Simulator/Vehicle/VehicleShape.hpp"
 #  include "Simulator/Vehicle/VehicleControl.hpp"
-#  include <SFML/System/Vector2.hpp>
 
 // *****************************************************************************
 //! \brief Base class for computing the vhecile physic (kinematic, dynamics ...)
+//! need to implement void Movable::update(float const dt)
 // *****************************************************************************
 template<class BLUEPRINT>
-class VehiclePhysics
+class VehiclePhysics : public Movable
 {
 public:
 
@@ -53,77 +54,12 @@ public:
     //--------------------------------------------------------------------------
     virtual ~VehiclePhysics() = default;
 
-    //--------------------------------------------------------------------------
-    //! \brief Set initial state values needed by physical equations.
-    //! \param[in] position: the (x, y) world coordinated of the car (can be the
-    //!   middle of the rear axle).
-    //! \param[in] acceleration: initial longitudinal acceleration [meter /
-    //!   second / second].
-    //! \param[in] speed: initial longitudinal speed [meter / second].
-    //! \param[in] position: initial world position of the car (its center of
-    //!   the rear axle) [meter].
-    //! \param[in] heading: the initial yaw angle of the vehicle [radian].
-    //--------------------------------------------------------------------------
-    virtual void init(float acceleration, float speed, sf::Vector2f position, float heading)
-    {
-        m_acceleration = acceleration;
-        m_speed = speed;
-        m_position = position;
-        m_heading = heading;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Update discrete time equations from continuous time equations.
-    //--------------------------------------------------------------------------
-    virtual void update(float const dt) = 0;
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return longitudinal acceleration [meter/second^2].
-    //--------------------------------------------------------------------------
-    inline float acceleration() const
-    {
-        return m_acceleration;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the longitudinal speed [meter/second].
-    //--------------------------------------------------------------------------
-    inline float speed() const
-    {
-        return m_speed;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the position of the middle of the rear axle
-    //! inside the world coordinates.
-    //--------------------------------------------------------------------------
-    inline sf::Vector2f position() const
-    {
-        return m_position;
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief Const getter: return the heading (yaw angle) [rad].
-    //--------------------------------------------------------------------------
-    inline float heading() const
-    {
-        return m_heading;
-    }
-
 protected:
 
     //! \brief
     VehicleShape<BLUEPRINT> const& m_shape;
     //! \brief
     VehicleControl const& m_control;
-    //! \brief Longitudinal acceleration [meter / second / second].
-    float m_acceleration;
-    //! \brief Longitudinal speed [meter / second].
-    float m_speed;
-    //! \brief World position of the car (its center of the rear axle) [meter].
-    sf::Vector2f m_position;
-    //! \brief Yaw angle of the vehicle [radian].
-    float m_heading;
 };
 
 #endif

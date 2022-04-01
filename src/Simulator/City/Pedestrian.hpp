@@ -29,11 +29,20 @@
 #  define PEDESTRIAN_HPP
 
 #  include "Simulator/Actor.hpp"
+#  include "Simulator/Movable.hpp"
 
-class Pedestrian: public DynamicActor
-{
-// TODO
 // https://github.com/Stanford-ILIAD/CARLO/blob/master/example_intersection.py#L44
+class Pedestrian: public Movable, public DynamicActor
+{
+public:
+
+    //--------------------------------------------------------------------------
+    //! \brief Update discrete time equations from continuous time equations.
+    //--------------------------------------------------------------------------
+    virtual void update(float const dt) override
+    {
+
+    }
 };
 
 // TODO Driver: public DynamicActor
