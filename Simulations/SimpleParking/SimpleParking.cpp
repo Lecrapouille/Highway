@@ -41,6 +41,7 @@ bool halt_simulation_when(Simulator const& simulator)
 {
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > sf::seconds(60.0f)), "Time simulation slipped");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0f), "Ego car is outside the parking");
+    // TODO outside the city
 
     return CONTINUE_SIMULATION;
 }
@@ -66,7 +67,7 @@ static Car& customize(Car& car)
 #endif
 
     // Add behaviors
-    car.addECU<AutoParkECU>(car); // FIXME how to avoid adding car ?
+    //car.addECU<AutoParkECU>(car); // FIXME how to avoid adding car ?
 
     // Add reactions from keyboard
     car.callback(sf::Keyboard::PageDown, [&car]()

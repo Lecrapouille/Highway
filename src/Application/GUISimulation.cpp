@@ -32,6 +32,8 @@ GUISimulation::GUISimulation(Application& application)
     : Application::GUI(application.renderer(), "GUI Simulation", sf::Color::White),
       simulator(application.renderer())
 {
+    m_hud_view = renderer().getDefaultView();
+
     // SFML view: change the world coordinated to follow the same computations
     // than the doc "Estimation et controle pour le pilotage automatique de
     // vehicule" by Sungwoo Choi.
@@ -39,9 +41,21 @@ GUISimulation::GUISimulation(Application& application)
     m_view.setSize(float(application.width()), -float(application.height()));
     zoom(ZOOM);
 
-    // TODO Load fonts
-    // m_fonts = ...
-    // m_message_bar.setFont(m_font);
+    // Load fonts
+    // Precompute SFML struct for drawing text (places and transitions)
+    if (!m_font.loadFromFile(DATADIR"/font.ttf"))
+    {
+        if (!m_font.loadFromFile("data/font.ttf"))
+        {
+            if (!m_font.loadFromFile("font.ttf"))
+            {
+                std::cerr << "Could not load font file ..." << std::endl;
+                exit(1);
+            }
+        }
+    }
+
+    simulator.message_bar.font(m_font);
 }
 
 //------------------------------------------------------------------------------
@@ -49,7 +63,7 @@ void GUISimulation::zoom(float const value)
 {
     m_zoom = value;
     m_view.zoom(m_zoom);
-    m_renderer.setView(m_view);
+    //m_renderer.setView(m_view);
 }
 
 //------------------------------------------------------------------------------
@@ -114,11 +128,11 @@ void GUISimulation::handleInput()
             {
                 if (simulator.reload())
                 {
-                    m_message_bar.setText("Simulation reloaded");
+                    simulator.message_bar.entry("Simulation reloaded", sf::Color::Green);
                 }
                 else
                 {
-                    m_message_bar.setText("Simulation failed reloaded");
+                    simulator.message_bar.entry("Simulation failed reloaded", sf::Color::Red);
                 }
             }
             else // propagate the key press to the simulator
@@ -144,7 +158,7 @@ void GUISimulation::draw()
     // FIXME not good !
     if (!isRunning())
     {
-        m_message_bar.setText("Simulation has ended");
+        simulator.message_bar.entry("Simulation has ended", sf::Color::Yellow);
     }
 
     // Make the camera follows the car
@@ -153,4 +167,10 @@ void GUISimulation::draw()
 
     // Draw the simulation
     simulator.draw();
+
+    // Draw the entry text
+    renderer().setView(m_hud_view);
+    simulator.message_bar.size(renderer().getSize());
+    renderer().draw(simulator.message_bar);
+    renderer().setView(m_view);
 }

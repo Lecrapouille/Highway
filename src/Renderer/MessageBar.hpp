@@ -57,31 +57,29 @@ struct MessageBar : public sf::Drawable
 {
     MessageBar()
     {
-        m_text.setPosition(0, 0);
-        m_text.setCharacterSize(20);
-        m_text.setFillColor(sf::Color::Black);
-
         m_shape.setFillColor(sf::Color(100,100,100));
         m_shape.setOutlineThickness(-1);
         m_shape.setOutlineColor(sf::Color::Black);
-
         m_timer.restart();
     }
 
-    void setFont(sf::Font& font)
+    void entry(const std::string& message, sf::Color const& color)
     {
-        m_text.setFont(font);
-    }
-
-    void setText(const std::string& message)
-    {
-        std::cout << message << std::endl;
         m_message = message;
+        m_shape.setFillColor(color);
         m_text.setString(m_message);
         m_timer.restart();
     }
 
-    void setSize(sf::Vector2u const& dimensions)
+    void font(sf::Font& font_)
+    {
+        m_text.setPosition(0, 0);
+        m_text.setFont(font_);
+        m_text.setCharacterSize(20);
+        m_text.setFillColor(sf::Color::Black);
+    }
+
+    void size(sf::Vector2u const& dimensions)
     {
         m_shape.setSize(sf::Vector2f(float(dimensions.x), 25.0f));
     }

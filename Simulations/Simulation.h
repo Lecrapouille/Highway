@@ -36,9 +36,9 @@
 #  include "City/City.hpp"
 #  include "Simulator/Simulator.hpp"
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 extern "C" {
-#endif
+#  endif
 
 //! \brief Function returning the simulation name.
 const char* simulation_name();
@@ -56,14 +56,14 @@ void react_to(Simulator& simulator, size_t key);
 #define CONTINUE_SIMULATION false
 #define HALT_SIMULATION_WHEN(condition, txt) \
    if (condition) { \
-      simulator.messagebox(txt); \
+      simulator.messagebox(txt, sf::Color::Yellow); \
       return true; \
    }
 
 // TODO faire un struct simulation { .simulation_name
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 }
-#endif
+#  endif
 
 #endif /* __USER_SIMULATION_H__ */

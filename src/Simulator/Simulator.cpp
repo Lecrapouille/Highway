@@ -102,6 +102,7 @@ void Simulator::activate()
     // }
     m_ego = &m_simulation.create(m_city);
     follow(m_ego);
+    messagebox("Simulation '" + std::string(m_simulation.name()) + "' activate", sf::Color::Green);
     m_time.restart();
 }
 

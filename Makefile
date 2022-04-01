@@ -133,6 +133,7 @@ install: $(TARGET_BIN) $(TARGET_LIB)
 	$(Q)mkdir -p $(BINDIR)
 	$(Q)mkdir -p $(LIBDIR)
 	$(Q)mkdir -p $(DATADIR)
+	cp -r data $(DATADIR)/..
 	cp $(BUILD)/$(TARGET_BIN) $(BINDIR)
 	cp $(BUILD)/$(TARGET_LIB) $(LIBDIR)
 

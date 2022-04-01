@@ -28,8 +28,9 @@
 #ifndef SIMULATOR_HPP
 #  define SIMULATOR_HPP
 
-#  include "City/City.hpp"
-#  include "Simulation.hpp"
+#  include "Simulator/City/City.hpp"
+#  include "Simulator/Simulation.hpp"
+#  include "Renderer/MessageBar.hpp"
 
 class Renderer;
 
@@ -140,9 +141,9 @@ public:
     //! \brief Pass a text to the simulator to display it inside the messagebox
     //! widget.
     //-------------------------------------------------------------------------
-    inline void messagebox(std::string const& txt) const
+    inline void messagebox(std::string const& txt, sf::Color const& color) const
     {
-        std::cout << txt << std::endl; // FIXME
+        message_bar.entry(txt, color);
     }
 
     //-------------------------------------------------------------------------
@@ -178,6 +179,11 @@ public:
 private:
 
     void showCollisions(Car& ego);
+
+public:
+
+    //! \brief Display messages
+    mutable MessageBar message_bar;
 
 protected:
 

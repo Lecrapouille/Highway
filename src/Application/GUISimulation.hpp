@@ -97,15 +97,15 @@ private:
     //! \brief Halting the GUI ?
     std::atomic<bool> m_running{true};
     //! \brief For managing world coordinates, zoom and camera displacement.
-    sf::View m_view;
+    sf::View m_view, m_hud_view;
     //! \brief Camera zoom
     float m_zoom;
     //! \brief Mouse X,Y position within the world coordinate [meter]. You
     //! directly can measure objects [meter] by clicking with mouse in the
     //! window.
     sf::Vector2f m_mouse;
-    //! \brief Display messages
-    MessageBar m_message_bar;
+    //! \brief SFML loaded font from a TTF file.
+    sf::Font m_font;
 
 public:
 
