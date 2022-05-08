@@ -25,56 +25,67 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Application/GUISimulation.hpp"
+#  include "Application/GUIMainMenu.hpp"
+
+//-----------------------------------------------------------------------------
+//! \file Entry point of the car simulation application. Check the command line
+//! and if no simulation file is providing start a "hello simulation" demo.
+//-----------------------------------------------------------------------------
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 1024
 
 //-----------------------------------------------------------------------------
-//! \brief simple demo of simulation.
+//! \brief "Hello simulation" demo: return the simulation name.
 const char* simulation_name()
 {
     return "Simple simulation demo";
 }
 
 //-----------------------------------------------------------------------------
-//! \brief simple demo of simulation.
-void react_to(Simulator& simulator, size_t key)
+//! \brief "Hello simulation" demo: make the simulator reacts to the given key
+//! pressed.
+void simulation_react_to(Simulator& simulator, size_t key)
 {
     // Allow the ego car to react to callbacks set with Vehicle::callback()
     simulator.ego().reactTo(key);
 }
 
 //-----------------------------------------------------------------------------
-//! \brief simple demo of simulation.
+//! \brief "Hello simulation" demo: customize the ego vehicle.
 static Car& customize(Car& car)
 {
-    // Add reactions from keyboard
+    // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()
     {
         //car.turningIndicator(false, m_turning_right ^ true);
     });
 
+    // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageUp, [&car]()
     {
         //car.turningIndicator(m_turning_left ^ true, false);
     });
 
+    // Make the car reacts from the keyboard: set car speed (kinematic).
     car.callback(sf::Keyboard::Up, [&car]()
     {
         car.refSpeed(1.0f);
     });
 
+    // Make the car reacts from the keyboard: make the car stopped (kinematic).
     car.callback(sf::Keyboard::Down, [&car]()
     {
         car.refSpeed(0.0f);
     });
 
+    // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Right, [&car]()
     {
         car.refSteering(car.refSteering() - 0.1f);
     });
 
+    // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Left, [&car]()
     {
         car.refSteering(car.refSteering() + 0.1f);
@@ -84,14 +95,15 @@ static Car& customize(Car& car)
 }
 
 //-----------------------------------------------------------------------------
-//! \brief simple demo of simulation.
+//! \brief "Hello simulation" demo: no condition to stop the simulation.
 static bool halt_simulation_when(Simulator const& simulator)
 {
     return false; // Always runs
 }
 
 //-----------------------------------------------------------------------------
-//! \brief simple demo of simulation.
+//! \brief "Hello simulation" demo: create a basic city world. Here made of
+//! parking slots and car parked. The ego car is on the road.
 static Car& create_city(City& city)
 {
     //BluePrints::init(); // FIXME a quel endroit ?
@@ -116,17 +128,18 @@ static Car& create_city(City& city)
 }
 
 //-----------------------------------------------------------------------------
-//! \brief Set callbacks implemented in Simulation/Simulation.cpp and needed for
-//! creating the simulation.
+//! \brief "Hello simulation" demo: set the scenario functions mandatory to
+//! create the simulation.
 static void simple_simulation_demo(Simulator& simulator)
 {
     Scenario s = {
         .name = simulation_name,
         .create = create_city,
         .halt = halt_simulation_when,
-        .react = react_to,
+        .react = simulation_react_to,
     };
 
+    // Start the simulation.
     // FIXME since this is not loaded from .so file not sure there is not side
     // effects.
     simulator.load(s);
@@ -137,19 +150,26 @@ int main(int argc, char* argv[])
 {
     try
     {
+        // SFML application
         Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-        GUISimulation gui(app);
+        if (!app.font("main font", "font.ttf"))
+            return EXIT_FAILURE;
 
-        // No argument: load an ultra basic simulation
+        // Create all application GUIs.
+        GUIMainMenu& gui_menu = app.create<GUIMainMenu>("GUIMainMenu");
+        GUISimulation& gui_sim = app.create<GUISimulation>("GUISimulation");
+        Simulator& simulator = gui_sim.simulator;
+
+        // No argument: load an ultra basic simulation (see static functions upper).
         if (argc == 1)
         {
-            simple_simulation_demo(gui.simulator);
+            simple_simulation_demo(simulator);
         }
-        // Single argument: load a shared library file holding functions for custom
-        // simulation.
-        else
+        // Single argument: load the shared library file, passed by command line,
+        // shared library holding scenario functions for creating the simulation.
+        else // TODO add a real command line parser
         {
-            if (!gui.simulator.load(argv[1]))
+            if (!simulator.load(argv[1]))
             {
                 std::cerr << "Fatal: failed loading a simulation file. Aborting ..."
                           << std::endl;
@@ -157,8 +177,8 @@ int main(int argc, char* argv[])
             }
         }
 
-        app.push(gui);
-        app.loop();
+        // Run the current GUI.
+        app.loop(gui_menu);
     }
     catch (std::string const& msg)
     {

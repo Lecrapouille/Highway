@@ -25,9 +25,69 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef GUIMAINMENU_HPP
-#define GUIMAINMENU_HPP
+#ifndef GUI_MAIN_MENU_HPP
+#  define GUI_MAIN_MENU_HPP
 
 #  include "Application/Application.hpp"
+#  include "Application/GUISimulation.hpp"
+#  include <atomic>
+
+// ****************************************************************************
+//! \brief Concrete SFML Application::GUI managing the GUI of the main menu.
+// ****************************************************************************
+class GUIMainMenu: public Application::GUI
+{
+public:
+
+    //-------------------------------------------------------------------------
+    //! \brief Default Constructor.
+    //! \param[inout] application: the main class managing the stack of GUI.
+    //-------------------------------------------------------------------------
+    GUIMainMenu(Application& application, const char* name);
+
+private: // Derived from Application::GUI
+
+    //-------------------------------------------------------------------------
+    //! \brief Draw the world and its entities.
+    //-------------------------------------------------------------------------
+    virtual void draw() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Update the simulation.
+    //-------------------------------------------------------------------------
+    virtual void update(const float dt) override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Manage mouse and keyboard events.
+    //-------------------------------------------------------------------------
+    virtual void handleInput() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Return true if GUI is alive.
+    //-------------------------------------------------------------------------
+    virtual bool running() const override
+    {
+        return m_running;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Create the simulation.
+    //-------------------------------------------------------------------------
+    virtual void activate() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Release the simulation.
+    //-------------------------------------------------------------------------
+    virtual void deactivate() override;
+
+private:
+
+    //! \brief View
+    sf::View m_view;
+    //! \brief Display messages
+    sf::Text m_text;
+    //! \brief Halting the GUI ?
+    std::atomic<bool> m_running{true};
+};
 
 #endif

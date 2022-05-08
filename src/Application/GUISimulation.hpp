@@ -25,8 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#ifndef SIMULATION_STATE_HPP
-#  define SIMULATION_STATE_HPP
+#ifndef GUI_SIMULATION_STATE_HPP
+#  define GUI_SIMULATION_STATE_HPP
 
 #  include "Application/Application.hpp"
 #  include "Simulator/Simulator.hpp"
@@ -49,8 +49,9 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Default Constructor.
     //! \param[inout] application: the main class managing the stack of GUI.
+    //! \param[in] name: the key for searching a GUI.
     //-------------------------------------------------------------------------
-    GUISimulation(Application& application);
+    GUISimulation(Application& application, const char* name);
 
     //-------------------------------------------------------------------------
     //! \brief Apply the zoom value.
@@ -77,9 +78,9 @@ private: // Derived from Application::GUI
     //-------------------------------------------------------------------------
     //! \brief Return true if GUI is alive.
     //-------------------------------------------------------------------------
-    virtual bool isRunning() override
+    virtual bool running() const override
     {
-        return m_running && simulator.isRunning();
+        return m_running && simulator.running();
     }
 
     //-------------------------------------------------------------------------

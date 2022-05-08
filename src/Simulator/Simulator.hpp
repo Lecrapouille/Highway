@@ -161,7 +161,7 @@ public:
     //! \brief Callback when the application needs to know if the GUI shall
     //! halt or continue.
     //-------------------------------------------------------------------------
-    bool isRunning() const;
+    bool running() const;
 
     //-------------------------------------------------------------------------
     //! \brief Update the simuation states.

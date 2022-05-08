@@ -26,12 +26,14 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "Application/GUISimulation.hpp"
+#include "Application/GUIMainMenu.hpp"
 
 //------------------------------------------------------------------------------
-GUISimulation::GUISimulation(Application& application)
-    : Application::GUI(application.renderer(), "GUI Simulation", sf::Color::White),
+GUISimulation::GUISimulation(Application& application, const char* name)
+    : Application::GUI(application, name, sf::Color::White),
       simulator(application.renderer())
 {
+    simulator.message_bar.font(application.font("main font"));
     m_hud_view = renderer().getDefaultView();
 
     // SFML view: change the world coordinated to follow the same computations
@@ -40,22 +42,6 @@ GUISimulation::GUISimulation(Application& application)
     m_view = renderer().getDefaultView();
     m_view.setSize(float(application.width()), -float(application.height()));
     zoom(ZOOM);
-
-    // Load fonts
-    // Precompute SFML struct for drawing text (places and transitions)
-    if (!m_font.loadFromFile(DATADIR"/font.ttf"))
-    {
-        if (!m_font.loadFromFile("data/font.ttf"))
-        {
-            if (!m_font.loadFromFile("font.ttf"))
-            {
-                std::cerr << "Could not load font file ..." << std::endl;
-                exit(1);
-            }
-        }
-    }
-
-    simulator.message_bar.font(m_font);
 }
 
 //------------------------------------------------------------------------------
@@ -69,13 +55,17 @@ void GUISimulation::zoom(float const value)
 //------------------------------------------------------------------------------
 void GUISimulation::activate()
 {
-    simulator.activate();
+std::cout << "GUISimulation::activate()" << std::endl;
+m_renderer.setView(m_view);
+    //m_running = true;
+    //simulator.activate();
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::deactivate()
 {
-    simulator.deactivate();
+std::cout << "GUISimulation::deactivate()" << std::endl;
+    //simulator.deactivate();
 }
 
 //------------------------------------------------------------------------------
@@ -90,12 +80,13 @@ void GUISimulation::handleInput()
     // Get the X,Y mouse coordinates from the simulated word coordinates.
     m_mouse = simulator.pixel2world(sf::Mouse::getPosition(renderer()));
 
-    while (m_running && renderer().pollEvent(event))
+    while (/*m_running && */renderer().pollEvent(event))
     {
         switch (event.type)
         {
         case sf::Event::Closed:
-            m_running = false;
+            //m_running = false;
+            m_renderer.close();
             break;
         // Get world's position
         case sf::Event::MouseButtonPressed:
@@ -122,7 +113,8 @@ void GUISimulation::handleInput()
             // Leaving the GUI
             if (event.key.code == sf::Keyboard::Escape)
             {
-                m_running = false;
+                //m_running = false;
+                m_application.push(m_application.gui<GUIMainMenu>("GUIMainMenu"));
             }
             else if (event.key.code == sf::Keyboard::F1)
             {
@@ -155,8 +147,8 @@ void GUISimulation::update(const float dt) // FIXME to be threaded
 //------------------------------------------------------------------------------
 void GUISimulation::draw()
 {
-    // FIXME not good !
-    if (!isRunning())
+    // FIXME not good: never shown
+    if (!running())
     {
         simulator.message_bar.entry("Simulation has ended", sf::Color::Yellow);
     }

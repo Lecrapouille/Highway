@@ -88,7 +88,7 @@ void Simulator::reactTo(size_t key)
 }
 
 //------------------------------------------------------------------------------
-bool Simulator::isRunning() const
+bool Simulator::running() const
 {
     return !m_simulation.halt(*this);
 }
