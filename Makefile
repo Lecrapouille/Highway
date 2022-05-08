@@ -67,10 +67,10 @@ LDFLAGS += `pkg-config --libs sfml-graphics`
 
 ## Pretty print the stack trace https://github.com/bombela/backward-cpp
 ## You can comment these lines if backward-cpp is not desired
-# CXXFLAGS += -g -O0
-# LDFLAGS += -ldw
-# DEFINES += -DBACKWARD_HAS_DW=1
-# OBJS_DEBUG += backward.o
+CXXFLAGS += -g -O0
+LDFLAGS += -ldw
+DEFINES += -DBACKWARD_HAS_DW=1
+OBJS += backward.o
 
 # dlopen() ...
 LDFLAGS += -ldl
