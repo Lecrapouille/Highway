@@ -80,7 +80,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Desired compiled files for the shared library
-LIB_OBJS += Collide.o Monitoring.o Components.o Drawable.o Renderer.o
+LIB_OBJS += Collide.o SpatialHashGrid.o Monitoring.o Components.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o
 LIB_OBJS += Car.o Trailer.o
