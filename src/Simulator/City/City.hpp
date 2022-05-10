@@ -29,6 +29,7 @@
 #  define CITY_HPP
 
 // #  include "City/Drivers.hpp" FIXME TBD
+#  include "Common/SpatialHashGrid.hpp"
 #  include "City/Parking.hpp"
 #  include "City/Road.hpp"
 #  include "City/Pedestrian.hpp"
@@ -42,17 +43,17 @@
 // TODO search in bsp for getting actors around the ego vehicle.
 
 // ****************************************************************************
-
 //! \brief Class managing a collection of static actors (roads, parkings), and
 //! dynamic actors (vehicles, pedestrians ...). The city shall be seen as a
 //! container (with binary space partitioning (in gestation) to faster
 //! collision and searching objects) and is passive: it does not perform simulation which is made by
 //! Simulator class.
-
 // ****************************************************************************
 class City
 {
 public:
+
+    City();
 
     //-------------------------------------------------------------------------
     //! \brief Reset the simulation states, remove entities: parking, cars, ego
@@ -161,6 +162,14 @@ public:
         return 0.0f; // Not implemented yet
     }
 
+    //-------------------------------------------------------------------------
+    //! \brief Return ref const to the hash grid.
+    //-------------------------------------------------------------------------
+    inline SpatialHashGrid const& grid() const
+    {
+        return m_grid;
+    }
+
 protected:
 
     //-------------------------------------------------------------------------
@@ -192,6 +201,8 @@ protected:
 
 protected:
 
+    //! \brief
+    SpatialHashGrid m_grid;
     //! \brief Container of cars
     std::vector<std::unique_ptr<Car>> m_cars;
     //! \brief Container of parking slots

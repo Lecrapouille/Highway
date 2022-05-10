@@ -175,6 +175,7 @@ public:
     //! \param[in] view: SFML view.
     //-------------------------------------------------------------------------
     void draw(); // FIXME const
+    void hud();
 
 private:
 

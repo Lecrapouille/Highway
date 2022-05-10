@@ -30,6 +30,36 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <cassert>
+
+//------------------------------------------------------------------------------
+Grid::Grid(sf::Rect<float> const& bounds, sf::Vector2u const& dimensions, sf::Color color)
+{
+    const float x = bounds.left;
+    const float y = bounds.top;
+    const float w = bounds.width;
+    const float h = bounds.height;
+
+    const float dx = bounds.width / float(dimensions.x);
+    const float dy = bounds.height / float(dimensions.y);
+
+    assert(dimensions.x != 0u);
+    assert(dimensions.y != 0u);
+
+    // Vertical lines
+    for (uint32_t u = 0u; u <= dimensions.x; ++u)
+    {
+        m_lines.push_back(sf::Vertex(sf::Vector2f(x + dx * float(u), y), color));
+        m_lines.push_back(sf::Vertex(sf::Vector2f(x + dx * float(u), y + h), color));
+    }
+
+    // Horizontal lines
+    for (uint32_t u = 0u; u <= dimensions.y; ++u)
+    {
+        m_lines.push_back(sf::Vertex(sf::Vector2f(x, y + dy * float(u)), color));
+        m_lines.push_back(sf::Vertex(sf::Vector2f(x + w, y + dy * float(u)), color));
+    }
+}
 
 //------------------------------------------------------------------------------
 Circle::Circle(float x, float y, float r, sf::Color color)

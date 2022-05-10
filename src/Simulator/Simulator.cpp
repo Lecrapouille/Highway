@@ -156,6 +156,11 @@ void Simulator::update(const float dt)
     }
 }
 
+// Mauvaise facon de faire:
+// class DrawableCity<City>(City& city) : m_city(city)
+// { City& m_city; draw() { }
+// };
+
 //------------------------------------------------------------------------------
 void Simulator::draw()
 {
@@ -176,4 +181,10 @@ void Simulator::draw()
       {
       Renderer::draw(*it, m_renderer);
       }*/
+}
+
+//------------------------------------------------------------------------------
+void Simulator::hud()
+{
+    Renderer::draw(m_city.grid(), m_renderer);
 }

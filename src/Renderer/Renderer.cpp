@@ -29,6 +29,13 @@
 #include "City/City.hpp"
 
 //------------------------------------------------------------------------------
+void Renderer::draw(SpatialHashGrid const& hashgrid, sf::RenderTarget& target, sf::RenderStates const& states)
+{
+    Grid grid(hashgrid.bounds(), hashgrid.dimensions(), sf::Color::Black); // FIXME heavy
+    target.draw(grid, states);
+}
+
+//------------------------------------------------------------------------------
 void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     sf::RectangleShape const& shape = parking.obb();

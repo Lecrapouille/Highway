@@ -153,6 +153,8 @@ void GUISimulation::draw()
         simulator.message_bar.entry("Simulation has ended", sf::Color::Yellow);
     }
 
+// FIXME degeux
+
     // Make the camera follows the car
     m_view.setCenter(simulator.camera());
     renderer().setView(m_view);
@@ -164,5 +166,7 @@ void GUISimulation::draw()
     renderer().setView(m_hud_view);
     simulator.message_bar.size(renderer().getSize());
     renderer().draw(simulator.message_bar);
+    simulator.hud();
+
     renderer().setView(m_view);
 }

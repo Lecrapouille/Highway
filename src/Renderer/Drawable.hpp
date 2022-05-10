@@ -31,6 +31,27 @@
 #  include <SFML/Graphics.hpp>
 
 // *****************************************************************************
+//! \brief
+// *****************************************************************************
+class Grid: public sf::Drawable
+{
+public:
+
+    Grid(sf::Rect<float> const& bounds, sf::Vector2u const& dimensions, sf::Color color);
+
+private:
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    {
+        target.draw(m_lines.data(), m_lines.size(), sf::Lines, states);
+    }
+
+private:
+
+    std::vector<sf::Vertex> m_lines;
+};
+
+// *****************************************************************************
 //! \brief Non-filled circle used to draw turning radius
 // *****************************************************************************
 class Circle: public sf::Drawable

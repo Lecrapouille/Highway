@@ -33,6 +33,7 @@
 class Parking;
 class Car;
 class Autonomous;
+class SpatialHashGrid;
 
 // *****************************************************************************
 //! \brief
@@ -44,6 +45,7 @@ public:
     static void draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
     static void draw(Car const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
     static void draw(Autonomous const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+    static void draw(SpatialHashGrid const& grid, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
 };
 
 #endif // RENDERER_HPP
