@@ -26,69 +26,10 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "Renderer/Drawable.hpp"
+#include "Math/Math.hpp"
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <cmath>
-
-constexpr float RAD2DEG(float const r) { return r * 57.295779513f; }
-constexpr float DEG2RAD(float const d) { return d * 0.01745329251994f; }
-
-//------------------------------------------------------------------------------
-Text::Text()
-{
-    if (!m_font.loadFromFile("data/font.ttf"))
-    {
-        std::cerr << "Failed loading fonts" << std::endl;
-    }
-
-    m_text.setFont(m_font);
-    m_text.setCharacterSize(12.0f);
-    m_text.setFillColor(sf::Color::Black);
-}
-
-//------------------------------------------------------------------------------
-inline void Text::position(float const x, float const y)
-{
-    m_x = x;
-    m_y = y;
-}
-
-//------------------------------------------------------------------------------
-inline Text& Text::string(const char* str)
-{
-    m_text.setString(str);
-    update();
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-inline Text& Text::string(std::string const& str)
-{
-    m_text.setString(str);
-    update();
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-inline Text& Text::string(int const number)
-{
-    std::stringstream stream;
-    stream << number;
-    m_text.setString(stream.str());
-    update();
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-inline Text& Text::string(float const number)
-{
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << number;
-    m_text.setString(stream.str());
-    update();
-    return *this;
-}
 
 //------------------------------------------------------------------------------
 Circle::Circle(float x, float y, float r, sf::Color color)

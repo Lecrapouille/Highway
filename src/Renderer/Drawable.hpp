@@ -31,43 +31,6 @@
 #  include <SFML/Graphics.hpp>
 
 // *****************************************************************************
-//! \brief
-// *****************************************************************************
-class Text: public sf::Drawable
-{
-public:
-
-    Text();
-    void position(float const x, float const y);
-    Text& string(const char* str);
-    Text& string(std::string const& str);
-    Text& string(int const number);
-    Text& string(float const number);
-
-private:
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
-    {
-        target.draw(m_text, states);
-    }
-
-    void update()
-    {
-        m_text.setPosition(m_x - m_text.getLocalBounds().width / 2.0f,
-                           m_y - m_text.getLocalBounds().height);
-    }
-
-private:
-
-    //! \brief SFML loaded font from a TTF file.
-    sf::Font m_font;
-    //! \brief SFML structure for rendering message.
-    sf::Text m_text;
-    float m_x = 0.0f;
-    float m_y = 0.0f;
-};
-
-// *****************************************************************************
 //! \brief Non-filled circle used to draw turning radius
 // *****************************************************************************
 class Circle: public sf::Drawable
