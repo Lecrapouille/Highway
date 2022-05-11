@@ -87,7 +87,15 @@ public:
     static BLUEPRINT const& get(const char* name)
     {
         assert(name != nullptr);
-        return database<BLUEPRINT>().at(name);
+        try
+        {
+            return database<BLUEPRINT>().at(name);
+        }
+        catch (...)
+        {
+            std::string e("Fatal: Unkown blueprint '");
+            throw std::runtime_error(e + name + "'");
+        }
     }
 
 
@@ -118,8 +126,6 @@ private:
 
 private:
 
-    //template<class BLUEPRINT>
-    //static std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> m_databases;
     static std::vector<std::function<void(std::string&)>> m_erase_functions;
 };
 

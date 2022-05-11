@@ -121,13 +121,25 @@ public:
         //! \brief Internal methods called by the Application class when the GUI
         //! is pushed in the stack.
         //----------------------------------------------------------------------
-        virtual void activate() = 0;
+        virtual void create() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! is poped from the stack.
         //----------------------------------------------------------------------
+        virtual void release() = 0;
+
+        //----------------------------------------------------------------------
+        //! \brief Internal methods called by the Application class when the GUI
+        //! is no longer on the top of the stack.
+        //----------------------------------------------------------------------
         virtual void deactivate() = 0;
+
+        //----------------------------------------------------------------------
+        //! \brief Internal methods called by the Application class when the GUI
+        //! has returned to the top of the stack.
+        //----------------------------------------------------------------------
+        virtual void activate() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class to know if
@@ -279,22 +291,6 @@ public:
         return m_renderer;
     }
 
-    //--------------------------------------------------------------------------
-    //! \brief Store a new font.
-    //! \param[in] name: the internal name of the font.
-    //! \param[in] ttf: the filename of the font. It will be searched in the
-    //! following oreder: ttf, ./data/., DATADIR
-    //! \return true if the font has been loaded with success.
-    //--------------------------------------------------------------------------
-    bool font(const char* name, const char* ttf);
-
-    //--------------------------------------------------------------------------
-    //! \brief Get the font given its internal name.
-    //! \return the reference to the font if present.
-    //! \throw if the font was not found.
-    //--------------------------------------------------------------------------
-    sf::Font& font(const char* name);
-
 private:
 
     void loop();
@@ -309,8 +305,6 @@ private:
     std::stack<Application::GUI*> m_stack;
     //! \brief SFML renderer.
     sf::RenderWindow m_renderer;
-    //! \brief List of fonts
-    std::map<std::string, std::unique_ptr<sf::Font>> m_fonts;
 };
 
 #endif

@@ -80,7 +80,8 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
 POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
 
 # Desired compiled files for the shared library
-LIB_OBJS += Collide.o SpatialHashGrid.o Monitoring.o Components.o Drawable.o Renderer.o
+LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o
+LIB_OBJS += FontManager.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o
 LIB_OBJS += Car.o Trailer.o
@@ -89,7 +90,7 @@ LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o
 LIB_OBJS += AutoParkECU.o CarParkedScanner.o
 #LIB_OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
 #LIB_OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
-LIB_OBJS += Simulation.o Simulator.o
+LIB_OBJS += Simulator.o
 
 # Desired compiled files for the standalone application
 OBJS += main.o

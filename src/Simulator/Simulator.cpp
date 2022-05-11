@@ -27,89 +27,123 @@
 
 #include "Simulator/Simulator.hpp"
 #include "Renderer/Renderer.hpp"
+#include "Renderer/FontManager.hpp"
 
 #define DEFAULT_CAR_COLOR 178, 174, 174
 #define EGO_CAR_COLOR 124, 99, 197
 #define COLISION_COLOR 255, 0, 0
 
 //------------------------------------------------------------------------------
-Simulator::Simulator(sf::RenderWindow& renderer)
-    : m_renderer(renderer)
+void Simulator::ScenarioLoader::onLoading()
 {
-    BluePrints::init();
+    m_scenario.name = prototype<const char* (void)>("simulation_name");
+    m_scenario.create = prototype<Car& (City&)>("create_city");
+    m_scenario.halt = prototype<bool (Simulator const&)>("halt_simulation_when");
+    m_scenario.react = prototype<void(Simulator&, size_t)>("react_to");
+}
+
+//------------------------------------------------------------------------------
+Simulator::Simulator(sf::RenderWindow& renderer)
+    : m_renderer(renderer), m_loader(m_scenario)
+{
+    m_message_bar.font(FontManager::instance().font("main font"));
 }
 
 //------------------------------------------------------------------------------
 bool Simulator::load(Scenario const& scenario)
 {
-    m_simulation.name = scenario.name;
-    m_simulation.create = scenario.create;
-    m_simulation.halt = scenario.halt;
-    m_simulation.react = scenario.react;
+    m_scenario.name = scenario.name;
+    m_scenario.create = scenario.create;
+    m_scenario.halt = scenario.halt;
+    m_scenario.react = scenario.react;
 
-    activate();
-    std::cout << "Loading simulation name: " << m_simulation.name()
-              << std::endl;
-    m_renderer.setTitle(m_simulation.name());
-
+    // Check if it has been loaded correctly
+    m_scenario_loaded = (m_scenario.name != nullptr) &&
+                        (m_scenario.create != nullptr) &&
+                        (m_scenario.halt != nullptr) &&
+                        (m_scenario.react != nullptr);
+    if (!m_scenario_loaded)
+    {
+        m_message_bar.entry("Failed loading the scenario because has "
+                            "detected nullptr functions", sf::Color::Red);
+        return false;
+    }
     return true;
 }
 
 //------------------------------------------------------------------------------
 bool Simulator::load(const char* lib_name)
 {
-    if (m_simulation.load(lib_name))
+    m_scenario_loaded = m_loader.load(lib_name);
+    if (!m_scenario_loaded)
     {
-        activate();
-        std::cout << "Loading simulation name: " << m_simulation.name()
-                  << std::endl;
-        m_renderer.setTitle(m_simulation.name());
-
-        return true;
+        m_message_bar.entry("Failed loading the scenario: " + m_loader.error(),
+                            sf::Color::Red);
+        return false;
     }
 
-    std::cerr << "Exception: "<< m_simulation.error() << std::endl;
     return true;
 }
 
 //------------------------------------------------------------------------------
 bool Simulator::reload()
 {
-    return load(m_simulation.path().c_str()); // FIXME useless
+    return m_loader.reload();
 }
 
 //------------------------------------------------------------------------------
-void Simulator::reactTo(size_t key)
+void Simulator::create()
 {
-    //if (m_simulation) // FIXME
+    if (!m_scenario_loaded)
     {
-        m_simulation.react(*this, key);
+        std::cout << "Scenari pas charge\n";
+        return ;
     }
-}
 
-//------------------------------------------------------------------------------
-bool Simulator::running() const
-{
-    return !m_simulation.halt(*this);
+    std::string name(m_scenario.name());
+
+    // Set simulation name on the GUI
+    m_message_bar.entry("Starting simulation " + name, sf::Color::Green);
+    m_renderer.setTitle(m_scenario.name());
+
+    // Create a new city
+    m_city.reset();
+    BluePrints::init();
+    m_ego = &m_scenario.create(m_city);
+
+    // Make the camera follow the ego car
+    follow(m_ego);
 }
 
 //------------------------------------------------------------------------------
 void Simulator::activate()
 {
-    // if (!m_simulation) { // FIXME
-    //   cerr << "failed" << endl;
-    //   return ;
-    // }
-    m_ego = &m_simulation.create(m_city);
-    follow(m_ego);
-    messagebox("Simulation '" + std::string(m_simulation.name()) + "' activate", sf::Color::Green);
     m_time.restart();
 }
 
 //------------------------------------------------------------------------------
 void Simulator::deactivate()
 {
+    // Nothing to do
+}
+
+//------------------------------------------------------------------------------
+void Simulator::release()
+{
     m_city.reset();
+    //m_scenario_loaded = false;
+}
+
+//------------------------------------------------------------------------------
+void Simulator::reactTo(size_t key)
+{
+    m_scenario.react(*this, key);
+}
+
+//------------------------------------------------------------------------------
+bool Simulator::running() const
+{
+    return m_scenario_loaded && (!m_scenario.halt(*this));
 }
 
 //------------------------------------------------------------------------------
@@ -139,6 +173,9 @@ void Simulator::showCollisions(Car& ego)
 //------------------------------------------------------------------------------
 void Simulator::update(const float dt)
 {
+    // Auto reload the scenario file if it has changed.
+    //m_loader.reloadIfChanged();
+
     // Update physics, ECU, sensors ...
     for (auto& it: m_city.cars())
     {
@@ -162,8 +199,11 @@ void Simulator::update(const float dt)
 // };
 
 //------------------------------------------------------------------------------
-void Simulator::draw()
+void Simulator::draw_simulation()
 {
+    // Draw the spatial hash grid
+    Renderer::draw(m_city.grid(), m_renderer);
+
     // Draw the city
     for (auto const& it: m_city.parkings())
     {
@@ -184,7 +224,10 @@ void Simulator::draw()
 }
 
 //------------------------------------------------------------------------------
-void Simulator::hud()
+void Simulator::draw_hud()
 {
     Renderer::draw(m_city.grid(), m_renderer);
+
+    m_message_bar.size(m_renderer.getSize());
+    m_renderer.draw(m_message_bar);
 }

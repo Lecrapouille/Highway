@@ -30,9 +30,6 @@
 #include "Vehicle/Car.hpp"
 
 //------------------------------------------------------------------------------
-//template<> std::unordered_map<std::string, std::map<std::string, ParkingBluePrint>> BluePrints::m_databases<ParkingBluePrint>;
-
-//------------------------------------------------------------------------------
 ParkingBluePrint::ParkingBluePrint(float const l, float const w, size_t const a)
     : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
 {}

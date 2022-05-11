@@ -26,6 +26,7 @@
 // For more information, please refer to <https://unlicense.org>
 
 #include "Application/GUIMainMenu.hpp"
+#include "Renderer/FontManager.hpp"
 
 //------------------------------------------------------------------------------
 GUIMainMenu::GUIMainMenu(Application& application, const char* name)
@@ -33,7 +34,7 @@ GUIMainMenu::GUIMainMenu(Application& application, const char* name)
 {
     m_view = renderer().getDefaultView();
 
-    m_text.setFont(m_application.font("main font"));
+    m_text.setFont(FontManager::instance().font("main font"));
     m_text.setString("Press space to start simulation");
     m_text.setCharacterSize(24);
     m_text.setFillColor(sf::Color::Red);
@@ -44,18 +45,24 @@ GUIMainMenu::GUIMainMenu(Application& application, const char* name)
 void GUIMainMenu::activate()
 {
     m_renderer.setView(m_view);
-    std::cout << "GUIMainMenu::activate()" << std::endl;
 }
 
 //------------------------------------------------------------------------------
 void GUIMainMenu::deactivate()
 {
-    std::cout << "GUIMainMenu::deactivate()" << std::endl;
     // FIXME do not push on stack from here else this will create inifinite loop
     // if (!m_renderer.close()) {
     //   m_application.push(m_application.gui<GUISimulation>("GUISimulation"));
     // }
 }
+
+//------------------------------------------------------------------------------
+void GUIMainMenu::create()
+{}
+
+//------------------------------------------------------------------------------
+void GUIMainMenu::release()
+{}
 
 //------------------------------------------------------------------------------
 void GUIMainMenu::handleInput()

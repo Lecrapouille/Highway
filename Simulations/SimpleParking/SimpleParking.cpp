@@ -39,8 +39,10 @@ const char* simulation_name()
 //-----------------------------------------------------------------------------
 bool halt_simulation_when(Simulator const& simulator)
 {
-    HALT_SIMULATION_WHEN((simulator.elapsedTime() > sf::seconds(60.0f)), "Time simulation slipped");
-    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0f), "Ego car is outside the parking");
+    HALT_SIMULATION_WHEN((simulator.elapsedTime() > sf::seconds(60.0f)),
+                         "Time simulation slipped");
+    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0f),
+                         "Ego car is outside the parking");
     // TODO outside the city
 
     return CONTINUE_SIMULATION;
@@ -66,35 +68,40 @@ static Car& customize(Car& car)
                .range = 2.0f/*174.0f*/ });
 #endif
 
-    // Add behaviors
+    // Add ECUs
     //car.addECU<AutoParkECU>(car); // FIXME how to avoid adding car ?
 
-    // Add reactions from keyboard
+    // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()
     {
         //car.turningIndicator(false, m_turning_right ^ true);
     });
 
+    // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageUp, [&car]()
     {
         //car.turningIndicator(m_turning_left ^ true, false);
     });
 
+    // Make the car reacts from the keyboard: set car speed (kinematic).
     car.callback(sf::Keyboard::Up, [&car]()
     {
         car.refSpeed(1.0f);
     });
 
+    // Make the car reacts from the keyboard: make the car stopped (kinematic).
     car.callback(sf::Keyboard::Down, [&car]()
     {
         car.refSpeed(0.0f);
     });
 
+    // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Right, [&car]()
     {
         car.refSteering(car.refSteering() - 0.1f);
     });
 
+    // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Left, [&car]()
     {
         car.refSteering(car.refSteering() + 0.1f);
@@ -106,10 +113,8 @@ static Car& customize(Car& car)
 //-----------------------------------------------------------------------------
 Car& create_city(City& city)
 {
-    std::cout << "Creating city for " << simulation_name() << std::endl;
-
-    BluePrints::init(); // FIXME
-    city.reset();
+    std::cout << "Creating city for scenario '" << simulation_name()
+              << "'" << std::endl;
 
     // Create parallel or perpendicular or diagnoal parking slots
     const int angle = 0u;

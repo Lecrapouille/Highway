@@ -28,10 +28,14 @@
 #ifndef DRAWABLE_HPP
 #  define DRAWABLE_HPP
 
+// *****************************************************************************
+//! \file this file complete the SFML library by adding extra shapes to display.
+// *****************************************************************************
+
 #  include <SFML/Graphics.hpp>
 
 // *****************************************************************************
-//! \brief
+//! \brief Show a grid used for debugging SpatialHashGrid.
 // *****************************************************************************
 class Grid: public sf::Drawable
 {
@@ -52,7 +56,7 @@ private:
 };
 
 // *****************************************************************************
-//! \brief Non-filled circle used to draw turning radius
+//! \brief Non-filled circle used to draw turning radius.
 // *****************************************************************************
 class Circle: public sf::Drawable
 {
@@ -73,14 +77,37 @@ private:
 };
 
 // *****************************************************************************
-//! \brief Circle used to draw turning radii
+//! \brief Arc used for drawing vehicle turning radius.
 // *****************************************************************************
 class Arc: public sf::Drawable
 {
 public:
 
-    Arc(float x, float y, float r, float start, float end, sf::Color color);
+    //----------------------------------------------------------------------
+    //! \brief Default constructor
+    //! \param[in] x center position (X-axis).
+    //! \param[in] y center position (Y-axis).
+    //! \param[in] radius radius of the circle.
+    //! \param[in] start angle [degree]
+    //! \param[in] ending angle [degree]
+    //! \param[in] color
+    //----------------------------------------------------------------------
+    Arc(float x, float y, float radius, float start, float end, sf::Color color);
+
+    //----------------------------------------------------------------------
+    //! \brief Dummy constructor. Shall be completed with init().
+    //----------------------------------------------------------------------
     Arc() = default;
+
+    //----------------------------------------------------------------------
+    //! \brief Default constructor
+    //! \param[in] x center position (X-axis).
+    //! \param[in] y center position (Y-axis).
+    //! \param[in] radius radius of the circle.
+    //! \param[in] start angle [degree]
+    //! \param[in] ending angle [degree]
+    //! \param[in] color
+    //----------------------------------------------------------------------
     void init(float x, float y, float r, float start, float end, sf::Color color);
 
 private:
@@ -93,7 +120,7 @@ private:
 private:
 
     // *************************************************************************
-    //! \brief Arc used to draw turning radius
+    //! \brief
     // *************************************************************************
     class ArcShape: public sf::CircleShape
     {
@@ -130,7 +157,7 @@ private:
 };
 
 // *****************************************************************************
-//! \brief Draw an arrow
+//! \brief Draw an arrow used for debugging vehicle's turning radius.
 // *****************************************************************************
 class Arrow: public sf::Drawable
 {

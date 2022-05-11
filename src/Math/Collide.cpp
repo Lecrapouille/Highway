@@ -10,6 +10,7 @@
 using RectVertexArray = std::array<sf::Vector2f, 4>;
 const float TOLERANCE = 0.0001f;
 
+//------------------------------------------------------------------------------
 // Returns normalized vector
 static sf::Vector2f norm(const sf::Vector2f& v)
 {
@@ -19,17 +20,20 @@ static sf::Vector2f norm(const sf::Vector2f& v)
     return sf::Vector2f(v.x / length, v.y / length);
 }
 
+//------------------------------------------------------------------------------
 static float dotProduct(const sf::Vector2f& a, const sf::Vector2f& b)
 {
     return a.x * b.x + a.y * b.y;
 }
 
+//------------------------------------------------------------------------------
 // Returns right hand perpendicular vector
 static sf::Vector2f getNormal(const sf::Vector2f& v)
 {
     return sf::Vector2f(-v.y, v.x);
 }
 
+//------------------------------------------------------------------------------
 // Find minimum and maximum projections of each vertex on the axis
 static sf::Vector2f projectOnAxis(const RectVertexArray& vertices, const sf::Vector2f& axis)
 {
@@ -44,12 +48,14 @@ static sf::Vector2f projectOnAxis(const RectVertexArray& vertices, const sf::Vec
     return sf::Vector2f(min, max);
 }
 
+//------------------------------------------------------------------------------
 // a and b are ranges and it's assumed that a.x <= a.y and b.x <= b.y
 static bool areOverlapping(const sf::Vector2f& a, const sf::Vector2f& b)
 {
     return a.x <= b.y && a.y >= b.x;
 }
 
+//------------------------------------------------------------------------------
 // a and b are ranges and it's assumed that a.x <= a.y and b.x <= b.y
 static float getOverlapLength(const sf::Vector2f& a, const sf::Vector2f& b)
 {
@@ -57,6 +63,7 @@ static float getOverlapLength(const sf::Vector2f& a, const sf::Vector2f& b)
     return std::min(a.y, b.y) - std::max(a.x, b.x);
 }
 
+//------------------------------------------------------------------------------
 static sf::Vector2f getCenter(const sf::RectangleShape& shape)
 {
     const sf::Transform& transform = shape.getTransform();
@@ -64,6 +71,7 @@ static sf::Vector2f getCenter(const sf::RectangleShape& shape)
     return transform.transformPoint(local.width / 2.f, local.height / 2.f);
 }
 
+//------------------------------------------------------------------------------
 static RectVertexArray getVertices(const sf::RectangleShape& shape)
 {
     RectVertexArray vertices;
@@ -74,12 +82,14 @@ static RectVertexArray getVertices(const sf::RectangleShape& shape)
     return vertices;
 }
 
+//------------------------------------------------------------------------------
 static sf::Vector2f getPerpendicularAxis(const RectVertexArray& vertices, std::size_t index)
 {
     assert(index < 4);
     return getNormal(norm(vertices[index + 1] - vertices[index]));
 }
 
+//------------------------------------------------------------------------------
 // Axes for which we'll test stuff. Two for each box, because testing for
 // parallel axes isn't needed
 static RectVertexArray
@@ -95,6 +105,7 @@ getPerpendicularAxes(const RectVertexArray& vertices1, const RectVertexArray& ve
     return axes;
 }
 
+//------------------------------------------------------------------------------
 // Separating Axis Theorem (SAT) collision test.
 // Minimum Translation Vector (MTV) is returned for the first Oriented Bounding
 // Box (OBB)

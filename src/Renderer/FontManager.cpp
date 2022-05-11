@@ -25,13 +25,35 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#include "Simulation.hpp"
-#include "Simulator.hpp"
+#include "Renderer/FontManager.hpp"
+#include <iostream>
 
-void Simulation::onLoaded()
+
+
+// -----------------------------------------------------------------------------
+bool FontManager::load(const char* name, const char* ttf)
 {
-    name = prototype<const char* (void)>("simulation_name");
-    create = prototype<Car& (City&)>("create_city");
-    halt = prototype<bool (Simulator const&)>("halt_simulation_when");
-    react = prototype<void(Simulator&, size_t)>("react_to");
+    std::unique_ptr<sf::Font> font = std::make_unique<sf::Font>();
+    if (font->loadFromFile(path.expand(ttf)))
+    {
+        m_fonts[name] = std::move(font);
+        return true;
+    }
+
+    // An error is already displayed on the console
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+sf::Font& FontManager::font(const char* name)
+{
+    try
+    {
+        return *m_fonts.at(name);
+    }
+    catch (...)
+    {
+        std::string e("Fatal: Unkown font '");
+        throw std::runtime_error(e + name + "'");
+    }
 }

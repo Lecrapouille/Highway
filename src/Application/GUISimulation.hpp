@@ -84,21 +84,33 @@ private: // Derived from Application::GUI
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Create the simulation.
+    //! \brief Pause the GUI.
     //-------------------------------------------------------------------------
     virtual void activate() override;
 
     //-------------------------------------------------------------------------
-    //! \brief Release the simulation.
+    //! \brief Unpause the GUI.
     //-------------------------------------------------------------------------
     virtual void deactivate() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Create the GUI.
+    //-------------------------------------------------------------------------
+    virtual void create() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Release the GUI.
+    //-------------------------------------------------------------------------
+    virtual void release() override;
 
 private:
 
     //! \brief Halting the GUI ?
     std::atomic<bool> m_running{true};
     //! \brief For managing world coordinates, zoom and camera displacement.
-    sf::View m_view, m_hud_view;
+    sf::View m_simulation_view;
+    //! \brief For displaying the GUI.
+    sf::View m_hud_view;
     //! \brief Camera zoom
     float m_zoom;
     //! \brief Mouse X,Y position within the world coordinate [meter]. You

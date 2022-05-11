@@ -29,10 +29,32 @@
 #  define SIMULATOR_HPP
 
 #  include "Simulator/City/City.hpp"
-#  include "Simulator/Simulation.hpp"
 #  include "Renderer/MessageBar.hpp"
+#  include "Common/DynamicLoader.hpp"
 
 class Renderer;
+class Simulator;
+
+// ****************************************************************************
+//! \brief Class holding C functions loaded from a shared library for setting
+//! and configurate simulation scenarios. This class is used by the simulator.
+// ****************************************************************************
+struct Scenario
+{
+    //! \brief C fonction returning the name of the simulation.
+    std::function<const char* (void)> name = nullptr;
+    //! \brief C fonction taking a City as input and allows to create the
+    //! desired city (roads, parking, vehicles ...). This function returns the
+    //! ego car.
+    std::function<Car&(City&)> create = nullptr;
+    //! \brief C function taking the Simulator as input and returns true when
+    //! the simulation shall halt (simulation duration, collision, reach a given
+    //! position ...).
+    std::function<bool(Simulator const&)> halt = nullptr;
+    //! \brief C function Reacting to external events (refered by their ID for
+    //! example keyboard keys).
+    std::function<void(Simulator& simulator, size_t key)> react = nullptr;
+};
 
 // ****************************************************************************
 //! \brief Class managing a simulation. This class is owned by the Application
@@ -41,10 +63,39 @@ class Renderer;
 //! some special C functions used for creating and setting the simulation. See
 //! for example Drive/Simulations/SimpleParking/SimpleParking.cpp).
 //!
-//! Idea: https://www.mathworks.com/help/driving/ug/motion-planning-using-dynamic-map.html
+//! Idea:
+//! https://www.mathworks.com/help/driving/ug/motion-planning-using-dynamic-map.html
 // ****************************************************************************
 class Simulator
 {
+private:
+
+    // *************************************************************************
+    //! \brief Helper class for loading scenarios.
+    // *************************************************************************
+    class ScenarioLoader : public DynamicLoader
+    {
+    public:
+
+        ScenarioLoader(Scenario& scenario)
+            : m_scenario(scenario)
+        {}
+
+    private:
+
+        //----------------------------------------------------------------------
+        //! \brief Concrete implementation of the callback triggered when the
+        //! simulation file (shared library) has been loaded with success. This
+        //! method will loaded desired C functions. In case of error an
+        //! execption is thrown.
+        //----------------------------------------------------------------------
+        virtual void onLoading() override;
+
+    private:
+
+        Scenario& m_scenario;
+    };
+
 public:
 
     //-------------------------------------------------------------------------
@@ -52,6 +103,15 @@ public:
     //! instance, needed for drawing the simulation.
     //-------------------------------------------------------------------------
     Simulator(sf::RenderWindow& renderer);
+
+    //-------------------------------------------------------------------------
+    //! \brief Pass a text to the simulator to display it inside the messagebox
+    //! widget.
+    //-------------------------------------------------------------------------
+    inline void messagebox(std::string const& txt, sf::Color const& color) const
+    {
+        m_message_bar.entry(txt, color);
+    }
 
     //-------------------------------------------------------------------------
     //! \brief Load a simulation file (a shared library file holding functions
@@ -138,15 +198,6 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Pass a text to the simulator to display it inside the messagebox
-    //! widget.
-    //-------------------------------------------------------------------------
-    inline void messagebox(std::string const& txt, sf::Color const& color) const
-    {
-        message_bar.entry(txt, color);
-    }
-
-    //-------------------------------------------------------------------------
     //! \brief Callback when the GUI has started: create the city, camera ...
     //-------------------------------------------------------------------------
     void activate();
@@ -156,6 +207,8 @@ public:
     //! remove entities: parking, cars, ego car ...
     //-------------------------------------------------------------------------
     void deactivate();
+    void create();
+    void release();
 
     //-------------------------------------------------------------------------
     //! \brief Callback when the application needs to know if the GUI shall
@@ -174,22 +227,23 @@ public:
     //! \param[in] renderer: SFML renderer (window)
     //! \param[in] view: SFML view.
     //-------------------------------------------------------------------------
-    void draw(); // FIXME const
-    void hud();
+    void draw_simulation(); // FIXME const
+    void draw_hud(); // FIXME const
 
 private:
 
     void showCollisions(Car& ego);
 
-public:
-
-    //! \brief Display messages
-    mutable MessageBar message_bar;
-
-protected:
+private:
 
     //! \brief SFML renderer needed for drawing the simulation.
     sf::RenderWindow& m_renderer;
+    //! \brief
+    ScenarioLoader m_loader;
+    //! \brief Simulation scenario loaded from a shared library.
+    Scenario m_scenario;
+    //! \brief
+    bool m_scenario_loaded = false;
     //! \brief The city we want to simulated with its roads, parkings, cars ...
     City m_city;
     //! \brief Make the camera follow the given car.
@@ -200,8 +254,8 @@ protected:
     sf::Vector2f m_camera;
     //! \brief Simulation time.
     sf::Clock m_time;
-    //! \brief Simulation scenario loaded from a shared library.
-    Simulation m_simulation;
+    //! \brief Display messages
+    mutable MessageBar m_message_bar;
 };
 
 #endif

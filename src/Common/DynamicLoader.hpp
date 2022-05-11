@@ -29,6 +29,7 @@
 #include <functional>
 #include <string>
 #include <stdexcept>
+#include <sys/stat.h>
 
 // *****************************************************************************
 //! \brief Class allowing to load C functions from a given shared library. This
@@ -54,9 +55,11 @@ public:
 
     //--------------------------------------------------------------------------
     //! \brief Load the given shared library (.so, .dylib, .dll file).
+    //! Call the virtual method onLoading() in which you should extract symbols
+    //! you want (ie with the method prototype()).
     //! \param[in] lib_name: the path of the shared library (.so, .dll, .dylib)
     //! to open.
-    //! \param[in] rt
+    //! \param[in] rt load symbols immediatly or in lazy way.
     //--------------------------------------------------------------------------
     bool load(const char* lib_name, Resolution rt = Resolution::NOW)
     {
@@ -67,12 +70,14 @@ public:
         if (m_handle == nullptr)
         {
             set_error(::dlerror());
+            m_prevUpdateTime = 0;
         }
         else
         {
             try
             {
-                onLoaded();
+                onLoading();
+                m_prevUpdateTime = getFileTime();
             }
             catch(std::logic_error &e)
             {
@@ -84,12 +89,32 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief 
+    //! \brief Close the shared library and reload its symbols.
+    //! \param[in] rt load symbols immediatly or in lazy way.
     //--------------------------------------------------------------------------
-    //bool reload(Resolution rt = Resolution::NOW)
-    //{
-    //    return load(m_path.c_str(), rt);
-    //}
+    bool reload(Resolution rt = Resolution::NOW)
+    {
+        return load(m_path.c_str(), rt);
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Call reload() if the time of the shared library has changed.
+    //--------------------------------------------------------------------------
+    bool reloadIfChanged(Resolution rt = Resolution::NOW)
+    {
+        long time = getFileTime();
+        if (time == 0)
+        {
+            return false;
+        }
+        if (time != m_prevUpdateTime)
+        {
+            m_prevUpdateTime = time;
+            return reload(rt);
+        }
+
+        return false;
+    }
 
     //--------------------------------------------------------------------------
     //! \brief Check if the shared library has been opened.
@@ -180,7 +205,7 @@ private:
     //! \brief Callback to implement when load() or reload() has ended with
     //! success.
     //--------------------------------------------------------------------------
-    virtual void onLoaded()
+    virtual void onLoading()
     {}
 
     //--------------------------------------------------------------------------
@@ -193,6 +218,23 @@ private:
         m_error += std::string("- ") + msg + '\n';
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Return the date of the shared library.
+    //! \pre The shared library shall be loaded.
+    //--------------------------------------------------------------------------
+    long getFileTime()
+    {
+        struct stat fileStat;
+
+        if (stat(m_path.c_str(), &fileStat) < 0)
+        {
+            set_error("Couldn't stat file");
+            return 0;
+        }
+
+        return fileStat.st_mtime;
+    }
+
 private:
 
     //! \brief Memorize the path of the shared library.
@@ -201,4 +243,6 @@ private:
     std::string m_error;
     //! \brief The handle on the opened shared library.
     void *m_handle = nullptr;
+    //! \brief The date of the shared lib
+    long m_prevUpdateTime = 0;
 };

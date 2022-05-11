@@ -25,7 +25,8 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#  include "Application/GUIMainMenu.hpp"
+#include "Application/GUIMainMenu.hpp"
+#include "Renderer/FontManager.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file Entry point of the car simulation application. Check the command line
@@ -106,9 +107,6 @@ static bool halt_simulation_when(Simulator const& simulator)
 //! parking slots and car parked. The ego car is on the road.
 static Car& create_city(City& city)
 {
-    //BluePrints::init(); // FIXME a quel endroit ?
-    city.reset();
-
     // Create parallel or perpendicular or diagnoal parking slots
     const int angle = 0u;
     std::string dim = "epi." + std::to_string(angle);
@@ -150,10 +148,12 @@ int main(int argc, char* argv[])
 {
     try
     {
+        // Load fonts
+        if (!FontManager::instance().load("main font", "font.ttf"))
+            return EXIT_FAILURE;
+
         // SFML application
         Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
-        if (!app.font("main font", "font.ttf"))
-            return EXIT_FAILURE;
 
         // Create all application GUIs.
         GUIMainMenu& gui_menu = app.create<GUIMainMenu>("GUIMainMenu");

@@ -33,14 +33,14 @@ GUISimulation::GUISimulation(Application& application, const char* name)
     : Application::GUI(application, name, sf::Color::White),
       simulator(application.renderer())
 {
-    simulator.message_bar.font(application.font("main font"));
-    m_hud_view = renderer().getDefaultView();
+    // SFML view for the GUI
+    m_hud_view = m_renderer.getDefaultView();
 
     // SFML view: change the world coordinated to follow the same computations
     // than the doc "Estimation et controle pour le pilotage automatique de
     // vehicule" by Sungwoo Choi.
-    m_view = renderer().getDefaultView();
-    m_view.setSize(float(application.width()), -float(application.height()));
+    m_simulation_view = m_renderer.getDefaultView();
+    m_simulation_view.setSize(float(application.width()), -float(application.height()));
     zoom(ZOOM);
 }
 
@@ -48,24 +48,32 @@ GUISimulation::GUISimulation(Application& application, const char* name)
 void GUISimulation::zoom(float const value)
 {
     m_zoom = value;
-    m_view.zoom(m_zoom);
-    //m_renderer.setView(m_view);
+    m_simulation_view.zoom(m_zoom);
+    //m_renderer.setView(m_simulation_view);
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::activate()
 {
-std::cout << "GUISimulation::activate()" << std::endl;
-m_renderer.setView(m_view);
-    //m_running = true;
-    //simulator.activate();
+    simulator.activate();
 }
 
 //------------------------------------------------------------------------------
 void GUISimulation::deactivate()
 {
-std::cout << "GUISimulation::deactivate()" << std::endl;
-    //simulator.deactivate();
+    simulator.deactivate();
+}
+
+//------------------------------------------------------------------------------
+void GUISimulation::create()
+{
+    simulator.create();
+}
+
+//------------------------------------------------------------------------------
+void GUISimulation::release()
+{
+    simulator.release(); 
 }
 
 //------------------------------------------------------------------------------
@@ -80,12 +88,11 @@ void GUISimulation::handleInput()
     // Get the X,Y mouse coordinates from the simulated word coordinates.
     m_mouse = simulator.pixel2world(sf::Mouse::getPosition(renderer()));
 
-    while (/*m_running && */renderer().pollEvent(event))
+    while (m_renderer.pollEvent(event))
     {
         switch (event.type)
         {
         case sf::Event::Closed:
-            //m_running = false;
             m_renderer.close();
             break;
         // Get world's position
@@ -113,19 +120,11 @@ void GUISimulation::handleInput()
             // Leaving the GUI
             if (event.key.code == sf::Keyboard::Escape)
             {
-                //m_running = false;
                 m_application.push(m_application.gui<GUIMainMenu>("GUIMainMenu"));
             }
             else if (event.key.code == sf::Keyboard::F1)
             {
-                if (simulator.reload())
-                {
-                    simulator.message_bar.entry("Simulation reloaded", sf::Color::Green);
-                }
-                else
-                {
-                    simulator.message_bar.entry("Simulation failed reloaded", sf::Color::Red);
-                }
+                simulator.reload();
             }
             else // propagate the key press to the simulator
             {
@@ -147,26 +146,14 @@ void GUISimulation::update(const float dt) // FIXME to be threaded
 //------------------------------------------------------------------------------
 void GUISimulation::draw()
 {
-    // FIXME not good: never shown
-    if (!running())
-    {
-        simulator.message_bar.entry("Simulation has ended", sf::Color::Yellow);
-    }
-
-// FIXME degeux
-
     // Make the camera follows the car
-    m_view.setCenter(simulator.camera());
-    renderer().setView(m_view);
+    m_simulation_view.setCenter(simulator.camera());
 
     // Draw the simulation
-    simulator.draw();
+    m_renderer.setView(m_simulation_view);
+    simulator.draw_simulation();
 
-    // Draw the entry text
-    renderer().setView(m_hud_view);
-    simulator.message_bar.size(renderer().getSize());
-    renderer().draw(simulator.message_bar);
-    simulator.hud();
-
-    renderer().setView(m_view);
+    // Draw the GUI
+    m_renderer.setView(m_hud_view);
+    simulator.draw_hud();
 }

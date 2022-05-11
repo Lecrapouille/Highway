@@ -52,7 +52,7 @@ COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter \
   -Wno-old-style-cast -Wno-sign-conversion -Wcast-function-type
 
 # Project flags
-CXXFLAGS += $(STANDARD) $(COMPIL_FLAGS)
+CXXFLAGS += $(STANDARD) $(COMPIL_FLAGS) -g -O0
 LDFLAGS += -lpthread
 DEFINES += -DZOOM=0.01f
 CXXFLAGS +=

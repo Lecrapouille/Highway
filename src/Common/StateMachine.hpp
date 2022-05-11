@@ -40,44 +40,115 @@
 #  endif
 
 // *****************************************************************************
-//! \brief
+//! \brief Base class of the structure depicting small Finite State Machine
+//! (FSM) and running them. See this document for more information about FSM:
+//! http://niedercorn.free.fr/iris/iris1/uml/uml09.pdf
+//!
+//! This class holds, for each of its states (nodes), actions to perform, as
+//! function pointers such as 'on entering', 'on leaving'. This class also holds
+//! the conditions for transitioning from the current state to the destination
+//! destination state when an external event occured. Condition are member
+//! functions on the derived FSM class.
+//!
+//! The following state machine, in plantuml syntax:
+//! @startuml
+//! [*] --> Idle
+//! Idle --> Starting : set speed
+//! Starting --> Stopping : halt
+//! Starting -> Spinning : set speed
+//! Spinning -> Stopping: halt
+//! Spinning --> Spinning : set speed
+//! Stopping -> Idle
+//! @enduml
+//!
+//! Can be represented by the following sparse table:
+//! +-----------------+------------+-----------+-----------+
+//! | States \\ Event | Set Speed  | Halt      | --        |
+//! +=================+============+===========+===========+
+//! | IDLE            | STARTING   |           |           |
+//! +-----------------+------------+-----------+-----------+
+//! | STOPPING        |            |           | IDLE      |
+//! +-----------------+------------+-----------+-----------+
+//! | STARTING        | SPINNING   | STOPPING  |           |
+//! +-----------------+------------+-----------+-----------+
+//! | SPINNING        | SPINNING   | STOPPING  |           |
+//! +-----------------+------------+-----------+-----------+
+//!
+//! The first column contains all states. The first line contains all events.
+//! Each column depict a transition: given the current state (i.e. IDLE) and a
+//! given event (i.e. Set Speed) the next state of the state machine will be
+//! STARTING. In this class, states are enums \c STATES_ID like: enum StatesID
+//! { IDLE = 0, STOPPING, STARTING, SPINNING, MAX_STATES }; and the table of
+//! states \c m_states shall be filled with these enums and pointer functions
+//! such as 'on entering' set. Each event (i.e. Set Speed) shall be a method
+//! having a static table of state transition.
+//!
+//! \tparam FSM the concrete Finite State Machine deriving from this base class.
+//! \tparam STATES_ID enumerate for giving an unique identifier for each state.
+//!
+//! This class is fine for small Finite State Machine (FSM) and is limited due
+//! to memory footprint (therefore no complex C++ designs, no dynamic containers
+//! and few virtual methods). The code is based on the following link
+//! https://www.codeproject.com/Articles/1087619/State-Machine-Design-in-Cplusplus-2
+//! For bigger state machines, please use something more robust such as Esterel
+//! SyncCharts.
 // *****************************************************************************
 template<typename FSM, class STATES_ID>
 class StateMachine
 {
 public:
 
+    //! \brief Pointer function with no argument and returning a boolean.
     using bFuncPtr = bool (FSM::*)();
+    //! \brief Pointer function with no argument and returning void.
     using xFuncPtr = void (FSM::*)();
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Class depicting a state of the state machine and hold pointer
+    //! functions for each desired action to perform.
     //--------------------------------------------------------------------------
     struct State
     {
+        //! \brief Call the guard fonction validating the event if return true
+        //! or set to nullptr. It invalidate the event if return false.
         bFuncPtr guard = nullptr;
+        //! \brief Call the "on entry" fonction when entering for the first time
+        //! (AND ONLY WHEN ONCE) in the state. Note: the guard prevent this
+        //! function.
         xFuncPtr entering = nullptr;
+        //! \brief Call the "on leaving" fonction when leavinging for the first
+        //! time (AND ONLY WHEN ONCE) the state. Note: the guard prevent this
+        //! function.
         xFuncPtr leaving = nullptr;
+        //! \brief Call the "on event" fonction when the event occured. Note:
+        //! the guard prevent this function. Entry and leaving actions are not
+        //! made if this function is not nullptr and return true.
         xFuncPtr onevent = nullptr;
     };
 
+    //! \brief Define the type of container holding all stated of the state
+    //! machine.
     using States = std::array<State, STATES_ID::MAX_STATES>;
+    //! \brief Define the type of container holding states transitions. Since
+    //! a state machine is generally a sparse matrix we use red-back tree.
     using Transitions = std::map<STATES_ID, STATES_ID>;
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor. Pass the number of states the FSM will use,
+    //! set the initial state and if mutex shall have to be used.
+    //! \param[in] initial the initial state to start with.
     //--------------------------------------------------------------------------
     StateMachine(STATES_ID const initial)
         : m_current_state(initial), m_initial_state(initial)
     {}
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Needed because of virtual methods.
     //--------------------------------------------------------------------------
     virtual ~StateMachine() = default;
 
     //--------------------------------------------------------------------------
-    //! \brief Restore to initial states.
+    //! \brief Restore the state machin to its initial state.
     //--------------------------------------------------------------------------
     inline void reset()
     {
@@ -105,6 +176,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Internal transition: jump to the desired state. This will call
     //! the guard, leaving actions, entering actions ...
+    //! \param[in] new_state the destination state.
     //--------------------------------------------------------------------------
     void transit(STATES_ID const new_state);
 
@@ -129,19 +201,22 @@ private:
 
 protected:
 
-    //! \brief Container of states
+    //! \brief Container of states.
     States m_states;
 
-    //! \brief Current active state
+    //! \brief Current active state.
     STATES_ID m_current_state;
 
 private:
 
-    //! \brief Save initial state
+    //! \brief Save the initial state need for restoring initial state.
     STATES_ID m_initial_state;
-
+    //! \brief Temporary variable saving the next state.
     STATES_ID m_next_state;
+    //! \brief Temporary variable saving the nesting state (needed for internal
+    //! event).
     STATES_ID m_nesting_state = STATES_ID::CANNOT_HAPPEN;
+    //! \brief is the state nested by an internal event.
     bool m_nesting = false;
 };
 
@@ -181,7 +256,7 @@ void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME s
         {
             std::cerr << "[STATE MACHINE] Forbidden event. Aborting!"
                       << std::endl;
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         // Do not react to this event
@@ -196,7 +271,7 @@ void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME s
         {
             std::cerr << "[STATE MACHINE] Unknown state. Aborting!"
                       << std::endl;
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         // Transition to new new state. Local variable mandatory since state
@@ -240,7 +315,7 @@ void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME s
                 return ;
             }
 
-            // Transitioning to a new state?
+            // Transitioning to a new state ?
             else if (current_state != m_next_state)
             {
                 if (cst.leaving != nullptr)

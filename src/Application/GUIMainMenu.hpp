@@ -71,14 +71,24 @@ private: // Derived from Application::GUI
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Create the simulation.
+    //! \brief Pause the simulation.
     //-------------------------------------------------------------------------
     virtual void activate() override;
 
     //-------------------------------------------------------------------------
-    //! \brief Release the simulation.
+    //! \brief Unpause the simulation.
     //-------------------------------------------------------------------------
     virtual void deactivate() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Create the simulation.
+    //-------------------------------------------------------------------------
+    virtual void create() override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Release the simulation.
+    //-------------------------------------------------------------------------
+    virtual void release() override;
 
 private:
 

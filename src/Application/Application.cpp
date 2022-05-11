@@ -51,45 +51,20 @@ Application::~Application()
     m_renderer.close();
 }
 
-// -----------------------------------------------------------------------------
-bool Application::font(const char* name, const char* ttf)
-{
-    std::unique_ptr<sf::Font> font = std::make_unique<sf::Font>();
-
-    if (!font->loadFromFile(ttf))
-    {
-        if (!font->loadFromFile(std::string("data/") + ttf))
-        {
-            if (!font->loadFromFile(std::string(DATADIR"/") + ttf))
-            {
-                std::cerr << "Could not load font file " << ttf<< std::endl;
-                return false;
-            }
-        }
-    }
-
-    m_fonts[name] = std::move(font);
-    return true;
-}
-
-// -----------------------------------------------------------------------------
-sf::Font& Application::font(const char* name)
-{
-    return *m_fonts.at(name);
-}
-
+// FIXME never call m_application.push(m_application.gui<GUIxx>("xxx"));
+// from the deactivate() callback!!
 // -----------------------------------------------------------------------------
 void Application::push(Application::GUI& gui)
 {
-    std::cout << "GUI push: " << gui.name() << std::endl;
-    if (peek() != nullptr)
+    GUI* g = peek();
+    if (g != nullptr)
     {
-        // FIXME never call m_application.push(m_application.gui<GUIxx>("xxx"));
-        // from the deactivate() callback!!
-        peek()->deactivate();
+        std::cout << "Deactivate GUI: " << g->name() << std::endl;
+        g->deactivate();
     }
     m_stack.push(&gui);
-    gui.activate();
+    std::cout << "Create GUI: " << gui.name() << std::endl;
+    gui.create();
     m_gui = &gui;
 }
 
@@ -97,15 +72,24 @@ void Application::push(Application::GUI& gui)
 void Application::pop()
 {
     m_gui = peek();
-    if (m_gui == nullptr)
+    if (m_gui != nullptr)
+    {
+        std::cout << "Release GUI: " << m_gui->name() << std::endl;
+        m_stack.pop();
+        m_gui->release();
+
+        m_gui = peek();
+        if (m_gui != nullptr)
+        {
+            std::cout << "Activate GUI: " << m_gui->name() << std::endl;
+            m_gui->activate();
+        }
+    }
+    else
     {
         std::cout << "Warning! Cannot pop GUI from empty stack" << std::endl;
         return ;
     }
-
-    std::cout << "GUI poped: " << m_gui->name() << std::endl;
-    m_stack.pop();
-    m_gui->deactivate();
 }
 
 // -----------------------------------------------------------------------------
