@@ -165,10 +165,10 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Return ref const to the hash grid.
     //-------------------------------------------------------------------------
-    inline SpatialHashGrid const& grid() const
-    {
-        return m_grid;
-    }
+    //inline SpatialHashGrid const& grid() const
+    //{
+    //    return m_grid;
+    //}
 
 protected:
 
@@ -202,7 +202,7 @@ protected:
 protected:
 
     //! \brief
-    SpatialHashGrid m_grid;
+    //SpatialHashGrid m_grid;
     //! \brief Container of cars
     std::vector<std::unique_ptr<Car>> m_cars;
     //! \brief Container of parking slots

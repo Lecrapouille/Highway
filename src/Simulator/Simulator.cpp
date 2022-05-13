@@ -202,7 +202,7 @@ void Simulator::update(const float dt)
 void Simulator::draw_simulation()
 {
     // Draw the spatial hash grid
-    Renderer::draw(m_city.grid(), m_renderer);
+    //Renderer::draw(m_city.grid(), m_renderer);
 
     // Draw the city
     for (auto const& it: m_city.parkings())
@@ -226,8 +226,6 @@ void Simulator::draw_simulation()
 //------------------------------------------------------------------------------
 void Simulator::draw_hud()
 {
-    Renderer::draw(m_city.grid(), m_renderer);
-
     m_message_bar.size(m_renderer.getSize());
     m_renderer.draw(m_message_bar);
 }

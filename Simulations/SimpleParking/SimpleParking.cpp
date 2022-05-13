@@ -116,6 +116,10 @@ Car& create_city(City& city)
     std::cout << "Creating city for scenario '" << simulation_name()
               << "'" << std::endl;
 
+    // FIXME I do not understand why this is needed while Simulator::create()
+    // does it before calling this instance
+    BluePrints::init();
+
     // Create parallel or perpendicular or diagnoal parking slots
     const int angle = 0u;
     std::string dim = "epi." + std::to_string(angle);
