@@ -94,14 +94,10 @@ public:
         return m_status;
     }
 
-    void reset();
-
-private:
-
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    virtual const char* stringify(CarParkedScannerStateID const state) const override;
+    void reset();
 
     //-------------------------------------------------------------------------
     //! \brief

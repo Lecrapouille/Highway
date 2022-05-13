@@ -28,10 +28,10 @@
 #ifndef STATE_MACHINE_HPP
 #  define STATE_MACHINE_HPP
 
-#  include <array>
 #  include <map>
 #  include <iostream>
 #  include <cstdio>
+#  include <cassert>
 
 #  if defined(NDEBUG)
 #    define DEBUG(...)
@@ -39,18 +39,28 @@
 #    define DEBUG printf
 #  endif
 
+//-----------------------------------------------------------------------------
+//! \brief Return the given state as string (shall not be free'ed).
+//! \note implement this method in derived class.
+//-----------------------------------------------------------------------------
+template<class STATES_ID>
+const char* stringify(STATES_ID const state);
+
 // *****************************************************************************
 //! \brief Base class of the structure depicting small Finite State Machine
-//! (FSM) and running them. See this document for more information about FSM:
+//! (FSM) and running them. This class is not made for defining hierarchical
+//! state machine (HSM). See this document for more information about FSM:
 //! http://niedercorn.free.fr/iris/iris1/uml/uml09.pdf
 //!
-//! This class holds, for each of its states (nodes), actions to perform, as
-//! function pointers such as 'on entering', 'on leaving'. This class also holds
-//! the conditions for transitioning from the current state to the destination
-//! destination state when an external event occured. Condition are member
-//! functions on the derived FSM class.
+//! This class holds the list of states \c State and the current active state.
+//! Each of state holds  actions to perform, as function pointers (such as
+//! 'on entering', 'on leaving' ...). This class does not hold directly tables
+//! for transitioning origin state to destination state when an external event
+//! occured. Instead each external event shall be implemented as member function
+//! in the derived FSM class and in each member function shall implement this
+//! table. This is a compromise to minimize the number of virtual methods.
 //!
-//! The following state machine, in plantuml syntax:
+//! Example: the following state machine, in plantuml syntax:
 //! @startuml
 //! [*] --> Idle
 //! Idle --> Starting : set speed
@@ -61,7 +71,9 @@
 //! Stopping -> Idle
 //! @enduml
 //!
-//! Can be represented by the following sparse table:
+//! A FSM can be depicted by a graph (nodes: states; arcs: transitions) which can
+//! be represented by table:
+//!
 //! +-----------------+------------+-----------+-----------+
 //! | States \\ Event | Set Speed  | Halt      | --        |
 //! +=================+============+===========+===========+
@@ -77,14 +89,17 @@
 //! The first column contains all states. The first line contains all events.
 //! Each column depict a transition: given the current state (i.e. IDLE) and a
 //! given event (i.e. Set Speed) the next state of the state machine will be
-//! STARTING. In this class, states are enums \c STATES_ID like: enum StatesID
+//! STARTING. Empty cells are forbiddent transitions. Usually the table is
+//! sparse.
+//!
+//! \tparam FSM the concrete Finite State Machine deriving from this base class.
+//! \tparam STATES_ID enumerate for giving an unique identifier for each state.
+//!
+//! In this class, states are enums \c STATES_ID like: enum StatesID
 //! { IDLE = 0, STOPPING, STARTING, SPINNING, MAX_STATES }; and the table of
 //! states \c m_states shall be filled with these enums and pointer functions
 //! such as 'on entering' set. Each event (i.e. Set Speed) shall be a method
 //! having a static table of state transition.
-//!
-//! \tparam FSM the concrete Finite State Machine deriving from this base class.
-//! \tparam STATES_ID enumerate for giving an unique identifier for each state.
 //!
 //! This class is fine for small Finite State Machine (FSM) and is limited due
 //! to memory footprint (therefore no complex C++ designs, no dynamic containers
@@ -138,14 +153,11 @@ public:
     //! set the initial state and if mutex shall have to be used.
     //! \param[in] initial the initial state to start with.
     //--------------------------------------------------------------------------
-    StateMachine(STATES_ID const initial)
+    StateMachine(STATES_ID const initial) // FIXME should be ok for constexpr
         : m_current_state(initial), m_initial_state(initial)
-    {}
-
-    //--------------------------------------------------------------------------
-    //! \brief Needed because of virtual methods.
-    //--------------------------------------------------------------------------
-    virtual ~StateMachine() = default;
+    {
+        assert(initial < STATES_ID::MAX_STATES); // FIXME static_assert not working
+    }
 
     //--------------------------------------------------------------------------
     //! \brief Restore the state machin to its initial state.
@@ -174,30 +186,24 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Internal transition: jump to the desired state. This will call
-    //! the guard, leaving actions, entering actions ...
+    //! \brief Internal transition: jump to the desired state from internal event.
+    //! This will call the guard, leaving actions, entering actions ...
     //! \param[in] new_state the destination state.
     //--------------------------------------------------------------------------
-    void transit(STATES_ID const new_state);
+    void transition(STATES_ID const new_state);
 
 protected:
 
     //--------------------------------------------------------------------------
-    //! \brief From current state, jump to the destination state.
+    //! \brief From current state, jump to the destination state from external
+    //! event.
+    //! \param[in] transitions the table of transitions.
     //--------------------------------------------------------------------------
-    void react(Transitions const& transitions)
+    void transition(Transitions const& transitions)
     {
         auto const& it = transitions.find(m_current_state);
-        transit(it != transitions.end() ? it->second : STATES_ID::IGNORING_EVENT);
+        transition(it != transitions.end() ? it->second : STATES_ID::IGNORING_EVENT);
     }
-
-private:
-
-    //--------------------------------------------------------------------------
-    //! \brief Return the given state as string (shall not be free'ed).
-    //! \note implement this method in derived class.
-    //--------------------------------------------------------------------------
-    virtual const char* stringify(STATES_ID const state) const = 0;
 
 protected:
 
@@ -222,7 +228,7 @@ private:
 
 //------------------------------------------------------------------------------
 template<class FSM, class STATES_ID> // FIXME use new version
-void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME std::any
+void StateMachine<FSM, STATES_ID>::transition(STATES_ID const new_state) // FIXME std::any
 {
     DEBUG("[STATE MACHINE] Reacting to event from state %s\n",
           stringify(m_current_state));
@@ -309,7 +315,7 @@ void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME s
             // the "on event" clause happened.
             if (cst.onevent != nullptr)
             {
-                DEBUG("[STATE MACHINE] Do the %s 'on event' actions\n",
+                DEBUG("[STATE MACHINE] Do the state %s 'on event' action\n",
                       stringify(current_state));
                 (reinterpret_cast<FSM*>(this)->*cst.onevent)();
                 return ;
@@ -320,7 +326,7 @@ void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME s
             {
                 if (cst.leaving != nullptr)
                 {
-                    DEBUG("[STATE MACHINE] State %s 'leaving' actions\n",
+                    DEBUG("[STATE MACHINE] Do the state %s 'on leaving' action\n",
                           stringify(current_state));
 
                     // Do reactions when leaving the current state
@@ -329,7 +335,7 @@ void StateMachine<FSM, STATES_ID>::transit(STATES_ID const new_state) // FIXME s
 
                 if (nst.entering != nullptr)
                 {
-                    DEBUG("[STATE MACHINE] State %s 'entry' actions\n",
+                    DEBUG("[STATE MACHINE] Do the state %s 'on entry' action\n",
                           stringify(new_state));
 
                     // Do reactions when entring into the new state

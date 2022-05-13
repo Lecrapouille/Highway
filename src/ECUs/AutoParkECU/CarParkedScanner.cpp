@@ -28,6 +28,19 @@
 #include "ECUs/AutoParkECU/CarParkedScanner.hpp"
 
 // -----------------------------------------------------------------------------
+const char* stringify(CarParkedScannerStateID const state)
+{
+    static const char* s_names[] = {
+        [CarParkedScannerStateID::DETECTING_REAR_OF_FIRST_CAR] = "DETECTING_REAR_OF_FIRST_CAR",
+        [CarParkedScannerStateID::DETECTING_FRONT_OF_FIRST_CAR] = "DETECTING_FRONT_OF_FIRST_CAR",
+        [CarParkedScannerStateID::DETECTING_HOLE] = "DETECTING_HOLE",
+        [CarParkedScannerStateID::DETECTING_REAR_OF_SECOND_CAR] = "DETECTING_REAR_OF_SECOND_CAR",
+    };
+
+    return s_names[state];
+}
+
+// -----------------------------------------------------------------------------
 void CarParkedScanner::enteringStateDetectingRearOfFirstCar()
 {
     std::cout << "Entering in state DetectingRearOfFirstCar" << std::endl;
@@ -135,7 +148,7 @@ void CarParkedScanner::event_detection(bool detection)
         },
     };
 
-    react(s_transitions);
+    transition(s_transitions);
 }
 
 // -----------------------------------------------------------------------------
@@ -162,17 +175,4 @@ CarParkedScanner::Status CarParkedScanner::update(float dt)
 
     // Empty parking slot detected or work in progress or failed finding one
     return m_status;
-}
-
-// -----------------------------------------------------------------------------
-const char* CarParkedScanner::stringify(CarParkedScannerStateID const state) const
-{
-    static const char* s_names[] = {
-        [CarParkedScannerStateID::DETECTING_REAR_OF_FIRST_CAR] = "DETECTING_REAR_OF_FIRST_CAR",
-        [CarParkedScannerStateID::DETECTING_FRONT_OF_FIRST_CAR] = "DETECTING_FRONT_OF_FIRST_CAR",
-        [CarParkedScannerStateID::DETECTING_HOLE] = "DETECTING_HOLE",
-        [CarParkedScannerStateID::DETECTING_REAR_OF_SECOND_CAR] = "DETECTING_REAR_OF_SECOND_CAR",
-    };
-
-    return s_names[state];
 }
