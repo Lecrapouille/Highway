@@ -47,11 +47,13 @@ INCLUDES = -Isrc -Isrc/Simulator
 STANDARD=--std=c++14
 
 # Compilation flags
-COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused       \
-  -Wunused-result -Wunused-parameter -Wtype-limits -Wshadow                 \
-  -Wcast-align -Wcast-qual -Wconversion -Wfloat-equal               \
-  -Wpointer-arith -Wswitch-enum -Wpacked -Wold-style-cast \
-  -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion
+COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused  \
+  -Wunused-result -Wunused-parameter -Wtype-limits -Wshadow    \
+  -Wcast-align -Wcast-qual -Wconversion -Wfloat-equal          \
+  -Wpointer-arith -Wswitch-enum -Wpacked -Wold-style-cast      \
+  -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion       \
+  -D_GLIBCXX_ASSERTIONS
+
 COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter \
   -Wno-old-style-cast -Wno-sign-conversion -Wcast-function-type
 
