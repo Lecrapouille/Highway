@@ -28,10 +28,6 @@
 #include "City/City.hpp"
 #include <iostream>
 
-#define COLISION_COLOR sf::Color(255, 0, 0)
-#define CAR_COLOR sf::Color(178, 174, 174)
-#define EGO_CAR_COLOR sf::Color(124, 99, 197)
-
 //------------------------------------------------------------------------------
 City::City()
     //: m_grid(sf::Rect<float>(0.01f, 0.01f, 1024.0f, 1024.0f), sf::Vector2u(16u, 16u))

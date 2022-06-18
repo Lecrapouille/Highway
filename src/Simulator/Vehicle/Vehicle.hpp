@@ -37,6 +37,10 @@
 #  include <memory>
 #  include <functional>
 
+#  define COLISION_COLOR sf::Color(255, 0, 0)
+#  define CAR_COLOR sf::Color(178, 174, 174)
+#  define EGO_CAR_COLOR sf::Color(124, 99, 197)
+
 // TODO faire callback collides
 // TODO faire get actors around the car comme std::functional
 
@@ -211,13 +215,32 @@ public:
     //! vehicle and one of its trailers.
     //-------------------------------------------------------------------------
     template<class T>
-    bool collides(Vehicle<T> const& other) const
+    bool collides(Vehicle<T>& other)
     {
         sf::Vector2f p;
 
         // TODO: traillers collisions
         // TODO: trigger callback
-        return m_shape->collides(other.obb(), p);
+        bool res = m_shape->collides(other.obb(), p);
+        m_collided |= res;
+        other.m_collided |= res;
+        return res;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    inline bool collided() const
+    {
+        return m_collided;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    inline void clear_collided()
+    {
+        m_collided = false;
     }
 
     //--------------------------------------------------------------------------
@@ -407,6 +430,8 @@ protected:
     bool m_turning_left = false;
     //! \brief Truning indicator
     bool m_turning_right = false;
+    //! \brief Has car collided again an other object?
+    bool m_collided = false;
 };
 
 #endif

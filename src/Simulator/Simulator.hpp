@@ -232,7 +232,7 @@ public:
 
 private:
 
-    void showCollisions(Car& ego);
+    void collisions(Car& ego);
 
 private:
 

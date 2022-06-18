@@ -29,10 +29,6 @@
 #include "Renderer/Renderer.hpp"
 #include "Renderer/FontManager.hpp"
 
-#define DEFAULT_CAR_COLOR 178, 174, 174
-#define EGO_CAR_COLOR 124, 99, 197
-#define COLISION_COLOR 255, 0, 0
-
 //------------------------------------------------------------------------------
 void Simulator::ScenarioLoader::onLoading()
 {
@@ -153,20 +149,27 @@ inline static bool isEgo(Car const& car)
 }
 
 //------------------------------------------------------------------------------
-void Simulator::showCollisions(Car& ego)
+void Simulator::collisions(Car& ego)
 {
-    ego.color = sf::Color(EGO_CAR_COLOR);
+    bool collided = false;
+
+    ego.clear_collided();
     for (auto& it: m_city.cars())
     {
-        if ((&*it != &ego) && (ego.collides(*it)))
+        // Do not collide to itself
+        if (it.get() == &ego)
+            continue ;
+
+        it->clear_collided();
+        if (ego.collides(*it))
         {
-            it->color = sf::Color(COLISION_COLOR);
-            ego.color = sf::Color(COLISION_COLOR);
+            collided = true;
         }
-        else
-        {
-            it->color = sf::Color(DEFAULT_CAR_COLOR);
-        }
+    }
+
+    if (collided)
+    {
+        m_message_bar.entry("Collision", sf::Color::Red);
     }
 }
 
@@ -182,7 +185,7 @@ void Simulator::update(const float dt)
         it->update(dt);
         if (isEgo(*it))
         {
-            showCollisions(*it);
+            collisions(*it);
         }
     }
 
