@@ -84,7 +84,14 @@ bool Simulator::load(const char* lib_name)
 //------------------------------------------------------------------------------
 bool Simulator::reload()
 {
-    return m_loader.reload();
+    if (m_loader.reload())
+    {
+        m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow); // FIXME not showned
+        release(); // FIXME degeux
+        create();
+        return true;
+    }
+    return false;
 }
 
 //------------------------------------------------------------------------------
@@ -92,7 +99,7 @@ void Simulator::create()
 {
     if (!m_scenario_loaded)
     {
-        std::cout << "Scenari pas charge\n";
+        m_message_bar.entry("Scenario not loaded", sf::Color::Red);
         return ;
     }
 
@@ -177,7 +184,12 @@ void Simulator::collisions(Car& ego)
 void Simulator::update(const float dt)
 {
     // Auto reload the scenario file if it has changed.
-    //m_loader.reloadIfChanged();
+    if (m_loader.reloadIfChanged())
+    {
+       m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
+       release();
+       create();
+    }
 
     // Update physics, ECU, sensors ...
     for (auto& it: m_city.cars())
