@@ -107,30 +107,30 @@ all: $(TARGET_BIN) $(TARGET_LIB)
 
 # Link the target
 $(TARGET_BIN): $(LIB_OBJS) $(OBJS)
-	@echo "Linking $@"
+	@echo "\033[0;32mLinking $@\033[0m"
 	$(Q)cd $(BUILD) && $(CXX) $(INCLUDES) -o $(TARGET_BIN) $(LIB_OBJS) $(OBJS) $(LDFLAGS)
 
 # Create the shared library
 $(TARGET_LIB): $(LIB_OBJS)
-	@echo "Library $@"
+	@echo "\033[0;32mLibrary $@\033[0m"
 	$(Q)cd $(BUILD) && $(CXX) -shared -o $(TARGET_LIB) $(LIB_OBJS) $(LDFLAGS)
 
 # Compile C++ source files
 %.o : %.cpp $(BUILD)/%.d Makefile
-	@echo "Compiling $<"
+	@echo "\033[0;32mCompiling $<\033[0m"
 	$(Q)$(CXX) $(DEPFLAGS) -fPIC $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
 	@$(POSTCOMPILE)
 
 # Compile C source files
 %.o : %.c $(BUILD)/%.d Makefile
-	@echo "Compiling $<"
+	@echo "\033[0;32mCompiling $<\033[0m"
 	$(Q)$(CXX) $(DEPFLAGS) -fPIC $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
 	@$(POSTCOMPILE)
 
 # Install the project
 .PHONY: install
 install: $(TARGET_BIN) $(TARGET_LIB)
-	@echo "Installing $(TARGET_BIN)"
+	@echo "\033[0;32mInstalling $(TARGET_BIN)\033[0m"
 	$(Q)mkdir -p $(BINDIR)
 	$(Q)mkdir -p $(LIBDIR)
 	$(Q)mkdir -p $(DATADIR)
@@ -141,7 +141,7 @@ install: $(TARGET_BIN) $(TARGET_LIB)
 # Do unit tests and code coverage
 .PHONY: check
 check:
-	@echo "Compiling unit tests"
+	@echo "\033[0;32mCompiling unit tests\033[0m"
 	$(Q)$(MAKE) -C tests check
 
 # Create the documentation
