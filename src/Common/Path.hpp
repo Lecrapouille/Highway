@@ -34,11 +34,6 @@ class Path
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief Empty constructor.
-    //--------------------------------------------------------------------------
-    Path() = default;
-
-    //--------------------------------------------------------------------------
     //! \brief Constructor. init with a given path. Directories are separated
     //! by ':'.
     //! Example: "/foo/bar:/usr/lib/".

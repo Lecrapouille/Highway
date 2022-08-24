@@ -1,87 +1,72 @@
-## 2021 -- 2022 Quentin Quadrat quentin.quadrat@gmail.com
+##=====================================================================
+## TimedPetriNetEditor: A timed Petri net editor.
+## Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
 ##
-## This is free and unencumbered software released into the public domain.
+## This file is part of PetriEditor.
 ##
-## Anyone is free to copy, modify, publish, use, compile, sell, or
-## distribute this software, either in source code form or as a compiled
-## binary, for any purpose, commercial or non-commercial, and by any
-## means.
+## PetriEditor is free software: you can redistribute it and/or modify it
+## under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
 ##
-## In jurisdictions that recognize copyright laws, the author or authors
-## of this software dedicate any and all copyright interest in the
-## software to the public domain. We make this dedication for the benefit
-## of the public at large and to the detriment of our heirs and
-## successors. We intend this dedication to be an overt act of
-## relinquishment in perpetuity of all present and future rights to this
-## software under copyright law.
+## This program is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
 ##
-## THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-## EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-## MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-## IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-## OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-## ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-## OTHER DEALINGS IN THE SOFTWARE.
-##
-## For more information, please refer to <https://unlicense.org>
+## You should have received a copy of the GNU General Public License
+## along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+##=====================================================================
 
-TARGET_BIN = CarSimulator
-TARGET_LIB = libcarsimulator.so
+###################################################
+# Project definition
+#
+PROJECT = Drive
+TARGET = $(PROJECT)
+DESCRIPTION = Timed Petri Net Editor
+STANDARD = --std=c++14
+BUILD_TYPE = debug
 
-# Needed for the command: make install
-DESTDIR ?=
-PREFIX ?= /usr
-BINDIR := $(DESTDIR)$(PREFIX)/bin
-LIBDIR := $(DESTDIR)$(PREFIX)/lib
-DATADIR := $(DESTDIR)$(PREFIX)/share/$(TARGET_BIN)/data
+###################################################
+# Location of the project directory and Makefiles
+#
+P := .
+M := $(P)/.makefile
+include $(M)/Makefile.header
 
-# Compilation searching files
-BUILD = build
-VPATH = $(BUILD) src src/Application src/Math src/Simulator/Sensors \
-  src/Simulator src/Simulator/City src/Simulator/Vehicle \
-  src/Renderer src/Simulator/Vehicle/VehiclePhysicalModels src/Common \
-  src/ECUs/AutoParkECU
-INCLUDES = -Isrc -Isrc/Simulator
+###################################################
+# Inform Makefile where to find header files
+#
+INCLUDES += -I$(P)/src -I$(P)/src/Simulator
 
-# C++14 (only because of std::make_unique not present in C++11)
-STANDARD=--std=c++14
+###################################################
+# Inform Makefile where to find *.cpp and *.o files
+#
+VPATH += $(P)/src $(P)/src/Application $(P)/src/Math $(P)/src/Simulator/Sensors	\
+  $(P)/src/Simulator $(P)/src/Simulator/City $(P)/src/Simulator/Vehicle		\
+  $(P)/src/Renderer $(P)/src/Simulator/Vehicle/VehiclePhysicalModels		\
+  $(P)/src/Common $(P)/src/ECUs/AutoParkECU
 
-# Compilation flags
-COMPIL_FLAGS = -Wall -Wextra -Wuninitialized -Wundef -Wunused  \
-  -Wunused-result -Wunused-parameter -Wtype-limits -Wshadow    \
-  -Wcast-align -Wcast-qual -Wconversion -Wfloat-equal          \
-  -Wpointer-arith -Wswitch-enum -Wpacked -Wold-style-cast      \
-  -Wdeprecated -Wvariadic-macros -Wvla -Wsign-conversion       \
-  -D_GLIBCXX_ASSERTIONS
+###################################################
+# Project defines
+#
+DEFINES = -DDATADIR=\"$(DATADIR)\" -DZOOM=0.01f
 
-COMPIL_FLAGS += -Wno-switch-enum -Wno-undef -Wno-unused-parameter \
-  -Wno-old-style-cast -Wno-sign-conversion -Wcast-function-type
+###################################################
+# Reduce warnings
+#
+DEFINES += -Wno-switch-enum -Wno-undef -Wno-unused-parameter
+DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 
-# Project flags
-CXXFLAGS += $(STANDARD) $(COMPIL_FLAGS)
-LDFLAGS += -lpthread
-DEFINES += -DDATADIR=\"$(DATADIR)\"
-DEFINES += -DZOOM=0.01f
+###################################################
+# Make the list of compiled files used both by the
+# library and application
+#
+COMMON_OBJS = Howard.o KeyBindings.o Application.o PetriNet.o PetriEditor.o
 
-# Lib SFML https://www.sfml-dev.org/index-fr.php
-CXXFLAGS += `pkg-config --cflags sfml-graphics`
-LDFLAGS += `pkg-config --libs sfml-graphics`
-
-## Pretty print the stack trace https://github.com/bombela/backward-cpp
-## You can comment these lines if backward-cpp is not desired
-CXXFLAGS += -g -O0
-LDFLAGS += -ldw
-DEFINES += -DBACKWARD_HAS_DW=1
-OBJS += backward.o
-
-# dlopen() ...
-LDFLAGS += -ldl
-
-# Header file dependencies
-DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td
-POSTCOMPILE = mv -f $(BUILD)/$*.Td $(BUILD)/$*.d
-
-# Desired compiled files for the shared library
+###################################################
+# Make the list of compiled files for the library
+#
 LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o
 LIB_OBJS += FontManager.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
@@ -94,93 +79,66 @@ LIB_OBJS += AutoParkECU.o CarParkedScanner.o
 #LIB_OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
 LIB_OBJS += Simulator.o
 
-# Desired compiled files for the standalone application
-OBJS += main.o
+###################################################
+# Make the list of compiled files for the application
+#
+OBJS += $(LIB_OBJS) main.o
 
-# Verbosity control
-ifeq ($(VERBOSE),1)
-Q :=
-else
-Q := @
+###################################################
+# Set Libraries. For knowing which libraries
+# is needed please read the external/README.md file.
+#
+PKG_LIBS = sfml-graphics
+
+LINKER_FLAGS += -lpthread -ldl
+
+###################################################
+# MacOS X
+#
+ifeq ($(ARCHI),Darwin)
+BUILD_MACOS_APP_BUNDLE = 1
+APPLE_IDENTIFIER = lecrapouille
+MACOS_BUNDLE_ICON = data/Drive.icns
+LINKER_FLAGS += -framework CoreFoundation
 endif
 
-# Compile the target
-all: $(TARGET_BIN) $(TARGET_LIB)
+###################################################
+# Compile the project, the static and shared libraries
+.PHONY: all
+all: $(TARGET) $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET) $(PKG_FILE)
 
-# Link the target
-$(TARGET_BIN): $(LIB_OBJS) $(OBJS)
-	@echo "\033[0;32mLinking $@\033[0m"
-	$(Q)cd $(BUILD) && $(CXX) $(INCLUDES) -o $(TARGET_BIN) $(LIB_OBJS) $(OBJS) $(LDFLAGS)
+###################################################
+# Compile and launch unit tests and generate the code coverage html report.
+.PHONY: unit-tests
+unit-tests:
+	@$(call print-simple,"Compiling unit tests")
+	@$(MAKE) -C tests coverage
 
-# Create the shared library
-$(TARGET_LIB): $(LIB_OBJS)
-	@echo "\033[0;32mLibrary $@\033[0m"
-	$(Q)cd $(BUILD) && $(CXX) -shared -o $(TARGET_LIB) $(LIB_OBJS) $(LDFLAGS)
-
-# Compile C++ source files
-%.o : %.cpp $(BUILD)/%.d Makefile
-	@echo "\033[0;32mCompiling $<\033[0m"
-	$(Q)$(CXX) $(DEPFLAGS) -fPIC $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
-	@$(POSTCOMPILE)
-
-# Compile C source files
-%.o : %.c $(BUILD)/%.d Makefile
-	@echo "\033[0;32mCompiling $<\033[0m"
-	$(Q)$(CXX) $(DEPFLAGS) -fPIC $(CXXFLAGS) $(INCLUDES) $(DEFINES) -c $(abspath $<) -o $(abspath $(BUILD)/$@)
-	@$(POSTCOMPILE)
-
-# Install the project
-.PHONY: install
-install: $(TARGET_BIN) $(TARGET_LIB)
-	@echo "\033[0;32mInstalling $(TARGET_BIN)\033[0m"
-	$(Q)mkdir -p $(BINDIR)
-	$(Q)mkdir -p $(LIBDIR)
-	$(Q)mkdir -p $(DATADIR)
-	cp -r data $(DATADIR)/..
-	cp $(BUILD)/$(TARGET_BIN) $(BINDIR)
-	cp $(BUILD)/$(TARGET_LIB) $(LIBDIR)
-
-# Do unit tests and code coverage
+###################################################
+# Compile and launch unit tests and generate the code coverage html report.
 .PHONY: check
-check:
-	@echo "\033[0;32mCompiling unit tests\033[0m"
-	$(Q)$(MAKE) -C tests check
+check: unit-tests
 
-# Create the documentation
-.PHONY: doc
-doc:
-	$(Q)doxygen Doxyfile
+ifeq ($(ARCHI),Linux)
+###################################################
+# Install project. You need to be root.
+.PHONY: install
+install: $(TARGET) $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET) $(PKG_FILE)
+	@$(call INSTALL_BINARY)
+	@$(call INSTALL_DOCUMENTATION)
+	@$(call INSTALL_PROJECT_LIBRARIES)
+	@$(call INSTALL_PROJECT_HEADERS)
+endif
 
-# Create the tarball
-.PHONY: tarball
-tarball:
-	$(Q)./.targz.sh $(PWD) $(TARGET_BIN)
-
-# Compile LaTeX documentation
-.PHONY: latex
-latex:
-	$(Q)cd IA/Planning/doc && latex IA.tex && latex IA.tex && dvipdf IA.dvi
-
-# Delete compiled files
-.PHONY: clean
-clean:
-	$(Q)-rm -fr $(BUILD)
-
-# Delete compiled files and backup files
+###################################################
+# Clean the whole project.
 .PHONY: veryclean
 veryclean: clean
-	$(Q)-rm -fr *~ .*~
-	$(Q)find src -name "*~" -print -delete
-	$(Q)-rm -fr doc/html
+	@rm -fr cov-int $(PROJECT).tgz *.log foo 2> /dev/null
+	@(cd tests && $(MAKE) -s clean)
+	@$(call print-simple,"Cleaning","$(PWD)/doc/html")
+	@rm -fr $(THIRDPART)/*/ doc/html 2> /dev/null
 
-# Create the directory before compiling sources
-$(LIB_OBJS) $(OBJS): | $(BUILD)
-$(BUILD):
-	@mkdir -p $(BUILD)
-
-# Create the dependency files
-$(BUILD)/%.d: ;
-.PRECIOUS: $(BUILD)/%.d
-
-# Header file dependencies
--include $(patsubst %,$(BUILD)/%.d,$(basename $(LIB_OBJS) $(OBJS)))
+###################################################
+# Sharable informations between all Makefiles
+include $(M)/Makefile.footer

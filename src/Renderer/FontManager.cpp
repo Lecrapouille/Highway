@@ -27,8 +27,35 @@
 
 #include "Renderer/FontManager.hpp"
 #include <iostream>
+#ifdef __APPLE__
+#  include <CoreFoundation/CFBundle.h>
+#endif
 
+//-----------------------------------------------------------------------------
+FontManager::FontManager()
+    : path("")
+{
+#  ifdef __APPLE__
 
+    // Add the resources folder inside MacOS bundle application
+    CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+    char resourcePath[PATH_MAX];
+    if (CFURLGetFileSystemRepresentation(resourceURL, true,
+                                         reinterpret_cast<UInt8 *>(resourcePath),
+                                         PATH_MAX))
+    {
+        if (resourceURL != NULL)
+        {
+            CFRelease(resourceURL);
+        }
+
+        path.add(std::string(resourcePath));
+    }
+
+#endif
+
+    path.add(".:data:" DATADIR);
+}
 
 // -----------------------------------------------------------------------------
 bool FontManager::load(const char* name, const char* ttf)
