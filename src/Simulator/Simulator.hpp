@@ -224,6 +224,14 @@ public:
     void draw_simulation(); // FIXME const
     void draw_hud(); // FIXME const
 
+    //--------------------------------------------------------------------------
+    //! \brief Return the latest error.
+    //--------------------------------------------------------------------------
+    inline std::string const& error() const
+    {
+        return m_error;
+    }
+
 private:
 
     void collisions(Car& ego);
@@ -248,6 +256,8 @@ private:
     sf::Vector2f m_camera;
     //! \brief Simulation time.
     sf::Clock m_time;
+    //! \brief Memorize the latest error.
+    std::string m_error;
     //! \brief Display messages
     mutable MessageBar m_message_bar;
 };

@@ -54,8 +54,8 @@ bool Simulator::load(Scenario const& scenario)
                         (m_scenario.react != nullptr);
     if (!m_scenario_loaded)
     {
-        m_message_bar.entry("Failed loading the scenario because has "
-                            "detected nullptr functions", sf::Color::Red);
+        m_error = "Failed loading the scenario because has detected nullptr functions";
+        m_message_bar.entry(m_error, sf::Color::Red);
         return false;
     }
     return true;
@@ -67,8 +67,8 @@ bool Simulator::load(const char* lib_name)
     m_scenario_loaded = m_loader.load(lib_name);
     if (!m_scenario_loaded)
     {
-        m_message_bar.entry("Failed loading the scenario: " + m_loader.error(),
-                            sf::Color::Red);
+        m_error = "Failed loading the scenario: " + m_loader.error();
+        m_message_bar.entry(m_error, sf::Color::Red);
         return false;
     }
 

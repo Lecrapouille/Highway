@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
 
         // SFML application
-        Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Auto Parking");
+        Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Highway: Open-source simulator for autonomous driving research");
 
         // Create all application GUIs.
         GUIMainMenu& gui_menu = app.create<GUIMainMenu>("GUIMainMenu");
@@ -165,7 +165,8 @@ int main(int argc, char* argv[])
         {
             if (!simulator.load(argv[1]))
             {
-                std::cerr << "Fatal: failed loading a simulation file. Aborting ..."
+                std::cerr << "Fatal: failed loading a simulation file. Reason: "
+                          << simulator.error() << ". Aborting ..."
                           << std::endl;
                 return EXIT_FAILURE;
             }
