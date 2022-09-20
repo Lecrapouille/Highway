@@ -56,7 +56,7 @@ CXXFLAGS += $(STANDARD) $(COMPIL_FLAGS) -g -O0
 LDFLAGS += -lpthread
 DEFINES += -DZOOM=0.01f
 CXXFLAGS +=
-LDFLAGS += -L$(abspath ../../build) -lcarsimulator
+LDFLAGS += -L$(abspath ../../build) -lhighway
 
 # Header file dependencies
 DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILD)/$*.Td

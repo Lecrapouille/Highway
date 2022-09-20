@@ -1,10 +1,11 @@
 ##=====================================================================
-## TimedPetriNetEditor: A timed Petri net editor.
+## https://github.com/Lecrapouille/Highway
+## Highway: Open-source simulator for autonomous driving research.
 ## Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
 ##
-## This file is part of PetriEditor.
+## This file is part of Highway.
 ##
-## PetriEditor is free software: you can redistribute it and/or modify it
+## Highway is free software: you can redistribute it and/or modify it
 ## under the terms of the GNU General Public License as published by
 ## the Free Software Foundation, either version 3 of the License, or
 ## (at your option) any later version.
@@ -21,9 +22,9 @@
 ###################################################
 # Project definition
 #
-PROJECT = Drive
+PROJECT = Highway
 TARGET = $(PROJECT)
-DESCRIPTION = Timed Petri Net Editor
+DESCRIPTION = Open-source simulator for autonomous driving research
 STANDARD = --std=c++14
 BUILD_TYPE = debug
 
