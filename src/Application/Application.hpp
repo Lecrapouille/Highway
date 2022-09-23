@@ -106,7 +106,7 @@ public:
         //----------------------------------------------------------------------
         inline void title(std::string const& name)
         {
-            return m_renderer.setTitle(name);
+            m_renderer.setTitle(name);
         }
 
     private:
