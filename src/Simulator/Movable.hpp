@@ -26,7 +26,7 @@
 // *****************************************************************************
 //! \brief Base class for computing physic.
 // *****************************************************************************
-class Movable
+class Movable // TODO faire NonMovable qui retourne speed et acc = 0
 {
 public:
 

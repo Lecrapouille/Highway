@@ -19,7 +19,6 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
-#include "Simulator/Demo.hpp"
 #include "Application/GUIMainMenu.hpp"
 #include "Application/GUISimulation.hpp"
 #include "Application/GUILoadSimulMenu.hpp"
@@ -38,37 +37,29 @@ int main(int argc, char* argv[])
 {
     try
     {
+        // FIXME: find a better solution
+        BluePrints::init();
+
         // Load fonts
         if (!FontManager::instance().load("main font", "font.ttf"))
             return EXIT_FAILURE;
 
         // SFML application
-        Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Highway: Open-source simulator for autonomous driving research");
-
-        // Create the simulation GUI and get its simulator.
-        Simulator& simulator = app.gui<GUISimulation>("GUISimulation").simulator;
+        Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Highway: Open-source "
+                        "simulator for autonomous driving research");
 
         // No argument: load an ultra basic simulation (see static functions upper).
         if (argc == 1)
         {
-            simple_simulation_demo(simulator);
+            app.push<GUIMainMenu>("GUIMainMenu");
         }
         // Single argument: load the shared library file, passed by command line,
         // shared library holding scenario functions for creating the simulation.
         else // TODO add a real command line parser
         {
-            if (!simulator.load(argv[1]))
-            {
-                std::cerr << "Fatal: failed loading a simulation file. Reason: "
-                          << simulator.error() << ". Aborting ..."
-                          << std::endl;
-                return EXIT_FAILURE;
-            }
+            app.push<GUISimulation>("GUISimulation");
         }
-
-        // Run the current GUI.
-        GUIMainMenu& gui_menu = app.gui<GUIMainMenu>("GUIMainMenu");
-        app.loop(gui_menu);
+        app.loop();
     }
     catch (std::string const& msg)
     {

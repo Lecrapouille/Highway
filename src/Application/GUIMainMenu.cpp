@@ -77,8 +77,6 @@ void GUIMainMenu::onHandleInput()
             {
                 if (m_cursor == 0)
                 {
-                    Simulator& simulator = m_application.gui<GUISimulation>("GUISimulation").simulator;
-                    simple_simulation_demo(simulator);
                     m_application.push<GUISimulation>("GUISimulation");
                 }
                 else

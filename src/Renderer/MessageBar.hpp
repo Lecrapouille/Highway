@@ -39,6 +39,7 @@ struct MessageBar : public sf::Drawable
 
     void entry(const std::string& message, sf::Color const& color)
     {
+        std::cerr << message << std::endl;
         m_message = message;
         m_shape.setFillColor(color);
         m_text.setString(m_message);

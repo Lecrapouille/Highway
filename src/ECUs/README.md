@@ -1,4 +1,4 @@
-# Simulate Car's Electronic control unit (ECU)
+# Electronic Control Unit (ECU)
 
 Only a single ECU is implemented: for doing auto parking. Feel free to add it more.
 

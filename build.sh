@@ -21,5 +21,5 @@
 ##=====================================================================
 
 make -j8
-(cd Simulations/SimpleParking && make -j8 && cp build/simpleparking.so ../../data/Simulations)
-./build/Highway data/Simulations/simpleparking.so
+(cd Scenarios/SimpleParking && make -j8 && cp build/simpleparking.so ../../data/Scenarios)
+./build/Highway data/Scenarios/simpleparking.so

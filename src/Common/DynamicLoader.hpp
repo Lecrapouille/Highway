@@ -51,16 +51,16 @@ public:
     //! \brief Load the given shared library (.so, .dylib, .dll file).
     //! Call the virtual method onLoading() in which you should extract symbols
     //! you want (ie with the method prototype()).
-    //! \param[in] lib_name: the path of the shared library (.so, .dll, .dylib)
+    //! \param[in] libpath: the path of the shared library (.so, .dll, .dylib)
     //! to open.
     //! \param[in] rt load symbols immediatly or in lazy way.
     //--------------------------------------------------------------------------
-    bool load(const char* lib_name, Resolution rt = Resolution::NOW)
+    bool load(std::string const& libpath, Resolution rt = Resolution::NOW)
     {
-        m_path = lib_name;
+        m_path = libpath;
         close();
         ::dlerror();
-        m_handle = ::dlopen(lib_name, rt);
+        m_handle = ::dlopen(libpath.c_str(), rt);
         if (m_handle == nullptr)
         {
             set_error(::dlerror());
@@ -70,7 +70,6 @@ public:
         {
             try
             {
-                onLoading();
                 m_prevUpdateTime = getFileTime();
             }
             catch(std::logic_error &e)
@@ -194,13 +193,6 @@ public:
     }
 
 private:
-
-    //--------------------------------------------------------------------------
-    //! \brief Callback to implement when load() or reload() has ended with
-    //! success.
-    //--------------------------------------------------------------------------
-    virtual void onLoading()
-    {}
 
     //--------------------------------------------------------------------------
     //! \brief Concat error messages.

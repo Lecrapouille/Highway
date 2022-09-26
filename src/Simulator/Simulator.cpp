@@ -24,17 +24,8 @@
 #include "Renderer/FontManager.hpp"
 
 //------------------------------------------------------------------------------
-void Simulator::ScenarioLoader::onLoading()
-{
-    m_scenario.name = prototype<const char* (void)>("simulation_name");
-    m_scenario.create = prototype<Car& (City&)>("create_city");
-    m_scenario.halt = prototype<bool (Simulator const&)>("halt_simulation_when");
-    m_scenario.react = prototype<void(Simulator&, size_t)>("react_to");
-}
-
-//------------------------------------------------------------------------------
 Simulator::Simulator(sf::RenderWindow& renderer)
-    : m_renderer(renderer), m_loader(m_scenario)
+    : m_renderer(renderer)
 {
     m_message_bar.font(FontManager::instance().font("main font"));
 }
@@ -47,54 +38,48 @@ bool Simulator::load(Scenario const& scenario)
     m_scenario.halt = scenario.halt;
     m_scenario.react = scenario.react;
 
-    // Check if it has been loaded correctly
-    m_scenario_loaded = (m_scenario.name != nullptr) &&
-                        (m_scenario.create != nullptr) &&
-                        (m_scenario.halt != nullptr) &&
-                        (m_scenario.react != nullptr);
-    if (!m_scenario_loaded)
+    // Check if it all functions are not nullptr
+    if (!m_scenario)
     {
         m_error = "Failed loading the scenario because has detected nullptr functions";
         m_message_bar.entry(m_error, sf::Color::Red);
         return false;
     }
-    return true;
+
+    return init();
 }
 
 //------------------------------------------------------------------------------
-bool Simulator::load(const char* lib_name)
+bool Simulator::load(std::string const& libpath)
 {
-    m_scenario_loaded = m_loader.load(lib_name);
-    if (!m_scenario_loaded)
+    if (m_loader.load(libpath))
+    {
+        m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
+        m_scenario.create = m_loader.prototype<Car& (City&)>("create_city");
+        m_scenario.halt = m_loader.prototype<bool (Simulator const&)>("halt_simulation_when");
+        m_scenario.react = m_loader.prototype<void(Simulator&, size_t)>("react_to");
+    }
+
+    // Check if it all functions are not nullptr
+    if (!m_scenario)
     {
         m_error = "Failed loading the scenario: " + m_loader.error();
         m_message_bar.entry(m_error, sf::Color::Red);
         return false;
     }
 
-    return true;
+    return init();
 }
 
 //------------------------------------------------------------------------------
-bool Simulator::reload()
+bool Simulator::init()
 {
-    if (m_loader.reload())
-    {
-        m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow); // FIXME not showned
-        release(); // FIXME degeux
-        create();
-        return true;
-    }
-    return false;
-}
-
-//------------------------------------------------------------------------------
-void Simulator::create()
-{
-    if (!m_scenario_loaded)
+    std::cout << "INIT\n";
+    if (!m_scenario)
     {
         m_message_bar.entry("Scenario not loaded", sf::Color::Red);
-        return ;
+            std::cout << "INIT KOOOO\n";
+        return false;
     }
 
     std::string name(m_scenario.name());
@@ -105,47 +90,78 @@ void Simulator::create()
 
     // Create a new city
     m_city.reset();
-    BluePrints::init();
     m_ego = &m_scenario.create(m_city);
 
-    // Make the camera follow the ego car
-    follow(m_ego);
+    // Make the camera follow the ego car by default
+    follow(*m_ego);
+
+    // Clear simulation time
+    m_pause = false;
+    m_elpased_time = sf::Time::Zero;
+    m_clock.restart();
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+void Simulator::pause(bool const state)
+{
+    if (m_pause == state)
+        return ;
+
+    m_pause = state;
+    if (m_pause)
+    {
+        m_elpased_time += m_clock.getElapsedTime();
+        m_message_bar.entry("Pause the simulation", sf::Color::Yellow);
+    }
+    else
+    {
+        m_message_bar.entry("Running the simulation", sf::Color::Yellow);
+        m_clock.restart();
+    }
 }
 
 //------------------------------------------------------------------------------
 void Simulator::activate()
 {
-    m_time.restart();
+    pause(false);
 }
 
 //------------------------------------------------------------------------------
 void Simulator::deactivate()
 {
-    // Nothing to do
+    pause(true);
 }
 
 //------------------------------------------------------------------------------
 void Simulator::release()
 {
     m_city.reset();
-    //m_scenario_loaded = false;
+    m_loader.close();
+    m_scenario.clear();
+    m_elpased_time = sf::Time::Zero;
 }
 
 //------------------------------------------------------------------------------
-void Simulator::reactTo(size_t key)
+void Simulator::reacts(size_t key)
 {
+    if ((!m_scenario) || (m_pause))
+        return ;
+
     m_scenario.react(*this, key);
 }
 
 //------------------------------------------------------------------------------
-bool Simulator::running() const
+bool Simulator::continuing() const
 {
-    return m_scenario_loaded && (!m_scenario.halt(*this));
+    return m_scenario && (!m_scenario.halt(*this));
 }
 
 //------------------------------------------------------------------------------
-inline static bool isEgo(Car const& car)
+inline static bool isEgo(Car const& car) // FIXME return car->ego()
 {
+    // TODO utiliser return car::ego
     return car.name[0] == 'e' && car.name[1] == 'g' && car.name[2] == 'o';
 }
 
@@ -180,16 +196,21 @@ void Simulator::update(const float dt)
     // Auto reload the scenario file if it has changed.
     if (m_loader.reloadIfChanged())
     {
-       m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
-       release();
-       create();
+        m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
+        init();
+    }
+
+    // User has paused the simulation ?
+    if (m_pause)
+    {
+        return ;
     }
 
     // Update physics, ECU, sensors ...
     for (auto& it: m_city.cars())
     {
         it->update(dt);
-        if (isEgo(*it))
+        if (isEgo(*it)) // FIXME it->ego()
         {
             collisions(*it);
         }
@@ -208,8 +229,10 @@ void Simulator::update(const float dt)
 // };
 
 //------------------------------------------------------------------------------
-void Simulator::draw_simulation()
+void Simulator::drawSimulation(sf::View const& view)
 {
+    m_renderer.setView(view);
+
     // Draw the spatial hash grid
     //Renderer::draw(m_city.grid(), m_renderer);
 
@@ -233,8 +256,9 @@ void Simulator::draw_simulation()
 }
 
 //------------------------------------------------------------------------------
-void Simulator::draw_hud()
+void Simulator::drawHUD(sf::View const& view)
 {
+    m_renderer.setView(view);
     m_message_bar.size(m_renderer.getSize());
     m_renderer.draw(m_message_bar);
 }

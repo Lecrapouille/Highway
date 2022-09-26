@@ -21,6 +21,7 @@
 
 #include "Application/GUISimulation.hpp"
 #include "Application/GUIMainMenu.hpp"
+#include "Simulator/Demo.hpp"
 
 //------------------------------------------------------------------------------
 GUISimulation::GUISimulation(Application& application, const char* name)
@@ -35,7 +36,7 @@ GUISimulation::GUISimulation(Application& application, const char* name)
     // vehicule" by Sungwoo Choi.
     m_simulation_view = m_renderer.getDefaultView();
     m_simulation_view.setSize(float(application.width()),
-                              float(-application.height()));
+                              -float(application.height()));
     zoom(ZOOM);
 }
 
@@ -62,7 +63,7 @@ void GUISimulation::onDeactivate()
 //------------------------------------------------------------------------------
 void GUISimulation::onCreate()
 {
-    simulator.create();
+    simulator.load(simple_simulation_demo());
 }
 
 //------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ void GUISimulation::onHandleInput()
             }
             break;
         case sf::Event::MouseWheelMoved:
-            zoom(m_zoom + float(event.mouseWheel.delta) / 0.1f);
+            //zoom(m_zoom + float(event.mouseWheel.delta) / 0.1f);
             break;
         case sf::Event::KeyPressed:
             // Leaving the current GUI
@@ -117,13 +118,17 @@ void GUISimulation::onHandleInput()
             {
                 close();
             }
+            else if (event.key.code == sf::Keyboard::Space)
+            {
+                simulator.pause(simulator.pause() ^ true);
+            }
             else if (event.key.code == sf::Keyboard::F1)
             {
-                simulator.reload();
+                simulator.restart();
             }
             else // propagate the key press to the simulator
             {
-                simulator.reactTo(event.key.code);
+                simulator.reacts(event.key.code);
             }
             break;
         default:
@@ -145,10 +150,8 @@ void GUISimulation::onDraw()
     m_simulation_view.setCenter(simulator.camera());
 
     // Draw the simulation
-    m_renderer.setView(m_simulation_view);
-    simulator.draw_simulation();
+    simulator.drawSimulation(m_simulation_view);
 
     // Draw the GUI
-    m_renderer.setView(m_interface_view);
-    simulator.draw_hud();
+    simulator.drawHUD(m_interface_view);
 }

@@ -23,32 +23,11 @@
 #  define SIMULATOR_HPP
 
 #  include "Simulator/City/City.hpp"
+#  include "Simulator/Scenario.hpp"
 #  include "Renderer/MessageBar.hpp"
 #  include "Common/DynamicLoader.hpp"
 
 class Renderer;
-class Simulator;
-
-// ****************************************************************************
-//! \brief Class holding C functions loaded from a shared library for setting
-//! and configurate simulation scenarios. This class is used by the simulator.
-// ****************************************************************************
-struct Scenario
-{
-    //! \brief C fonction returning the name of the simulation.
-    std::function<const char* (void)> name = nullptr;
-    //! \brief C fonction taking a City as input and allows to create the
-    //! desired city (roads, parking, vehicles ...). This function returns the
-    //! ego car.
-    std::function<Car&(City&)> create = nullptr;
-    //! \brief C function taking the Simulator as input and returns true when
-    //! the simulation shall halt (simulation duration, collision, reach a given
-    //! position ...).
-    std::function<bool(Simulator const&)> halt = nullptr;
-    //! \brief C function Reacting to external events (refered by their ID for
-    //! example keyboard keys).
-    std::function<void(Simulator& simulator, size_t key)> react = nullptr;
-};
 
 // ****************************************************************************
 //! \brief Class managing a simulation. This class is owned by the Application
@@ -62,34 +41,6 @@ struct Scenario
 // ****************************************************************************
 class Simulator
 {
-private:
-
-    // *************************************************************************
-    //! \brief Helper class for loading scenarios.
-    // *************************************************************************
-    class ScenarioLoader : public DynamicLoader
-    {
-    public:
-
-        ScenarioLoader(Scenario& scenario)
-            : m_scenario(scenario)
-        {}
-
-    private:
-
-        //----------------------------------------------------------------------
-        //! \brief Concrete implementation of the callback triggered when the
-        //! simulation file (shared library) has been loaded with success. This
-        //! method will loaded desired C functions. In case of error an
-        //! execption is thrown.
-        //----------------------------------------------------------------------
-        virtual void onLoading() override;
-
-    private:
-
-        Scenario& m_scenario;
-    };
-
 public:
 
     //-------------------------------------------------------------------------
@@ -99,52 +50,85 @@ public:
     Simulator(sf::RenderWindow& renderer);
 
     //-------------------------------------------------------------------------
-    //! \brief Pass a text to the simulator to display it inside the messagebox
-    //! widget.
-    //-------------------------------------------------------------------------
-    inline void messagebox(std::string const& txt, sf::Color const& color) const
-    {
-        m_message_bar.entry(txt, color);
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Load a simulation file (a shared library file holding functions
-    //! needed for defining a scenario).
-    //! \param[in] libpath the path to the shared libray compiled against this
-    //!   code, holding functions needed for defining a scenario (see
-    //!   Drive/Simulations/SimpleParking/SimpleParking.cpp for example).
-    //! \return Return true if the shared library has been loaded with success
-    //!   else return false.
-    //-------------------------------------------------------------------------
-    bool load(const char* libpath);
-
-    //-------------------------------------------------------------------------
     //! \brief Load a scenario (the structure holding functions loaded from a
-    //! simulation file, as shared library).
-    //! \param[in] scenario structure
-    //! \return Return true if the shared library has been loaded with success
-    //!   else return false.
+    //! shared library or from local functions). Call this method as create or
+    //! init entry point.
+    //! \param[in] the scenario structure with non-nullptr function pointers.
+    //! \return Return true if the scernario has been loaded with success
+    //!   else return false and use \c error() to get the reason.
     //-------------------------------------------------------------------------
     bool load(Scenario const& scenario);
 
     //-------------------------------------------------------------------------
-    //! \brief Reload the simulation file (load() should have been called
-    //! previously).
+    //! \brief Load a simulation file: a shared library file holding functions
+    //! needed for defining a scenario. Call this method as create or init
+    //! entry point.
+    //! \param[in] libpath the path to the shared libray compiled against this
+    //!   code, holding functions needed for defining a scenario (see
+    //!   Drive/Simulations/SimpleParking/SimpleParking.cpp for example).
+    //! \return Return true if the shared library has been loaded with success
+    //!   else return false and use \c error() to get the reason.
     //-------------------------------------------------------------------------
-    bool reload();
+    bool load(std::string const& libpath);
+
+    //-------------------------------------------------------------------------
+    //! \brief Restart the simulation. Shall be called after \c load().
+    //-------------------------------------------------------------------------
+    inline bool restart() { return init(); }
+
+    //-------------------------------------------------------------------------
+    //! \brief Pause or unpause the simulation.
+    //-------------------------------------------------------------------------
+    void pause(bool const state);
+
+    //-------------------------------------------------------------------------
+    //! \brief Get info if the simulation is in pause or not.
+    //-------------------------------------------------------------------------
+    inline bool pause() const { return m_pause; }
+
+    //-------------------------------------------------------------------------
+    //! \brief When GUI triggered the onActivate().
+    //-------------------------------------------------------------------------
+    void activate();
+
+    //-------------------------------------------------------------------------
+    //! \brief When GUI triggered the onDectivate().
+    //-------------------------------------------------------------------------
+    void deactivate();
 
     //-------------------------------------------------------------------------
     //! \brief Make the simulator reacts to the given event ID.
     //-------------------------------------------------------------------------
-    void reactTo(size_t key);
+    void reacts(size_t key);
 
     //-------------------------------------------------------------------------
-    //! \brief Return the simulation elapsed time.
+    //! \brief To know if the simulation has halted (conditions are depicted by
+    //! the scenario) or is continuing. In case where the simulation has halted
+    //! the GUI should close i.e.
     //-------------------------------------------------------------------------
-    inline sf::Time elapsedTime() const
-    {
-        return m_time.getElapsedTime();
-    }
+    bool continuing() const;
+
+    //-------------------------------------------------------------------------
+    //! \brief Update the simuation states.
+    //! \param[in] dt: delta time in seconds from the previous call.
+    //-------------------------------------------------------------------------
+    void update(const float dt);
+
+    //-------------------------------------------------------------------------
+    //! \brief Draw the world, city, its entities (cars, parkings ...) and the
+    //! graphical interface.
+    //-------------------------------------------------------------------------
+    void drawSimulation(sf::View const& view); // FIXME const
+
+    //-------------------------------------------------------------------------
+    //! \brief Draw the Head Up Display. 
+    //-------------------------------------------------------------------------
+    void drawHUD(sf::View const& view); // FIXME const
+
+    //-------------------------------------------------------------------------
+    //! \brief When GUI triggered the onRelease().
+    //-------------------------------------------------------------------------
+    void release();
 
     //-------------------------------------------------------------------------
     //! \brief Convert Window's X-Y position [pixel] to world's X-Y position
@@ -158,29 +142,35 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Return the ego car. The ego car shall exist !
+    //! \brief Return the city
+    //-------------------------------------------------------------------------
+    inline City const& city()
+    {
+        return m_city;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Return the ego car.
     //-------------------------------------------------------------------------
     inline Car& ego()
     {
-        assert(m_ego != nullptr);
         return *m_ego;
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Return the ego car. The ego car shall exist !
+    //! \brief Return the ego car.
     //-------------------------------------------------------------------------
     inline Car const& ego() const
     {
-        assert(m_ego != nullptr);
         return *m_ego;
     }
 
     //-------------------------------------------------------------------------
     //! \brief Make the camera follows the given car.
     //-------------------------------------------------------------------------
-    inline void follow(Car* car)
+    inline void follow(Car& car)
     {
-        m_follow = car;
+        m_follow = &car;
     }
 
     //-------------------------------------------------------------------------
@@ -192,37 +182,12 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Callback when the GUI has started: create the city, camera ...
+    //! \brief Return the simulation elapsed time.
     //-------------------------------------------------------------------------
-    void activate();
-
-    //-------------------------------------------------------------------------
-    //! \brief Callback when the GUI has ended. Reset the simulation states,
-    //! remove entities: parking, cars, ego car ...
-    //-------------------------------------------------------------------------
-    void deactivate();
-    void create();
-    void release();
-
-    //-------------------------------------------------------------------------
-    //! \brief Callback when the application needs to know if the GUI shall
-    //! halt or continue.
-    //-------------------------------------------------------------------------
-    bool running() const;
-
-    //-------------------------------------------------------------------------
-    //! \brief Update the simuation states.
-    //! \param[in] dt: delta time in seconds from the previous call.
-    //-------------------------------------------------------------------------
-    void update(const float dt);
-
-    //-------------------------------------------------------------------------
-    //! \brief Draw the world and its entities (cars, parkings ...)
-    //! \param[in] renderer: SFML renderer (window)
-    //! \param[in] view: SFML view.
-    //-------------------------------------------------------------------------
-    void draw_simulation(); // FIXME const
-    void draw_hud(); // FIXME const
+    inline sf::Time elapsedTime() const
+    {
+        return m_elpased_time + m_clock.getElapsedTime();
+    }
 
     //--------------------------------------------------------------------------
     //! \brief Return the latest error.
@@ -234,31 +199,44 @@ public:
 
 private:
 
+    bool init();
     void collisions(Car& ego);
+
+    //-------------------------------------------------------------------------
+    //! \brief Pass a text to the simulator to display it inside the messagebox
+    //! widget.
+    //-------------------------------------------------------------------------
+    inline void messagebox(std::string const& txt, sf::Color const& color) const
+    {
+        m_message_bar.entry(txt, color);
+    }
 
 private:
 
     //! \brief SFML renderer needed for drawing the simulation.
     sf::RenderWindow& m_renderer;
-    //! \brief
-    ScenarioLoader m_loader;
+    //! \brief Load a simulation scenario from a shared library.
+    DynamicLoader m_loader;
     //! \brief Simulation scenario loaded from a shared library.
     Scenario m_scenario;
-    //! \brief
-    bool m_scenario_loaded = false;
-    //! \brief The city we want to simulated with its roads, parkings, cars ...
+    //! \brief The simulated city (with its roads, parkings, cars,
+    //! pedestrians ...)
     City m_city;
-    //! \brief Make the camera follow the given car.
-    Car* m_follow = nullptr;
-    //! \brief The ego car.
+    //! \brief The ego car we want to simulate.
     Car* m_ego = nullptr;
-    //! \brief Camera position tracking a vehicle.
+    //! \brief Memorize the camera position.
     sf::Vector2f m_camera;
-    //! \brief Simulation time.
-    sf::Clock m_time;
+    //! \brief Camera follow the given car.
+    Car* m_follow = nullptr;
+    //! \brief Current elapsed time of the simulation.
+    sf::Clock m_clock;
+    //! \brief Total elapsed time of the simulation.
+    sf::Time m_elpased_time;
+    //! \brief Freeze the simulation.
+    bool m_pause;
     //! \brief Memorize the latest error.
     std::string m_error;
-    //! \brief Display messages
+    //! \brief Display info or error messages.
     mutable MessageBar m_message_bar;
 };
 

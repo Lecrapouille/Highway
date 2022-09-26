@@ -81,14 +81,23 @@ public:
     static BLUEPRINT const& get(const char* name)
     {
         assert(name != nullptr);
+
         try
         {
             return database<BLUEPRINT>().at(name);
         }
         catch (...)
         {
-            std::string e("Fatal: Unkown blueprint '");
-            throw std::runtime_error(e + name + "'");
+            if (database<BLUEPRINT>().size() != 0u)
+            {
+                std::string e("Fatal: Unkown blueprint '");
+                throw std::runtime_error(e + name + "'");
+            }
+            else
+            {
+                std::string e("Fatal: dummy database. Unknown '");
+                throw std::runtime_error(e + name + "'");
+            }
         }
     }
 

@@ -119,17 +119,12 @@ static Car& create_city(City& city)
 //! \brief "Hello simulation" demo: set the scenario functions mandatory to
 //! create the simulation.
 //-----------------------------------------------------------------------------
-void simple_simulation_demo(Simulator& simulator)
+Scenario simple_simulation_demo()
 {
-    Scenario s = {
+    return {
         .name = simulation_name,
         .create = create_city,
         .halt = halt_simulation_when,
         .react = simulation_react_to,
     };
-
-    // Start the simulation.
-    // FIXME since this is not loaded from .so file not sure there is not side
-    // effects.
-    simulator.load(s);
 }

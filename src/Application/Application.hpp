@@ -260,8 +260,7 @@ public:
         if (it != m_guis.end())
             return *dynamic_cast<GUI*>(it->second.get());
         m_guis[name] = std::make_unique<GUI>(*this, name);
-        std::cout << "GUI " << name << ": " << m_guis[name].get() << std::endl;
-        return *reinterpret_cast<GUI*>(m_guis[name].get());
+         return *reinterpret_cast<GUI*>(m_guis[name].get());
     }
 
     //--------------------------------------------------------------------------
@@ -306,6 +305,7 @@ public:
     //! methods.
     //--------------------------------------------------------------------------
     void loop(Application::GUI& starting_gui, uint8_t rate = 60u);
+    void loop(uint8_t rate = 60u);
 
     //--------------------------------------------------------------------------
     //! \brief Return the SFML renderer needed to paint SFML shapes
@@ -316,12 +316,22 @@ public:
         return m_renderer;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Show the stack of GUIs.
+    //--------------------------------------------------------------------------
+    inline void printStack();
+
 private:
 
     //--------------------------------------------------------------------------
     //! \brief Clear the stack of GUIs and close the renderer.
     //--------------------------------------------------------------------------
     void halt();
+
+    //--------------------------------------------------------------------------
+    //! \brief Helper method to show the stack of GUIs.
+    //--------------------------------------------------------------------------
+    void printStack(std::stack<Application::GUI*>& stack);
 
 private:
 

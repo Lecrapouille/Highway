@@ -392,6 +392,18 @@ public:
         return m_sensors;
     }
 
+    //-------------------------------------------------------------------------
+    //! \brief Debug purpose only: show shape information.
+    //-------------------------------------------------------------------------
+    friend std::ostream& operator<<(std::ostream& os, Vehicle const& vehicle)
+    {
+        return os << "vehicle "
+                  << vehicle.name << " {" << std::endl
+                  << "   position: " << vehicle.position().x << ", "
+                                     << vehicle.position().y << std::endl
+                  << "}";
+    }
+
 public:
 
     //! \brief Dimension of the vehicle

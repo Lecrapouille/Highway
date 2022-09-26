@@ -28,6 +28,6 @@
 //! \brief "Hello simulation" demo: set the scenario functions mandatory to
 //! create the simulation.
 //-----------------------------------------------------------------------------
-void simple_simulation_demo(Simulator& simulator);
+Scenario simple_simulation_demo();
 
 #endif

@@ -58,12 +58,11 @@ void Application::push(Application::GUI& gui)
     GUI* current_gui = peek();
     if ((current_gui != nullptr) && (current_gui != &gui))
     {
-        std::cout << "Deactivate GUI: " << current_gui->name() << std::endl;
         current_gui->onDeactivate();
     }
     m_stack.push(&gui);
-    std::cout << "Create GUI: " << gui.name() << std::endl;
     gui.onCreate();
+    printStack();    // Debug
 }
 
 // -----------------------------------------------------------------------------
@@ -73,29 +72,35 @@ bool Application::pop()
     if (gui == nullptr)
         return false;
 
-    std::cout << "Release GUI: " << gui->name() << std::endl;
     m_stack.pop();
     gui->onRelease();
 
     gui = peek();
     if (gui != nullptr)
     {
-        std::cout << "Activate GUI: " << gui->name() << std::endl;
         gui->m_closing = gui->m_halting = false;
         gui->onActivate();
     }
 
+    printStack();    // Debug
     return true;
 }
 
 // -----------------------------------------------------------------------------
 void Application::loop(Application::GUI& starting_gui, uint8_t const rate)
 {
+    push(starting_gui);
+    loop(rate);
+}
+
+// -----------------------------------------------------------------------------
+void Application::loop(uint8_t const rate)
+{
     sf::Clock clock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
     const sf::Time time_per_frame = sf::seconds(1.0f / float(rate));
 
-    push(starting_gui);
+
     while (m_renderer.isOpen())
     {
         GUI* gui = peek();
@@ -124,10 +129,30 @@ void Application::loop(Application::GUI& starting_gui, uint8_t const rate)
         // Close the current GUI
         else if (gui->m_closing)
         {
+            gui->m_closing = false;
             if (!pop())
             {
                 m_renderer.close();
             }
         }
     }
+}
+
+// -----------------------------------------------------------------------------
+void Application::printStack()
+{
+    std::cout << "Application stack of GUIs:" << std::endl;
+    printStack(m_stack);
+}
+
+// -----------------------------------------------------------------------------
+void Application::printStack(std::stack<Application::GUI*>& stack)
+{
+    if (stack.empty())
+        return;
+    Application::GUI* gui = stack.top();
+    stack.pop();
+    std::cout << "  " << gui->m_name << std::endl;
+    printStack(stack);
+    stack.push(gui);
 }
