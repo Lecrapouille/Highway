@@ -1,4 +1,4 @@
-//=====================================================================
+//==============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,39 +17,26 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
-#ifndef GUI_SIMULATION_STATE_HPP
-#  define GUI_SIMULATION_STATE_HPP
+//==============================================================================
+#ifndef GUI_LOAD_SIMULATIONS_MENU_HPP
+#  define GUI_LOAD_SIMULATIONS_MENU_HPP
 
 #  include "Application/Application.hpp"
-#  include "Simulator/Simulator.hpp"
-#  include "Renderer/MessageBar.hpp"
+#  include "Application/GUISimulation.hpp"
 #  include <atomic>
 
 // ****************************************************************************
-//! \brief Concrete SFML Application::GUI managing the GUI for the car
-//! simulation. The world coordinates are:
-//!     ^ Y
-//!     |
-//!     +------> X
-//! to follow the same computations than the document "Estimation et controle
-//! pour le pilotage automatique de vehicule" by Sungwoo Choi.
+//! \brief Main menu of the simulator. Offer the possibility to load a scenario.
 // ****************************************************************************
-class GUISimulation: public Application::GUI
+class GUILoadSimulMenu: public Application::GUI
 {
 public:
 
     //-------------------------------------------------------------------------
     //! \brief Default Constructor.
     //! \param[inout] application: the main class managing the stack of GUI.
-    //! \param[in] name: the key for searching a GUI.
     //-------------------------------------------------------------------------
-    GUISimulation(Application& application, const char* name);
-
-    //-------------------------------------------------------------------------
-    //! \brief Apply the zoom value.
-    //-------------------------------------------------------------------------
-    inline void zoom(float const value);
+    GUILoadSimulMenu(Application& application, const char* name);
 
 private: // Derived from Application::GUI
 
@@ -69,45 +56,31 @@ private: // Derived from Application::GUI
     virtual void onHandleInput() override;
 
     //-------------------------------------------------------------------------
-    //! \brief Pause the GUI.
+    //! \brief Pause the simulation.
     //-------------------------------------------------------------------------
     virtual void onActivate() override;
 
     //-------------------------------------------------------------------------
-    //! \brief Unpause the GUI.
+    //! \brief Unpause the simulation.
     //-------------------------------------------------------------------------
     virtual void onDeactivate() override;
 
     //-------------------------------------------------------------------------
-    //! \brief Create the GUI.
+    //! \brief Create the simulation.
     //-------------------------------------------------------------------------
     virtual void onCreate() override;
 
     //-------------------------------------------------------------------------
-    //! \brief Release the GUI.
+    //! \brief Release the simulation.
     //-------------------------------------------------------------------------
     virtual void onRelease() override;
 
 private:
 
-    //! \brief For managing world coordinates, zoom and camera displacement.
-    sf::View m_simulation_view;
-    //! \brief For displaying the interface.
-    sf::View m_interface_view;
-    //! \brief Camera zoom
-    float m_zoom;
-    //! \brief Mouse X,Y position within the world coordinate [meter]. You
-    //! directly can measure objects [meter] by clicking with mouse in the
-    //! window.
-    sf::Vector2f m_mouse;
-    //! \brief SFML loaded font from a TTF file.
-    sf::Font m_font;
-
-public:
-
-    //! \brief City, cars, pedestrians simulation ... in which we will test the
-    //! ego vehicle.
-    Simulator simulator;
+    //! \brief Camera's view
+    sf::View m_view;
+    //! \brief Display messages
+    sf::Text m_text;
 };
 
 #endif

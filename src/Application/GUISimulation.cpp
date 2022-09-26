@@ -1,4 +1,4 @@
-//=====================================================================
+//==============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,7 +17,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//==============================================================================
+
 #include "Application/GUISimulation.hpp"
 #include "Application/GUIMainMenu.hpp"
 
@@ -27,13 +28,14 @@ GUISimulation::GUISimulation(Application& application, const char* name)
       simulator(application.renderer())
 {
     // SFML view for the GUI
-    m_hud_view = m_renderer.getDefaultView();
+    m_interface_view = m_renderer.getDefaultView();
 
     // SFML view: change the world coordinated to follow the same computations
     // than the doc "Estimation et controle pour le pilotage automatique de
     // vehicule" by Sungwoo Choi.
     m_simulation_view = m_renderer.getDefaultView();
-    m_simulation_view.setSize(float(application.width()), -float(application.height()));
+    m_simulation_view.setSize(float(application.width()),
+                              float(-application.height()));
     zoom(ZOOM);
 }
 
@@ -46,31 +48,31 @@ void GUISimulation::zoom(float const value)
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::activate()
+void GUISimulation::onActivate()
 {
     simulator.activate();
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::deactivate()
+void GUISimulation::onDeactivate()
 {
     simulator.deactivate();
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::create()
+void GUISimulation::onCreate()
 {
     simulator.create();
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::release()
+void GUISimulation::onRelease()
 {
-    simulator.release(); 
+    simulator.release();
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::handleInput()
+void GUISimulation::onHandleInput()
 {
     // Measurement
     float distance;
@@ -86,7 +88,7 @@ void GUISimulation::handleInput()
         switch (event.type)
         {
         case sf::Event::Closed:
-            m_renderer.close();
+            halt();
             break;
         // Get world's position
         case sf::Event::MouseButtonPressed:
@@ -110,10 +112,10 @@ void GUISimulation::handleInput()
             zoom(m_zoom + float(event.mouseWheel.delta) / 0.1f);
             break;
         case sf::Event::KeyPressed:
-            // Leaving the GUI
+            // Leaving the current GUI
             if (event.key.code == sf::Keyboard::Escape)
             {
-                m_application.push(m_application.gui<GUIMainMenu>("GUIMainMenu"));
+                close();
             }
             else if (event.key.code == sf::Keyboard::F1)
             {
@@ -131,13 +133,13 @@ void GUISimulation::handleInput()
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::update(const float dt) // FIXME to be threaded
+void GUISimulation::onUpdate(const float dt) // FIXME to be threaded
 {
     simulator.update(dt);
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::draw()
+void GUISimulation::onDraw()
 {
     // Make the camera follows the car
     m_simulation_view.setCenter(simulator.camera());
@@ -147,6 +149,6 @@ void GUISimulation::draw()
     simulator.draw_simulation();
 
     // Draw the GUI
-    m_renderer.setView(m_hud_view);
+    m_renderer.setView(m_interface_view);
     simulator.draw_hud();
 }

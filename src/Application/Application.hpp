@@ -31,36 +31,38 @@
 #  include <SFML/Graphics.hpp>
 #  include <SFML/System.hpp>
 #  include <stack>
+#  include <map>
 #  include <cassert>
 #  include <iostream>
 #  include <memory>
 
 // *****************************************************************************
-
 //! \brief Manage a stack of GUI instances (GUI which shall derive from the
 //! interface Application::GUI class). Since we desire to manage a very simple
 //! application, GUIs are simply pushed and poped in a stack (\c m_stack) and
 //! only the GUI on the top of the stack is active, reacts to IO events (mouse,
-//! keyboard ...)  and are rendered by the SFML library. Others stacked GUIs are
-//! inactive until they reached the top position in the stack where they become
-//! active.  Therefore a GUI pushing a child GUI in the stack will be in pause
-//! until the child GUI is poped off the stack.
-
-//! Finally, note when a GUI is puash it does not have not their memory created
-//! (and when poped they do not have their memory released). Indeed, the stack
-//! holds and refers GUIs fromraw pointers. GUI are in fact created can be
-//! stored into a separate internal container (\c m_guis created through the \c
-//! create() method and get from the \c gui() method).
-
+//! keyboard ...) and is rendered by the SFML library. Others deeper stacked
+//! GUIs are inactive until they reached the top position in the stack where
+//! they become active. Therefore an active GUI pushing a child GUI in the stack
+//! will be in pause until the child GUI is poped off the stack (for example
+//! when pushing a submenu). This mimic Android behavior.
+//!
+//! Finally, note that when a GUI is pushed or poped, it does not have its
+//! memory created or released. Indeed, the stack holds raw pointers on GUI
+//! instances because when a GUI is created (through the \c create() method) it
+//! is stored into a separate internal container (\c m_guis) and pointer get
+//! from the \c gui() method).
 // *****************************************************************************
 class Application
 {
 public:
 
     // *************************************************************************
-    //! \brief Interface class for drawing a GUI and handling mouse and keyboard
-    //! events. This instance knows the Application instance owning it.
-    //! \pre This class is dependent from the SFML library.
+    //! \brief Interface class for drawing a Graphical User Interface (GUI) and
+    //! handling mouse and keyboard events. This instance knows the Application
+    //! instance owning it.
+    //! \pre This class is dependent from the SFML library but could be totally
+    //! abstract.
     // *************************************************************************
     class GUI
     {
@@ -72,8 +74,8 @@ public:
         //----------------------------------------------------------------------
         //! \brief Default constructor. No actions are made except initializing
         //! internal states with values passed as parameters.
-        //! \param[in] application: the instance owning GUIs.
-        //! \param[in] name: Name of the GUI. Used as key for Application to
+        //! \param[in] application: the instance owning this GUI.
+        //! \param[in] name: Name of the GUI, used as key for Application to
         //!   find it back.
         //! \param[in] color: Background color.
         //----------------------------------------------------------------------
@@ -94,7 +96,8 @@ public:
         }
 
         //----------------------------------------------------------------------
-        //! \brief Return then GUI name (as search key or for debug purpose).
+        //! \brief Return then GUI name used either as search key or for debug
+        //! purpose.
         //----------------------------------------------------------------------
         inline std::string const& name() const
         {
@@ -109,43 +112,55 @@ public:
             m_renderer.setTitle(name);
         }
 
+        //----------------------------------------------------------------------
+        //! \brief Close the GUI: it will be poped and if it was the last GUI
+        //! the application will close.
+        //----------------------------------------------------------------------
+        inline void close()
+        {
+            m_closing = true;
+        }
+
+        //----------------------------------------------------------------------
+        //! \brief Close the GUI: it will be poped and if it was the last GUI
+        //! the application will close.
+        //----------------------------------------------------------------------
+        inline void halt()
+        {
+            m_halting = true;
+        }        
+
     private:
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! is pushed in the stack.
         //----------------------------------------------------------------------
-        virtual void create() = 0;
+        virtual void onCreate() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! is poped from the stack.
         //----------------------------------------------------------------------
-        virtual void release() = 0;
+        virtual void onRelease() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! is no longer on the top of the stack.
         //----------------------------------------------------------------------
-        virtual void deactivate() = 0;
+        virtual void onDeactivate() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! has returned to the top of the stack.
         //----------------------------------------------------------------------
-        virtual void activate() = 0;
-
-        //----------------------------------------------------------------------
-        //! \brief Internal methods called by the Application class to know if
-        //! the GUI has finished and shall be poped.
-        //----------------------------------------------------------------------
-        virtual bool running() const = 0;
+        virtual void onActivate() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! has to be rendered.
         //----------------------------------------------------------------------
-        virtual void draw() = 0;
+        virtual void onDraw() = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
@@ -153,13 +168,13 @@ public:
         //! \param[in] dt the number of seconds spent this the previous call
         //! (delta time).
         //----------------------------------------------------------------------
-        virtual void update(const float dt) = 0;
+        virtual void onUpdate(const float dt) = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI
         //! has to manage IO events (mouse, keyboard, ...).
         //----------------------------------------------------------------------
-        virtual void handleInput() = 0;
+        virtual void onHandleInput() = 0;
 
     public:
 
@@ -177,12 +192,16 @@ public:
 
         //! \brief the GUI name (used as key search or for debug purpose).
         std::string m_name;
-    };
+        //! \brief Closing the GUI ?
+        bool m_closing = false;
+        //! \brief Halting the application ?
+        bool m_halting = false;
+    }; // class GUI
 
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief Create a SFML window with an empty stack of GUI.
+    //! \brief Create a SFML window with an empty stack of GUIs.
     //! \param[in] width: the initial width dimension of the window [pixel].
     //! \param[in] height: the initial height dimension of the window [pixel].
     //! \param[in] title: window title.
@@ -190,7 +209,7 @@ public:
     Application(uint32_t const width, uint32_t const height, std::string const& title);
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Clear the stack of GUIs and close the renderer.
     //--------------------------------------------------------------------------
     ~Application();
 
@@ -210,37 +229,39 @@ public:
         return m_renderer.getSize().y;
     }
 
-    //----------------------------------------------------------------------
-    //! \brief Create a new GUI whih is not stored in the GUI stack.
-    //! \param[in] name he GUI name used as key search or for debug purpose.
-    //! \return the reference to the created GUI and stored internally.
-    //----------------------------------------------------------------------
+#if 0
+    //--------------------------------------------------------------------------
+    //! \brief Create a new GUI on its internal container. The GUI is not pushed
+    //! in the GUI stack (it is the developper decision to push or pop GUIs). If
+    //! a GUI with the same name is already present it is replaced by the new
+    //! one.
+    //! \param[in] name the GUI name used as key search or for debug purpose.
+    //! \return the reference to the created GUI and stored internally (not
+    //! deferenced by insertion).
+    //--------------------------------------------------------------------------
     template<class GUI>
     GUI& create(const char* name)
     {
-        m_guis.push_back(std::make_unique<GUI>(*this, name));
-        return *reinterpret_cast<GUI*>(m_guis.back().get());
+        m_guis[name] = std::make_unique<GUI>(*this, name);
+        return *reinterpret_cast<GUI*>(m_guis[name].get());
     }
+#endif
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     //! \brief Search and return the given GUI name and type.
     //! \param[in] name he GUI name used as key search.
     //! \return the reference to the created GUI and stored internally.
     //! \note if the GUI is not found a new one is created.
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     template<class GUI>
     GUI& gui(const char* name)
     {
-        for (auto& it: m_guis)
-        {
-            if (it->name() != name)
-                continue;
-
-            GUI* gui = dynamic_cast<GUI*>(it.get());
-            if (gui != nullptr)
-                return *gui;
-        }
-        return create<GUI>(name);
+        auto const& it = m_guis.find(name);
+        if (it != m_guis.end())
+            return *dynamic_cast<GUI*>(it->second.get());
+        m_guis[name] = std::make_unique<GUI>(*this, name);
+        std::cout << "GUI " << name << ": " << m_guis[name].get() << std::endl;
+        return *reinterpret_cast<GUI*>(m_guis[name].get());
     }
 
     //--------------------------------------------------------------------------
@@ -250,12 +271,21 @@ public:
     void push(Application::GUI& gui);
 
     //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    template<class GUI>
+    void push(const char* name)
+    {
+        push(gui<GUI>(name));
+    }
+
+    //--------------------------------------------------------------------------
     //! \brief Drop the current GUI. The new GUI on the top of the stack will be
     //! active and draw by SFML.
     //! \note the poped GUI is not released.
     //! \pre The stack shall have at least one GUI.
     //--------------------------------------------------------------------------
-    void pop();
+    bool pop();
 
     //--------------------------------------------------------------------------
     //! \brief Get the GUI placed on the top of the stack.
@@ -270,11 +300,12 @@ public:
     //! \brief Push a new GUI on the top of the stack and start a loop for
     //! managing its draw and IO events. When the GUI is closed it will be drop
     //! from the stack.
-    //!
+    //! \param[inout] starting_gui the initial GUI to start the application with.
+    //! \param[in] rate fixed time step. By fault set to 60 Hertz.
     //! \note this method will call Application::GUI's private pure virtual
     //! methods.
     //--------------------------------------------------------------------------
-    void loop(Application::GUI& starting_gui);
+    void loop(Application::GUI& starting_gui, uint8_t rate = 60u);
 
     //--------------------------------------------------------------------------
     //! \brief Return the SFML renderer needed to paint SFML shapes
@@ -287,14 +318,15 @@ public:
 
 private:
 
-    void loop();
+    //--------------------------------------------------------------------------
+    //! \brief Clear the stack of GUIs and close the renderer.
+    //--------------------------------------------------------------------------
+    void halt();
 
 private:
 
-    //! \brief Current activate gui
-    Application::GUI* m_gui = nullptr;
-    //! \brief List of GUIs.
-    std::vector<std::unique_ptr<Application::GUI>> m_guis;
+    //! \brief List of created GUIs.
+    std::map<std::string, std::unique_ptr<Application::GUI>> m_guis;
     //! \brief Stack of GUIs.
     std::stack<Application::GUI*> m_stack;
     //! \brief SFML renderer.

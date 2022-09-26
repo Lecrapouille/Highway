@@ -39,78 +39,95 @@ Application::Application(uint32_t const width, uint32_t const height,
 // -----------------------------------------------------------------------------
 Application::~Application()
 {
+    halt();
+}
+
+// -----------------------------------------------------------------------------
+void Application::halt()
+{
     // Clear the satck of GUIs
     std::stack<Application::GUI*>().swap(m_stack);
     // Stop the SFML renderer
     m_renderer.close();
 }
 
-// FIXME never call m_application.push(m_application.gui<GUIxx>("xxx"));
-// from the deactivate() callback!!
 // -----------------------------------------------------------------------------
+// FIXME recurrsion ConcreteGUI::onDeactivate() { ConcreteGUI::push(NewGUI); }
 void Application::push(Application::GUI& gui)
 {
-    GUI* g = peek();
-    if (g != nullptr)
+    GUI* current_gui = peek();
+    if ((current_gui != nullptr) && (current_gui != &gui))
     {
-        std::cout << "Deactivate GUI: " << g->name() << std::endl;
-        g->deactivate();
+        std::cout << "Deactivate GUI: " << current_gui->name() << std::endl;
+        current_gui->onDeactivate();
     }
     m_stack.push(&gui);
     std::cout << "Create GUI: " << gui.name() << std::endl;
-    gui.create();
-    m_gui = &gui;
+    gui.onCreate();
 }
 
 // -----------------------------------------------------------------------------
-void Application::pop()
+bool Application::pop()
 {
-    m_gui = peek();
-    if (m_gui != nullptr)
-    {
-        std::cout << "Release GUI: " << m_gui->name() << std::endl;
-        m_stack.pop();
-        m_gui->release();
+    GUI* gui = peek();
+    if (gui == nullptr)
+        return false;
 
-        m_gui = peek();
-        if (m_gui != nullptr)
-        {
-            std::cout << "Activate GUI: " << m_gui->name() << std::endl;
-            m_gui->activate();
-        }
-    }
-    else
+    std::cout << "Release GUI: " << gui->name() << std::endl;
+    m_stack.pop();
+    gui->onRelease();
+
+    gui = peek();
+    if (gui != nullptr)
     {
-        std::cout << "Warning! Cannot pop GUI from empty stack" << std::endl;
-        return ;
+        std::cout << "Activate GUI: " << gui->name() << std::endl;
+        gui->m_closing = gui->m_halting = false;
+        gui->onActivate();
     }
+
+    return true;
 }
 
 // -----------------------------------------------------------------------------
-void Application::loop()
+void Application::loop(Application::GUI& starting_gui, uint8_t const rate)
 {
     sf::Clock clock;
+    sf::Time timeSinceLastUpdate = sf::Time::Zero;
+    const sf::Time time_per_frame = sf::seconds(1.0f / float(rate));
 
+    push(starting_gui);
     while (m_renderer.isOpen())
     {
-        float dt = clock.restart().asSeconds();
+        GUI* gui = peek();
+        if (gui == nullptr)
+            return ;
 
-        m_gui = peek();
-        if (m_gui != nullptr)
+        // Process events at fixed time steps
+        timeSinceLastUpdate += clock.restart();
+        while (timeSinceLastUpdate > time_per_frame)
         {
-            m_gui->handleInput();
-            m_gui->update(dt);
-            m_renderer.clear(m_gui->background_color);
-            m_gui->draw();
+            timeSinceLastUpdate -= time_per_frame;
+            gui->onHandleInput();
+            gui->onUpdate(time_per_frame.asSeconds());
         }
-        m_renderer.display();
-    }
-}
 
-// -----------------------------------------------------------------------------
-void Application::loop(Application::GUI& starting_gui)
-{
-    push(starting_gui);
-    loop();
-    pop();
+        // Rendering
+        m_renderer.clear(gui->background_color);
+        gui->onDraw();
+        m_renderer.display();
+
+        // Halt the application
+        if (gui->m_halting)
+        {
+            halt();
+        }
+        // Close the current GUI
+        else if (gui->m_closing)
+        {
+            if (!pop())
+            {
+                m_renderer.close();
+            }
+        }
+    }
 }

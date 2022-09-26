@@ -1,4 +1,4 @@
-//=====================================================================
+//=============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,9 +17,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//=============================================================================
 
+#include "Simulator/Demo.hpp"
 #include "Application/GUIMainMenu.hpp"
+#include "Application/GUISimulation.hpp"
+#include "Application/GUILoadSimulMenu.hpp"
 #include "Renderer/FontManager.hpp"
 
 //-----------------------------------------------------------------------------
@@ -29,113 +32,6 @@
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 1024
-
-//-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: return the simulation name.
-const char* simulation_name()
-{
-    return "Simple simulation demo";
-}
-
-//-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: make the simulator reacts to the given key
-//! pressed.
-void simulation_react_to(Simulator& simulator, size_t key)
-{
-    // Allow the ego car to react to callbacks set with Vehicle::callback()
-    simulator.ego().reactTo(key);
-}
-
-//-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: customize the ego vehicle.
-static Car& customize(Car& car)
-{
-    // Make the car reacts from the keyboard: enable the turning indicator.
-    car.callback(sf::Keyboard::PageDown, [&car]()
-    {
-        //car.turningIndicator(false, m_turning_right ^ true);
-    });
-
-    // Make the car reacts from the keyboard: enable the turning indicator.
-    car.callback(sf::Keyboard::PageUp, [&car]()
-    {
-        //car.turningIndicator(m_turning_left ^ true, false);
-    });
-
-    // Make the car reacts from the keyboard: set car speed (kinematic).
-    car.callback(sf::Keyboard::Up, [&car]()
-    {
-        car.refSpeed(1.0f);
-    });
-
-    // Make the car reacts from the keyboard: make the car stopped (kinematic).
-    car.callback(sf::Keyboard::Down, [&car]()
-    {
-        car.refSpeed(0.0f);
-    });
-
-    // Make the car reacts from the keyboard: make the car turns (kinematic).
-    car.callback(sf::Keyboard::Right, [&car]()
-    {
-        car.refSteering(car.refSteering() - 0.1f);
-    });
-
-    // Make the car reacts from the keyboard: make the car turns (kinematic).
-    car.callback(sf::Keyboard::Left, [&car]()
-    {
-        car.refSteering(car.refSteering() + 0.1f);
-    });
-
-    return car;
-}
-
-//-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: no condition to stop the simulation.
-static bool halt_simulation_when(Simulator const& simulator)
-{
-    return false; // Always runs
-}
-
-//-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: create a basic city world. Here made of
-//! parking slots and car parked. The ego car is on the road.
-static Car& create_city(City& city)
-{
-    // Create parallel or perpendicular or diagnoal parking slots
-    const int angle = 0u;
-    std::string dim = "epi." + std::to_string(angle);
-    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
-    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
-    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
-    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
-    city.addParking(dim.c_str(), parking3.position() + parking3.delta());
-
-    // Add parked cars (static)
-    city.addCar("Renault.Twingo", parking0);
-    city.addCar("Renault.Twingo", parking1);
-    city.addCar("Renault.Twingo", parking3);
-
-    // Self-parking car (dynamic). Always be the last in the container
-    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
-}
-
-//-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: set the scenario functions mandatory to
-//! create the simulation.
-static void simple_simulation_demo(Simulator& simulator)
-{
-    Scenario s = {
-        .name = simulation_name,
-        .create = create_city,
-        .halt = halt_simulation_when,
-        .react = simulation_react_to,
-    };
-
-    // Start the simulation.
-    // FIXME since this is not loaded from .so file not sure there is not side
-    // effects.
-    simulator.load(s);
-}
 
 // -----------------------------------------------------------------------------
 int main(int argc, char* argv[])
@@ -149,10 +45,8 @@ int main(int argc, char* argv[])
         // SFML application
         Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Highway: Open-source simulator for autonomous driving research");
 
-        // Create all application GUIs.
-        GUIMainMenu& gui_menu = app.create<GUIMainMenu>("GUIMainMenu");
-        GUISimulation& gui_sim = app.create<GUISimulation>("GUISimulation");
-        Simulator& simulator = gui_sim.simulator;
+        // Create the simulation GUI and get its simulator.
+        Simulator& simulator = app.gui<GUISimulation>("GUISimulation").simulator;
 
         // No argument: load an ultra basic simulation (see static functions upper).
         if (argc == 1)
@@ -173,6 +67,7 @@ int main(int argc, char* argv[])
         }
 
         // Run the current GUI.
+        GUIMainMenu& gui_menu = app.gui<GUIMainMenu>("GUIMainMenu");
         app.loop(gui_menu);
     }
     catch (std::string const& msg)

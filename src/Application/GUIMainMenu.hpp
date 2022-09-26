@@ -22,11 +22,10 @@
 #  define GUI_MAIN_MENU_HPP
 
 #  include "Application/Application.hpp"
-#  include "Application/GUISimulation.hpp"
 #  include <atomic>
 
 // ****************************************************************************
-//! \brief Concrete SFML Application::GUI managing the GUI of the main menu.
+//! \brief Main menu of the simulator. Offer the possibility to load a scenario.
 // ****************************************************************************
 class GUIMainMenu: public Application::GUI
 {
@@ -43,54 +42,46 @@ private: // Derived from Application::GUI
     //-------------------------------------------------------------------------
     //! \brief Draw the world and its entities.
     //-------------------------------------------------------------------------
-    virtual void draw() override;
+    virtual void onDraw() override;
 
     //-------------------------------------------------------------------------
     //! \brief Update the simulation.
     //-------------------------------------------------------------------------
-    virtual void update(const float dt) override;
+    virtual void onUpdate(const float dt) override;
 
     //-------------------------------------------------------------------------
     //! \brief Manage mouse and keyboard events.
     //-------------------------------------------------------------------------
-    virtual void handleInput() override;
-
-    //-------------------------------------------------------------------------
-    //! \brief Return true if GUI is alive.
-    //-------------------------------------------------------------------------
-    virtual bool running() const override
-    {
-        return m_running;
-    }
+    virtual void onHandleInput() override;
 
     //-------------------------------------------------------------------------
     //! \brief Pause the simulation.
     //-------------------------------------------------------------------------
-    virtual void activate() override;
+    virtual void onActivate() override;
 
     //-------------------------------------------------------------------------
     //! \brief Unpause the simulation.
     //-------------------------------------------------------------------------
-    virtual void deactivate() override;
+    virtual void onDeactivate() override;
 
     //-------------------------------------------------------------------------
     //! \brief Create the simulation.
     //-------------------------------------------------------------------------
-    virtual void create() override;
+    virtual void onCreate() override;
 
     //-------------------------------------------------------------------------
     //! \brief Release the simulation.
     //-------------------------------------------------------------------------
-    virtual void release() override;
+    virtual void onRelease() override;
 
 private:
 
-    //! \brief View
+    //! \brief Camera's view
     sf::View m_view;
     //! \brief Display messages
     sf::Text m_text;
-    //! \brief Halting the GUI ?
-    std::atomic<bool> m_running{true};
+    //! \brief Selector of menu
+    size_t m_cursor = 0u;
 };
 
 #endif

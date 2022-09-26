@@ -74,11 +74,11 @@ LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o
 LIB_OBJS += Car.o Trailer.o
 LIB_OBJS += Pedestrian.o Parking.o BluePrints.o City.o
-LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o
+LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o GUILoadSimulMenu.o
 LIB_OBJS += AutoParkECU.o CarParkedScanner.o
 #LIB_OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
 #LIB_OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
-LIB_OBJS += Simulator.o
+LIB_OBJS += Demo.o Simulator.o
 
 ###################################################
 # Make the list of compiled files for the application
