@@ -8,6 +8,7 @@ data/Simulations/*.dylib
 data/Simulations/*.dll
 data/Simulations/*.lib
 data/Simulations/*.a
+.vscode
 
 # Linux
 *~
