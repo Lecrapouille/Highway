@@ -79,7 +79,7 @@ public:
         //!   find it back.
         //! \param[in] color: Background color.
         //----------------------------------------------------------------------
-        GUI(Application& application, const char* name, sf::Color const& color
+        GUI(Application& application, std::string const& name, sf::Color const& color
             = sf::Color::White);
 
         //----------------------------------------------------------------------
@@ -240,7 +240,7 @@ public:
     //! deferenced by insertion).
     //--------------------------------------------------------------------------
     template<class GUI>
-    GUI& create(const char* name)
+    GUI& create(std::string const& name)
     {
         m_guis[name] = std::make_unique<GUI>(*this, name);
         return *reinterpret_cast<GUI*>(m_guis[name].get());
@@ -253,13 +253,13 @@ public:
     //! \return the reference to the created GUI and stored internally.
     //! \note if the GUI is not found a new one is created.
     //--------------------------------------------------------------------------
-    template<class GUI>
-    GUI& gui(const char* name)
+    template<class GUI, typename ...ArgsT>
+    GUI& gui(std::string const& name, ArgsT&&... args)
     {
-        auto const& it = m_guis.find(name);
+        auto const& it = m_guis.find(name); // TBD: use typeid(T).hash_code() instead of name
         if (it != m_guis.end())
             return *dynamic_cast<GUI*>(it->second.get());
-        m_guis[name] = std::make_unique<GUI>(*this, name);
+        m_guis[name] = std::make_unique<GUI>(*this, name, std::forward<ArgsT>(args)...);
          return *reinterpret_cast<GUI*>(m_guis[name].get());
     }
 
@@ -272,10 +272,10 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    template<class GUI>
-    void push(const char* name)
+    template<class GUI, typename ...ArgsT>
+    void push(std::string const& name, ArgsT&&... args)
     {
-        push(gui<GUI>(name));
+        push(gui<GUI>(name, std::forward<ArgsT>(args)...));
     }
 
     //--------------------------------------------------------------------------

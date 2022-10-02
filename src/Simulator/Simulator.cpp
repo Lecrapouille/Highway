@@ -24,8 +24,8 @@
 #include "Renderer/FontManager.hpp"
 
 //------------------------------------------------------------------------------
-Simulator::Simulator(sf::RenderWindow& renderer)
-    : m_renderer(renderer)
+Simulator::Simulator(sf::RenderWindow& renderer, MessageBar& message_bar)
+    : m_renderer(renderer), m_message_bar(message_bar)
 {
     m_message_bar.font(FontManager::instance().font("main font"));
 }
@@ -52,6 +52,7 @@ bool Simulator::load(Scenario const& scenario)
 //------------------------------------------------------------------------------
 bool Simulator::load(std::string const& libpath)
 {
+    // The shared lib has been successfully opened. Now load functions.
     if (m_loader.load(libpath))
     {
         m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
@@ -74,11 +75,10 @@ bool Simulator::load(std::string const& libpath)
 //------------------------------------------------------------------------------
 bool Simulator::init()
 {
-    std::cout << "INIT\n";
+    // Missing call Simulator::load() or scenario has failed loaded.
     if (!m_scenario)
     {
         m_message_bar.entry("Scenario not loaded", sf::Color::Red);
-            std::cout << "INIT KOOOO\n";
         return false;
     }
 
@@ -86,13 +86,13 @@ bool Simulator::init()
 
     // Set simulation name on the GUI
     m_message_bar.entry("Starting simulation " + name, sf::Color::Green);
-    m_renderer.setTitle(m_scenario.name());
+    m_renderer.setTitle(name);
 
-    // Create a new city
+    // Create a new city from "scratch".
     m_city.reset();
     m_ego = &m_scenario.create(m_city);
 
-    // Make the camera follow the ego car by default
+    // Make by default, the camera follows the ego car.
     follow(*m_ego);
 
     // Clear simulation time
@@ -155,6 +155,7 @@ void Simulator::reacts(size_t key)
 //------------------------------------------------------------------------------
 bool Simulator::continuing() const
 {
+    std::cout << "CONNTTT\n";
     return m_scenario && (!m_scenario.halt(*this));
 }
 
@@ -203,6 +204,7 @@ void Simulator::update(const float dt)
     // User has paused the simulation ?
     if (m_pause)
     {
+        m_message_bar.entry("The simulation is in pause", sf::Color::Yellow);
         return ;
     }
 

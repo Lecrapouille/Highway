@@ -19,7 +19,7 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //==============================================================================
 
-#include "Scenarios/API.hpp"
+#include "API.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
 
 // FIXME: ajouter bool checkCity(City&) si pas de soucis => ou mieux en interne (par exemple >= 1 voiture ego)
@@ -37,6 +37,8 @@ bool halt_simulation_when(Simulator const& simulator)
                          "Time simulation slipped");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0f),
                          "Ego car is outside the parking");
+    HALT_SIMULATION_WHEN(simulator.ego().collided(),
+                         "Ego car collided");
     // TODO outside the city
 
     return CONTINUE_SIMULATION;
@@ -53,6 +55,9 @@ void react_to(Simulator& simulator, size_t const key)
 // FIXME Ajouter:Car& ego_specialisation(Car&) qui est appellé par City::createEgo() { return ego_specialisation(new Car()); }
 static Car& customize(Car& car)
 {
+    // If desired, use a different color than the default for the ego car.
+    car.color = sf::Color::Cyan;
+
     // Add sensors
     //car.addRadar(Radar(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f), 90.0f, 20.0f, 2.0f));
 #if 0

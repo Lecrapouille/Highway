@@ -22,7 +22,7 @@
 #include "Application.hpp"
 
 // -----------------------------------------------------------------------------
-Application::GUI::GUI(Application& application, const char* name,
+Application::GUI::GUI(Application& application, std::string const& name,
                       sf::Color const& color)
     : background_color(color), m_application(application),
       m_renderer(application.renderer()), m_name(name)
@@ -62,7 +62,8 @@ void Application::push(Application::GUI& gui)
     }
     m_stack.push(&gui);
     gui.onCreate();
-    printStack();    // Debug
+    // Uncomment for debuging
+    // printStack();
 }
 
 // -----------------------------------------------------------------------------
@@ -82,7 +83,8 @@ bool Application::pop()
         gui->onActivate();
     }
 
-    printStack();    // Debug
+    // Uncomment for debuging
+    // printStack();
     return true;
 }
 

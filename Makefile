@@ -25,7 +25,7 @@
 PROJECT = Highway
 TARGET = $(PROJECT)
 DESCRIPTION = Open-source simulator for autonomous driving research
-STANDARD = --std=c++14
+STANDARD = --std=c++17
 BUILD_TYPE = debug
 
 ###################################################

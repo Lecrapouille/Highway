@@ -1,4 +1,4 @@
-//=====================================================================
+//==============================================================================
 // MyLogger: A basic logger.
 // Copyright 2018 Quentin Quadrat <lecrapouille@gmail.com>
 //
@@ -16,10 +16,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with MyLogger.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//==============================================================================
 
-#ifndef MYLOGGER_PATH_HPP
-#  define MYLOGGER_PATH_HPP
+#ifndef COMMON_PATH_HPP
+#  define COMMON_PATH_HPP
 
 #  include <list>
 #  include <string>

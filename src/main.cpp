@@ -23,6 +23,7 @@
 #include "Application/GUISimulation.hpp"
 #include "Application/GUILoadSimulMenu.hpp"
 #include "Renderer/FontManager.hpp"
+#include "Common/FileSystem.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file Entry point of the car simulation application. Check the command line
@@ -37,7 +38,8 @@ int main(int argc, char* argv[])
 {
     try
     {
-        // FIXME: find a better solution
+        // FIXME: find a better solution.
+        // Initialize the database of blueprints.
         BluePrints::init();
 
         // Load fonts
@@ -48,22 +50,41 @@ int main(int argc, char* argv[])
         Application app(WINDOW_WIDTH, WINDOW_HEIGHT, "Highway: Open-source "
                         "simulator for autonomous driving research");
 
-        // No argument: load an ultra basic simulation (see static functions upper).
+        // No argument: load an ultra basic simulation set from
+        // src/Simulator/Demo.cpp.
         if (argc == 1)
         {
             app.push<GUIMainMenu>("GUIMainMenu");
         }
-        // Single argument: load the shared library file, passed by command line,
-        // shared library holding scenario functions for creating the simulation.
-        else // TODO add a real command line parser
+        // Single argument: load the shared library file passed by command line.
+        // The shared library is holding functions for creating the simulation.
+        // See Scenarios/API.hpp for more information.
+        else
         {
-            app.push<GUISimulation>("GUISimulation");
+            if (fs::exists(argv[1]))
+            {
+                app.push<GUIMainMenu>("GUIMainMenu");
+                app.push<GUISimulation>("GUISimulation", argv[1]);
+            }
+            else
+            {
+                std::cerr << "Fatal: the scenario file '" << argv[1] << "' does not exist"
+                          << std::endl;
+                return EXIT_FAILURE;
+            }
         }
+
+        // Infinite loop managing the GUI
         app.loop();
     }
     catch (std::string const& msg)
     {
         std::cerr << "Fatal: " << msg << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (std::exception const& e)
+    {
+        std::cerr << "Fatal: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 

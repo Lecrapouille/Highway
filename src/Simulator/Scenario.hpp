@@ -22,6 +22,14 @@
 #ifndef SCENARIO_HPP
 #  define SCENARIO_HPP
 
+#  if defined(_WIN32)
+#    define SHARED_LIB_EXTENSION "dll"
+#  elif defined(__linux__)
+#    define SHARED_LIB_EXTENSION "so"
+#  elif defined(__APPLE__)
+#    define SHARED_LIB_EXTENSION "dylib"
+#  endif
+
 class City;
 class Simulator;
 

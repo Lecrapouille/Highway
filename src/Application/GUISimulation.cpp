@@ -24,9 +24,11 @@
 #include "Simulator/Demo.hpp"
 
 //------------------------------------------------------------------------------
-GUISimulation::GUISimulation(Application& application, const char* name)
+GUISimulation::GUISimulation(Application& application, std::string const& name,
+                             std::string const& scenario_path)
     : Application::GUI(application, name, sf::Color::White),
-      simulator(application.renderer())
+      m_scenario_path(scenario_path),
+      simulator(application.renderer(), m_message_bar)
 {
     // SFML view for the GUI
     m_interface_view = m_renderer.getDefaultView();
@@ -63,7 +65,23 @@ void GUISimulation::onDeactivate()
 //------------------------------------------------------------------------------
 void GUISimulation::onCreate()
 {
-    simulator.load(simple_simulation_demo());
+    bool res;
+
+    if (!m_scenario_path.empty())
+    {
+        // Load the simulation from a shared library.
+        res = simulator.load(m_scenario_path);
+    }
+    else
+    {
+        // Hello-world simulation.
+        res = simulator.load(simple_simulation_demo());
+    }
+
+    if (!res)
+    {
+        // Nothing to do: let inside this GUI until the user close it.
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -140,7 +158,14 @@ void GUISimulation::onHandleInput()
 //------------------------------------------------------------------------------
 void GUISimulation::onUpdate(const float dt) // FIXME to be threaded
 {
-    simulator.update(dt);
+    if (simulator.continuing())
+    {
+        simulator.update(dt);
+    }
+    else
+    {
+        close();
+    }
 }
 
 //------------------------------------------------------------------------------

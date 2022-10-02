@@ -36,7 +36,7 @@ public:
     //! \brief Default Constructor.
     //! \param[inout] application: the main class managing the stack of GUI.
     //-------------------------------------------------------------------------
-    GUILoadSimulMenu(Application& application, const char* name);
+    GUILoadSimulMenu(Application& application, std::string const& name);
 
 private: // Derived from Application::GUI
 
@@ -77,10 +77,21 @@ private: // Derived from Application::GUI
 
 private:
 
+    struct ScenarioEntry
+    {
+        std::string libpath;
+        std::string filename;
+        std::string brief;
+    };
+
     //! \brief Camera's view
     sf::View m_view;
     //! \brief Display messages
     sf::Text m_text;
+    //! \brief List of scenarios
+    std::vector<ScenarioEntry> m_scenarios;
+    //! \brief Selector of menu
+    size_t m_cursor = 0u;
 };
 
 #endif

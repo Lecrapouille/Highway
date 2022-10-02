@@ -26,7 +26,7 @@
 #include "Simulator/Demo.hpp"
 
 //------------------------------------------------------------------------------
-GUIMainMenu::GUIMainMenu(Application& application, const char* name)
+GUIMainMenu::GUIMainMenu(Application& application, std::string const& name)
     : Application::GUI(application, name, sf::Color::White)
 {
     m_view = m_renderer.getDefaultView();
@@ -84,7 +84,7 @@ void GUIMainMenu::onHandleInput()
                     m_application.push<GUILoadSimulMenu>("GUILoadSimulMenu");
                 }
             }
-            else if (event.key.code == sf::Keyboard::Up)
+            else if (event.key.code == sf::Keyboard::Down)
             {
                 m_cursor += 1u;
                 if (m_cursor >= 2u)
@@ -92,7 +92,7 @@ void GUIMainMenu::onHandleInput()
                     m_cursor = 0u;
                 }
             }
-            else if (event.key.code == sf::Keyboard::Down)
+            else if (event.key.code == sf::Keyboard::Up)
             {
                 if (m_cursor == 0u)
                 {

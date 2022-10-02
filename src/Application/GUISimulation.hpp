@@ -43,13 +43,27 @@ public:
     //! \brief Default Constructor.
     //! \param[inout] application: the main class managing the stack of GUI.
     //! \param[in] name: the key for searching a GUI.
+    //! \param[in] scenario_path the path to the simulation file (shared lib)
+    //! if set empty then an hello simulation is given.
     //-------------------------------------------------------------------------
-    GUISimulation(Application& application, const char* name);
+    GUISimulation(Application& application, std::string const& name,
+                  std::string const& scenario_path = {}); 
 
     //-------------------------------------------------------------------------
     //! \brief Apply the zoom value.
     //-------------------------------------------------------------------------
     inline void zoom(float const value);
+
+private:
+
+    //-------------------------------------------------------------------------
+    //! \brief Pass a text to the simulator to display it inside the messagebox
+    //! widget.
+    //-------------------------------------------------------------------------
+    inline void messagebox(std::string const& txt, sf::Color const& color) const
+    {
+        m_message_bar.entry(txt, color);
+    }
 
 private: // Derived from Application::GUI
 
@@ -102,9 +116,13 @@ private:
     sf::Vector2f m_mouse;
     //! \brief SFML loaded font from a TTF file.
     sf::Font m_font;
+    //! \brief Display info or error messages.
+    mutable MessageBar m_message_bar;
 
 public:
 
+    //! \brief Path to the scenario file to load. Can be empty.
+    std::string m_scenario_path;
     //! \brief City, cars, pedestrians simulation ... in which we will test the
     //! ego vehicle.
     Simulator simulator;

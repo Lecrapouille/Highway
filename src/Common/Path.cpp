@@ -1,4 +1,4 @@
-//=====================================================================
+//==============================================================================
 // MyLogger: A basic logger.
 // Copyright 2018 Quentin Quadrat <lecrapouille@gmail.com>
 //
@@ -16,7 +16,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with MyLogger.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//==============================================================================
 
 #include "Common/Path.hpp"
 #include <sstream>

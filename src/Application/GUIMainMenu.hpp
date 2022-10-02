@@ -35,7 +35,7 @@ public:
     //! \brief Default Constructor.
     //! \param[inout] application: the main class managing the stack of GUI.
     //-------------------------------------------------------------------------
-    GUIMainMenu(Application& application, const char* name);
+    GUIMainMenu(Application& application, std::string const& name);
 
 private: // Derived from Application::GUI
 

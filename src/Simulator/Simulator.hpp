@@ -47,7 +47,7 @@ public:
     //! \brief Default constructor. Take the SFML renderer, from the Application
     //! instance, needed for drawing the simulation.
     //-------------------------------------------------------------------------
-    Simulator(sf::RenderWindow& renderer);
+    Simulator(sf::RenderWindow& renderer, MessageBar& message_bar);
 
     //-------------------------------------------------------------------------
     //! \brief Load a scenario (the structure holding functions loaded from a
@@ -189,6 +189,15 @@ public:
         return m_elpased_time + m_clock.getElapsedTime();
     }
 
+    //-------------------------------------------------------------------------
+    //! \brief Pass a text to the simulator to display it inside the messagebox
+    //! widget.
+    //-------------------------------------------------------------------------
+    inline void messagebox(std::string const& txt, sf::Color const& color) const
+    {
+        m_message_bar.entry(txt, color);
+    }
+
     //--------------------------------------------------------------------------
     //! \brief Return the latest error.
     //--------------------------------------------------------------------------
@@ -199,22 +208,22 @@ public:
 
 private:
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     bool init();
-    void collisions(Car& ego);
 
-    //-------------------------------------------------------------------------
-    //! \brief Pass a text to the simulator to display it inside the messagebox
-    //! widget.
-    //-------------------------------------------------------------------------
-    inline void messagebox(std::string const& txt, sf::Color const& color) const
-    {
-        m_message_bar.entry(txt, color);
-    }
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void collisions(Car& ego);
 
 private:
 
     //! \brief SFML renderer needed for drawing the simulation.
     sf::RenderWindow& m_renderer;
+    //! \brief Display info or error messages.
+    MessageBar& m_message_bar;
     //! \brief Load a simulation scenario from a shared library.
     DynamicLoader m_loader;
     //! \brief Simulation scenario loaded from a shared library.
@@ -223,7 +232,7 @@ private:
     //! pedestrians ...)
     City m_city;
     //! \brief The ego car we want to simulate.
-    Car* m_ego = nullptr;
+    Car* m_ego = nullptr; // FIXME remove the pointer!
     //! \brief Memorize the camera position.
     sf::Vector2f m_camera;
     //! \brief Camera follow the given car.
@@ -236,8 +245,6 @@ private:
     bool m_pause;
     //! \brief Memorize the latest error.
     std::string m_error;
-    //! \brief Display info or error messages.
-    mutable MessageBar m_message_bar;
 };
 
 #endif
