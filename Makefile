@@ -90,7 +90,6 @@ OBJS += $(LIB_OBJS) main.o
 # is needed please read the external/README.md file.
 #
 PKG_LIBS = sfml-graphics
-
 LINKER_FLAGS += -lpthread -ldl
 
 ###################################################
@@ -104,9 +103,27 @@ LINKER_FLAGS += -framework CoreFoundation
 endif
 
 ###################################################
+# Entry point to call other makefiles compiling all
+# scenarios.
+#
+SCENARIOS = $(sort $(dir $(wildcard ./Scenarios/*/.)))
+
+###################################################
 # Compile the project, the static and shared libraries
+# and scenarios.
+#
 .PHONY: all
-all: $(TARGET) $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET) $(PKG_FILE)
+all: $(TARGET) $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET) $(PKG_FILE) scenarios
+
+###################################################
+# Compile scenarios
+.PHONY: scenarios
+scenarios: | $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET)
+	@$(call print-from,"Compiling scenarios",$(PROJECT),$(SCENARIOS))
+	@for i in $(SCENARIOS);        \
+	do                             \
+		$(MAKE) -C $$i all;        \
+	done;
 
 ###################################################
 # Compile and launch unit tests and generate the code coverage html report.
@@ -139,6 +156,11 @@ veryclean: clean
 	@(cd tests && $(MAKE) -s clean)
 	@$(call print-simple,"Cleaning","$(PWD)/doc/html")
 	@rm -fr $(THIRDPART)/*/ doc/html 2> /dev/null
+	@rm -f data/Scenarios/*.$(SO) 2> /dev/null
+	@for i in $(SCENARIOS);        \
+	do                             \
+		$(MAKE) -C $$i clean;      \
+	done;
 
 ###################################################
 # Sharable informations between all Makefiles
