@@ -9,6 +9,7 @@ data/Simulations/*.dll
 data/Simulations/*.lib
 data/Simulations/*.a
 .vscode
+doc/html
 
 # Linux
 *~
