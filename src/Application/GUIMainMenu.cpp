@@ -21,7 +21,6 @@
 
 #include "Application/GUIMainMenu.hpp"
 #include "Application/GUILoadSimulMenu.hpp"
-#include "Application/GUISimulation.hpp"
 #include "Renderer/FontManager.hpp"
 #include "Simulator/Demo.hpp"
 

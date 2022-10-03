@@ -20,7 +20,6 @@
 //=============================================================================
 
 #include "Application/GUIMainMenu.hpp"
-#include "Application/GUISimulation.hpp"
 #include "Application/GUILoadSimulMenu.hpp"
 #include "Renderer/FontManager.hpp"
 #include "Common/FileSystem.hpp"

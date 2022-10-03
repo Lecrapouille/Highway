@@ -21,7 +21,6 @@
 #ifndef GUI_LOAD_SIMULATIONS_MENU_HPP
 #  define GUI_LOAD_SIMULATIONS_MENU_HPP
 
-#  include "Application/Application.hpp"
 #  include "Application/GUISimulation.hpp"
 #  include <atomic>
 
