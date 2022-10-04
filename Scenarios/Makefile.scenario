@@ -68,9 +68,13 @@ LINKER_FLAGS += -lhighway
 ###################################################
 # Compile the scenario and install it on the scenario
 # folder (remove prefix 'lib' and remove the version)
+#
+# Call rm before cp else this produces a segfault. I dunno why !!
+#
 .PHONY: all
 all: $(SHARED_LIB_TARGET)
 	@$(call print-to,"Installing","$(SHARED_LIB_TARGET)","$(SCENARIO_DIR)","")
+	@rm $(SCENARIO_DIR)/$(basename $(basename $(SHARED_LIB_TARGET:lib%=%))) || echo ""
 	@cp $(BUILD)/$(SHARED_LIB_TARGET) $(SCENARIO_DIR)/$(basename $(basename $(SHARED_LIB_TARGET:lib%=%)))
 
 ###################################################

@@ -76,6 +76,10 @@ private: // Derived from Application::GUI
 
 private:
 
+    void createListScenarios();
+
+private:
+
     struct ScenarioEntry
     {
         std::string libpath;

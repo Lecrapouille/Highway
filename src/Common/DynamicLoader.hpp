@@ -60,7 +60,7 @@ public:
         m_path = libpath;
         close();
         ::dlerror();
-        m_handle = ::dlopen(libpath.c_str(), rt);
+        m_handle = ::dlopen(libpath.c_str(), int(rt));
         if (m_handle == nullptr)
         {
             set_error(::dlerror());

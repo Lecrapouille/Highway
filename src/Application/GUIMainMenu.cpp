@@ -76,10 +76,14 @@ void GUIMainMenu::onHandleInput()
             {
                 if (m_cursor == 0)
                 {
+                    // No scenario file given as argument => load the demo
+                    // scenario.
                     m_application.push<GUISimulation>("GUISimulation");
                 }
                 else
                 {
+                    // Load the GUI shwing all scenarios installed on the
+                    // system.
                     m_application.push<GUILoadSimulMenu>("GUILoadSimulMenu");
                 }
             }

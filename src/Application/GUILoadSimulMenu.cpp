@@ -32,17 +32,7 @@ GUILoadSimulMenu::GUILoadSimulMenu(Application& application, std::string const& 
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onActivate()
-{
-    m_renderer.setView(m_view);
-}
-
-//------------------------------------------------------------------------------
-void GUILoadSimulMenu::onDeactivate()
-{}
-
-//------------------------------------------------------------------------------
-void GUILoadSimulMenu::onCreate()
+void GUILoadSimulMenu::createListScenarios()
 {
     DynamicLoader loader;
     m_scenarios.clear();
@@ -74,6 +64,23 @@ void GUILoadSimulMenu::onCreate()
 }
 
 //------------------------------------------------------------------------------
+void GUILoadSimulMenu::onActivate()
+{
+    m_renderer.setView(m_view);
+    createListScenarios();
+}
+
+//------------------------------------------------------------------------------
+void GUILoadSimulMenu::onDeactivate()
+{}
+
+//------------------------------------------------------------------------------
+void GUILoadSimulMenu::onCreate()
+{
+    createListScenarios();
+}
+
+//------------------------------------------------------------------------------
 void GUILoadSimulMenu::onRelease()
 {}
 
@@ -96,8 +103,11 @@ void GUILoadSimulMenu::onHandleInput()
             }
             else if (event.key.code == sf::Keyboard::Enter)
             {
-                m_application.push<GUISimulation>("GUISimulation",
-                                                  m_scenarios[m_cursor].libpath);
+                if (m_cursor < m_scenarios.size())
+                {
+                    m_application.push<GUISimulation>(
+                        "GUISimulation", m_scenarios[m_cursor].libpath);
+                }
             }
             else if (event.key.code == sf::Keyboard::Down)
             {
@@ -113,7 +123,10 @@ void GUILoadSimulMenu::onHandleInput()
                 {
                     m_cursor = m_scenarios.size();
                 }
-                m_cursor -= 1u;
+                if (m_cursor > 0u)
+                {
+                    m_cursor -= 1u;
+                }
             }
             else if (event.key.code == sf::Keyboard::PageUp)
             {

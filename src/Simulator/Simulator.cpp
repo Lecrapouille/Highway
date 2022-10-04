@@ -73,6 +73,33 @@ bool Simulator::load(std::string const& libpath)
 }
 
 //------------------------------------------------------------------------------
+bool Simulator::autoreload()
+{
+    // Auto reload the scenario file if it has changed.
+    if (m_loader.reloadIfChanged())
+    {
+        std::cerr << m_loader.prototype<const char* (void)>("simulation_name")() << std::endl;
+        m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
+        m_scenario.create = m_loader.prototype<Car& (City&)>("create_city");
+        m_scenario.halt = m_loader.prototype<bool (Simulator const&)>("halt_simulation_when");
+        m_scenario.react = m_loader.prototype<void(Simulator&, size_t)>("react_to");
+
+        // Check if it all functions are not nullptr
+        if (!m_scenario)
+        {
+            m_error = "Failed loading the scenario: " + m_loader.error();
+            m_message_bar.entry(m_error, sf::Color::Red);
+            return false;
+        }
+
+        m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
+        return init();
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------------------------
 bool Simulator::init()
 {
     // Missing call Simulator::load() or scenario has failed loaded.
@@ -155,8 +182,7 @@ void Simulator::reacts(size_t key)
 //------------------------------------------------------------------------------
 bool Simulator::continuing() const
 {
-    std::cout << "CONNTTT\n";
-    return m_scenario && (!m_scenario.halt(*this));
+    return m_loader && m_scenario && (!m_scenario.halt(*this));
 }
 
 //------------------------------------------------------------------------------
@@ -194,12 +220,8 @@ void Simulator::collisions(Car& ego)
 //------------------------------------------------------------------------------
 void Simulator::update(const float dt)
 {
-    // Auto reload the scenario file if it has changed.
-    if (m_loader.reloadIfChanged())
-    {
-        m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
-        init();
-    }
+    // Hot reload the scenario
+    autoreload();
 
     // User has paused the simulation ?
     if (m_pause)

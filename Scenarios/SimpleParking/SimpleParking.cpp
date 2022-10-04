@@ -31,6 +31,7 @@ const char* simulation_name()
 }
 
 //-----------------------------------------------------------------------------
+// TODO restart_simulation_after
 bool halt_simulation_when(Simulator const& simulator)
 {
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > sf::seconds(60.0f)),
