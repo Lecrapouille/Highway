@@ -385,6 +385,17 @@ public:
     }
 
     //-------------------------------------------------------------------------
+    //! \brief By default a vehicle to be concidered as ego shall have is name
+    //! starting by "ego".
+    //! FIXME https://github.com/Lecrapouille/Highway/issues/6
+    //-------------------------------------------------------------------------
+    virtual bool isEgo()
+    {
+        return (name.size() >= 3u) && (name[0] == 'e') && (name[1] == 'g') &&
+               (name[2] == 'o');
+    }
+
+    //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
     inline std::vector<std::shared_ptr<Radar>> const& sensors() const

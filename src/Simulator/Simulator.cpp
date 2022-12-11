@@ -186,13 +186,6 @@ bool Simulator::continuing() const
 }
 
 //------------------------------------------------------------------------------
-inline static bool isEgo(Car const& car) // FIXME return car->ego()
-{
-    // TODO utiliser return car::ego
-    return car.name[0] == 'e' && car.name[1] == 'g' && car.name[2] == 'o';
-}
-
-//------------------------------------------------------------------------------
 void Simulator::collisions(Car& ego)
 {
     bool collided = false;
@@ -234,7 +227,7 @@ void Simulator::update(const float dt)
     for (auto& it: m_city.cars())
     {
         it->update(dt);
-        if (isEgo(*it)) // FIXME it->ego()
+        if (it->isEgo())
         {
             collisions(*it);
         }
