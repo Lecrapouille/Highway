@@ -56,7 +56,7 @@ DEFINES = -DDATADIR=\"$(DATADIR)\" -DZOOM=0.01f
 ###################################################
 # Reduce warnings
 #
-DEFINES += -Wno-switch-enum -Wno-undef -Wno-unused-parameter
+DEFINES += -Wno-switch-enum -Wno-undef -Wno-unused-parameter -Wno-pedantic
 DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 
 ###################################################

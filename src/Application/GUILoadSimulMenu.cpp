@@ -22,6 +22,7 @@
 #include "Application/GUILoadSimulMenu.hpp"
 #include "Renderer/FontManager.hpp"
 #include "Common/FileSystem.hpp"
+#include "Common/Path.hpp"
 
 //------------------------------------------------------------------------------
 GUILoadSimulMenu::GUILoadSimulMenu(Application& application, std::string const& name)
@@ -37,7 +38,11 @@ void GUILoadSimulMenu::createListScenarios()
     DynamicLoader loader;
     m_scenarios.clear();
 
-    for (auto const& entry: fs::directory_iterator("/home/qq/MyGitHub/Highway/data/Scenarios"))
+    std::pair<std::string, bool> res = Path::instance().find("Scenarios");
+    if (!res.second)
+        return ;
+
+    for (auto const& entry: fs::directory_iterator(Path::instance().expand("Scenarios")))
     {
         auto libpath = entry.path().string();
         if (libpath.substr(libpath.find_last_of(".") + 1) == SHARED_LIB_EXTENSION)

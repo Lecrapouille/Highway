@@ -21,6 +21,7 @@
 #ifndef COMMON_PATH_HPP
 #  define COMMON_PATH_HPP
 
+#  include "Common/Singleton.hpp"
 #  include <list>
 #  include <string>
 #  include <vector>
@@ -29,7 +30,7 @@
 //! \brief Class manipulating a set of paths for searching files in the same
 //! idea of the Unix environment variable $PATH.
 // *****************************************************************************
-class Path
+class Path : public Singleton<Path>
 {
 public:
 
@@ -38,7 +39,7 @@ public:
     //! by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    Path(std::string const& path);
+    Path(std::string const& path = "");
 
     //--------------------------------------------------------------------------
     //! \brief Destructor.
@@ -49,43 +50,45 @@ public:
     //! \brief Append a new path. Directories are separated by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    void add(std::string const& path);
+    Path& add(std::string const& path);
 
     //--------------------------------------------------------------------------
     //! \brief Reset the path state. Directories are separated by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    void reset(std::string const& path);
+    Path& reset(std::string const& path);
 
     //--------------------------------------------------------------------------
     //! \brief Erase the path.
     //--------------------------------------------------------------------------
-    void clear();
+    Path& clear();
 
     //--------------------------------------------------------------------------
     //! \brief Erase the given directory from the path.
     //--------------------------------------------------------------------------
-    void remove(std::string const& path);
+    Path& remove(std::string const& path);
 
     //--------------------------------------------------------------------------
     //! \brief Save temporary the path of currently loading MyLoggerMap
     //! file. The goal of the stack is to avoid to MyLogger to have path
     //! conflict with two loaded MyLoggerMap files.
     //--------------------------------------------------------------------------
-    void push(std::string const& path)
+    Path& push(std::string const& path)
     {
         m_stack_path.push_back(path);
+        return *this;
     }
 
     //--------------------------------------------------------------------------
     //! \brief once loaded the path is no longer needed.
     //--------------------------------------------------------------------------
-    void pop()
+    Path& pop()
     {
         if (!m_stack_path.empty())
         {
             m_stack_path.pop_back();
         }
+        return *this;
     }
 
     //--------------------------------------------------------------------------
@@ -146,5 +149,9 @@ protected:
     //! file.)
     std::vector<std::string> m_stack_path;
 };
+
+#  ifdef __APPLE__
+std::string osx_get_resources_dir(std::string const& file);
+#  endif
 
 #endif

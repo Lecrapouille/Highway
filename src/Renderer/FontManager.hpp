@@ -36,11 +36,6 @@ class FontManager: public Singleton<FontManager>
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief
-    //--------------------------------------------------------------------------
-    FontManager();
-
-    //--------------------------------------------------------------------------
     //! \brief Store a new font.
     //! \param[in] name: the internal name of the font.
     //! \param[in] ttf: the filename of the font. It will be searched in the
@@ -55,11 +50,6 @@ public:
     //! \throw if the font was not found.
     //--------------------------------------------------------------------------
     sf::Font& font(const char* name);
-
-public:
-
-    //! \brief Path to search ttf files
-    Path path;
 
 private:
 

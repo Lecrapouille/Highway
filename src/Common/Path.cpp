@@ -21,6 +21,32 @@
 #include "Common/Path.hpp"
 #include <sstream>
 #include <sys/stat.h>
+#ifdef __APPLE__
+#  include <CoreFoundation/CFBundle.h>
+#endif
+#include <iostream>//FIXME
+//------------------------------------------------------------------------------
+#ifdef __APPLE__
+std::string osx_get_resources_dir(std::string const& file)
+{
+    CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+    char resourcePath[PATH_MAX];
+    if (CFURLGetFileSystemRepresentation(resourceURL, true,
+                                         reinterpret_cast<UInt8 *>(resourcePath),
+                                         PATH_MAX))
+    {
+        if (resourceURL != NULL)
+        {
+            CFRelease(resourceURL);
+        }
+
+        std::string path(resourcePath) + "/" + file;
+        return path;
+    }
+
+    return {};
+}
+#endif
 
 //------------------------------------------------------------------------------
 namespace File
@@ -39,33 +65,37 @@ Path::Path(std::string const& path)
 }
 
 //------------------------------------------------------------------------------
-void Path::add(std::string const& path)
+Path& Path::add(std::string const& path)
 {
     if (!path.empty())
     {
         split(path);
     }
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void Path::reset(std::string const& path)
+Path& Path::reset(std::string const& path)
 {
     m_search_paths.clear();
     split(path);
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void Path::clear()
+Path& Path::clear()
 {
     m_search_paths.clear();
     m_string_path.clear();
+    return *this;
 }
 
 //------------------------------------------------------------------------------
-void Path::remove(std::string const& path)
+Path& Path::remove(std::string const& path)
 {
     m_search_paths.remove(path);
     update();
+    return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -80,14 +110,18 @@ std::pair<std::string, bool> Path::find(std::string const& filename) const
         temporary_file = top();
         temporary_file += filename;
         if (File::exist(temporary_file))
+        {
             return std::make_pair(temporary_file, true);
+        }
     }
 
     for (auto const& it: m_search_paths)
     {
         std::string file(it + filename);
         if (File::exist(file))
+        {
             return std::make_pair(file, true);
+        }
     }
 
     // Not found
