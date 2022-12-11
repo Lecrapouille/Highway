@@ -427,9 +427,9 @@ public:
 
 protected:
 
-    //! \brief
+    //! \brief Simulate Electronic Control Unit
     std::vector<ECU*> m_ecus;
-    //! \brief
+    //! \brief FIXME https://github.com/Lecrapouille/Highway/issues/7
     std::vector<std::shared_ptr<Radar>> m_sensors;
     //! \brief The shape of the vehicle, dimension, wheel positions
     std::unique_ptr<VehicleShape<BLUEPRINT>> m_shape;

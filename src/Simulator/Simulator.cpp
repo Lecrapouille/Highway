@@ -105,7 +105,7 @@ bool Simulator::init()
     // Missing call Simulator::load() or scenario has failed loaded.
     if (!m_scenario)
     {
-        m_message_bar.entry("Scenario not loaded", sf::Color::Red);
+        m_message_bar.entry("No scenario referred", sf::Color::Red);
         return false;
     }
 

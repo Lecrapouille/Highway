@@ -256,17 +256,17 @@ public:
     template<class GUI, typename ...ArgsT>
     GUI& gui(std::string const& name, ArgsT&&... args)
     {
-        auto const& it = m_guis.find(name); // TBD: use typeid(T).hash_code() instead of name
-        if (it != m_guis.end())
-        {
-            // FIXME: if we do not remove existing GUI the arguments are not be passed
-            // and therefore they are not used.
-            // https://github.com/Lecrapouille/Highway/issues/2
-            //return *dynamic_cast<GUI*>(it->second.get());
-            m_guis.erase(it);
-        }
+        //auto const& it = m_guis.find(name); // TBD: use typeid(T).hash_code() instead of name
+        //if (it != m_guis.end())
+        //{
+        //    // FIXME: if we do not remove existing GUI the arguments are not be passed
+        //    // and therefore they are not used.
+        //    // https://github.com/Lecrapouille/Highway/issues/2
+        //    //return *dynamic_cast<GUI*>(it->second.get());
+        //    m_guis.erase(it);
+        //}
         m_guis[name] = std::make_unique<GUI>(*this, name, std::forward<ArgsT>(args)...);
-         return *reinterpret_cast<GUI*>(m_guis[name].get());
+        return *reinterpret_cast<GUI*>(m_guis[name].get());
     }
 
     //--------------------------------------------------------------------------

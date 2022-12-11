@@ -56,6 +56,8 @@ void GUIMainMenu::onRelease()
 {}
 
 //------------------------------------------------------------------------------
+// FIXME can be factorized with GUILoadSimulMenu.cpp by adding a class Selection:
+// See https://github.com/Lecrapouille/Highway/issues/5
 void GUIMainMenu::onHandleInput()
 {
     sf::Event event;

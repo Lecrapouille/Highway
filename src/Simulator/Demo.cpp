@@ -21,6 +21,8 @@
 
 #include "Simulator/Demo.hpp"
 
+#define CONTINUE_SIMULATION false
+
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: return the simulation name.
 //-----------------------------------------------------------------------------
@@ -88,7 +90,7 @@ static Car& customize(Car& car)
 //-----------------------------------------------------------------------------
 static bool halt_simulation_when(Simulator const& simulator)
 {
-    return false; // Always runs
+    return CONTINUE_SIMULATION; // Always run the simulation
 }
 
 //-----------------------------------------------------------------------------
