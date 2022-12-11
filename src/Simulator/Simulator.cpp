@@ -182,7 +182,7 @@ void Simulator::reacts(size_t key)
 //------------------------------------------------------------------------------
 bool Simulator::continuing() const
 {
-    return m_loader && m_scenario && (!m_scenario.halt(*this));
+    return /*m_loader &&*/ m_scenario && (!m_scenario.halt(*this));
 }
 
 //------------------------------------------------------------------------------
