@@ -63,7 +63,7 @@ DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 ###################################################
 # Compile against the Highway shared library
 #
-LINKER_FLAGS += -lhighway
+LINKER_FLAGS += $(abspath $(P)/$(BUILD)/libhighway.$(SO).$(shell cat $(P)/VERSION.txt))
 
 ###################################################
 # Compile the scenario and install it on the scenario
