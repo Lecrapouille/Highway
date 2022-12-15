@@ -19,29 +19,28 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#include "SelfParking/Trajectories/Trajectory.hpp"
-#include "SelfParking/Trajectories/DiagonalTrajectory.hpp"
-#include "SelfParking/Trajectories/PerpendicularTrajectory.hpp"
-#include "SelfParking/Trajectories/ParallelTrajectory.hpp"
+#include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
+#include "ECUs/AutoParkECU/Trajectories/ParallelTrajectory.hpp"
+//#include "SelfParking/Trajectories/DiagonalTrajectory.hpp"
+//#include "SelfParking/Trajectories/PerpendicularTrajectory.hpp"
 #include "Vehicle/VehicleControl.hpp"
-#include <iostream>
 
 //------------------------------------------------------------------------------
-bool CarTrajectory::update(CarControl& control, float const dt)
+bool CarTrajectory::update(VehicleControl& control, float const dt)
 {
     m_time += dt;
 
     if (USE_KINEMATIC)
     {
-        control.set_speed(m_speeds.get(m_time));
-        control.set_steering(m_steerings.get(m_time));
+        control.set_ref_speed(m_speeds.get(m_time));
+        control.set_ref_steering(m_steerings.get(m_time));
 
         return !m_speeds.end(m_time);
     }
     else
     {
-        control.set_acceleration(m_accelerations.get(m_time), dt);
-        control.set_steering_rate(m_steerings.get(m_time), dt);
+        control.set_ref_acceleration(m_accelerations.get(m_time), dt);
+        control.set_ref_steering_rate(m_steerings.get(m_time), dt);
 
         return !m_accelerations.end(m_time);
     }
@@ -55,9 +54,12 @@ CarTrajectory::Ptr CarTrajectory::create(Parking::Type const type)
     {
     case Parking::Type::Parallel:
         return std::make_unique<ParallelTrajectory>();
-    case Parking::Type::Perpendicular:
-        return std::make_unique<PerpTrajectory>();
+    //case Parking::Type::Perpendicular:
+    //    return std::make_unique<PerpTrajectory>();
+    //default:
+    //    return std::make_unique<DiagonalTrajectory>();
     default:
-        return std::make_unique<DiagonalTrajectory>();
+        assert(false && "Not yet implemented");
+        break;
     }
 }

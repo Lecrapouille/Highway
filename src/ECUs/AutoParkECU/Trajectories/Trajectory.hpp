@@ -22,16 +22,14 @@
 #ifndef CAR_TRAJECTORIES_HPP
 #  define CAR_TRAJECTORIES_HPP
 
-#  include "World/Parking.hpp"
+#  include "Simulator/City/Parking.hpp"
 #  include <SFML/Graphics.hpp> // FIXME deplacer CarTrajectory::draw
 #  include <vector>
 
 class Car;
-class CarControl;
+class VehicleControl;
 
 static const bool USE_KINEMATIC = true;
-static const float VMAX = 1.0f; // [m/s]
-static const float ADES = 1.0f; // [m/s/s]
 
 class References
 {
@@ -118,7 +116,7 @@ public:
     virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;
     //! \brief
     //! \return false if no need to update (end of references)
-    virtual bool update(CarControl& control, float const dt);
+    virtual bool update(VehicleControl& control, float const dt);
     virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
 
 protected:

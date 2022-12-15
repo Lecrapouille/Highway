@@ -3,11 +3,11 @@ tests/doc
 rapport.info
 foo
 Highway*.tar.gz
-data/Simulations/*.so
-data/Simulations/*.dylib
-data/Simulations/*.dll
-data/Simulations/*.lib
-data/Simulations/*.a
+data/Scenarios/*.so*
+data/Scenarios/*.dylib
+data/Scenarios/*.dll
+data/Scenarios/*.lib
+data/Scenarios/*.a
 .vscode
 doc/html
 

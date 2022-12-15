@@ -20,6 +20,7 @@
 //=============================================================================
 
 #include "Simulator/Demo.hpp"
+#include "ECUs/AutoParkECU/AutoParkECU.hpp"
 
 #define CONTINUE_SIMULATION false
 
@@ -44,8 +45,11 @@ static void simulation_react_to(Simulator& simulator, size_t key)
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: customize the ego vehicle.
 //-----------------------------------------------------------------------------
-static Car& customize(Car& car)
+static Car& customize(City const& city, Car& car)
 {
+    // Add ECUs
+    car.addECU<AutoParkECU>(car, city.cars()); // FIXME how to avoid adding car ?
+
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()
     {
@@ -114,7 +118,7 @@ static Car& create_city(City& city)
     city.addCar("Renault.Twingo", parking3);
 
     // Self-parking car (dynamic). Always be the last in the container
-    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
+    return customize(city, city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
 }
 
 //-----------------------------------------------------------------------------

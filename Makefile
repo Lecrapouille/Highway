@@ -46,7 +46,7 @@ INCLUDES += -I$(P)/src -I$(P)/src/Simulator
 VPATH += $(P)/src $(P)/src/Application $(P)/src/Math $(P)/src/Simulator/Sensors	\
   $(P)/src/Simulator $(P)/src/Simulator/City $(P)/src/Simulator/Vehicle		\
   $(P)/src/Renderer $(P)/src/Simulator/Vehicle/VehiclePhysicalModels		\
-  $(P)/src/Common $(P)/src/ECUs/AutoParkECU
+  $(P)/src/Common $(P)/src/ECUs/AutoParkECU $(P)/src/ECUs/AutoParkECU/Trajectories
 
 ###################################################
 # Project defines
@@ -71,13 +71,12 @@ COMMON_OBJS = Howard.o KeyBindings.o Application.o PetriNet.o PetriEditor.o
 LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o
 LIB_OBJS += FontManager.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
-LIB_OBJS += Radar.o
+LIB_OBJS += Radar.o Antenne.o # FIXME Antenne temporaire
 LIB_OBJS += Car.o Trailer.o
 LIB_OBJS += Pedestrian.o Parking.o BluePrints.o City.o
 LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o GUILoadSimulMenu.o
-LIB_OBJS += AutoParkECU.o CarParkedScanner.o
-#LIB_OBJS += Trajectory.o PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
-#LIB_OBJS += SelfParkingStateMachine.o SelfParkingScanParkedCars.o SelfParkingVehicle.o
+LIB_OBJS += Trajectory.o ParallelTrajectory.o AutoParkECU.o
+# PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
 LIB_OBJS += Demo.o Simulator.o
 
 ###################################################

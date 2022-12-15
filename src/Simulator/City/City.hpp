@@ -140,6 +140,11 @@ public:
         return m_cars;
     }
 
+    std::vector<std::unique_ptr<Car>> const& cars() const
+    {
+        return m_cars;
+    }
+
     //-------------------------------------------------------------------------
     //! \brief Return the list of parkings.
     //-------------------------------------------------------------------------

@@ -19,10 +19,12 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#include "SelfParking/Trajectories/TurningRadius.hpp"
-#include "SelfParking/Trajectories/ParallelTrajectory.hpp"
+#include "Simulator/Vehicle/TurningRadius.hpp"
+#include "ECUs/AutoParkECU/Trajectories/ParallelTrajectory.hpp"
 #include "Renderer/Renderer.hpp"
-#include "Vehicle/Vehicle.hpp"
+#include "Vehicle/Car.hpp"
+#include <iostream>
+#include <cassert>
 
 // Reserve enough memory to store all maneuver states while not information are
 // needed to be saved we keep them for the debug.
@@ -35,17 +37,17 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
 {
     // We suppose that the parking spot can hold the ego car. This case is
     // supposed to be checked by the caller function.
-    assert(car.dim.length < parking.dim.length);
+    assert(car.blueprint.length < parking.blueprint.length);
 
     // More the steering angle is great more the turning radius is short
     // ../../../doc/pics/TurninRadius.png
     // ../../../doc/pics/LeavingCondition.png
-    TurningRadius radius(car.dim, car.dim.max_steering_angle);
+    TurningRadius radius(car.blueprint, car.blueprint.max_steering_angle);
     Remin = radius.external;
     Rimin = radius.internal;
-    Rwmin = Rimin + car.dim.width / 2.0f;
-    Lmin = car.dim.back_overhang + sqrtf(Remin * Remin - Rimin * Rimin);
-    std::cout << "Steermax=" << RAD2DEG(car.dim.max_steering_angle)
+    Rwmin = Rimin + car.blueprint.width / 2.0f;
+    Lmin = car.blueprint.back_overhang + sqrtf(Remin * Remin - Rimin * Rimin);
+    std::cout << "Steermax=" << RAD2DEG(car.blueprint.max_steering_angle)
               << ", Remin=" << Remin << ", Rimin=" << Rimin
               << ", Rwmin=" << Rwmin << ", Lmin=" << Lmin
               << std::endl;
@@ -62,6 +64,10 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     C.resize(MAX_MANEUVERS);
     Em.resize(MAX_MANEUVERS);
 
+    // References
+    const float VMAX = 1.0f; // Max speed [m/s]
+    const float ADES = 1.0f; // Desired acceleration [m/s/s]
+
     // Minimum length of the parallel parking length. See figure 4 "Easy
     // Path Planning and Robust Control for Automatic Parallel Parking" by
     // Sungwoo CHOI, Clément Boussard, Brigitte d’Andréa-Novel.
@@ -71,7 +77,7 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
     // radius Rimin) and A the front-right wheel (external radius Remin). Since
     // the frame of the car body is placed at the center of the back axle, we
     // have to add the back overhang.
-    if (parking.dim.length >= Lmin)
+    if (parking.blueprint.length >= Lmin)
     {
         // ../../../doc/pics/ParallelFinalStep.png
         m_maneuvers = computePath1Trial(car, parking);
@@ -111,7 +117,7 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
     Yf = parking.position().y;
 
     // C1: center of the ending turn (end position of the 2nd turning maneuver)
-    C[0].x = Xf + car.dim.back_overhang;
+    C[0].x = Xf + car.blueprint.back_overhang;
     C[0].y = Yf + Rwmin;
 
     // C2: center of the starting turn (begining position of the 1st turning
@@ -169,16 +175,16 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     // Sungwoo Choi. We are working with position relative to the middle of the
     // bottom side of the parking spot. The position of the middle rear axle of
     // the ego car shall touch the car parked on its back. The position is:
-    Em[0].x = car.dim.back_overhang - parking.dim.length / 2.0f;
-    Em[0].y = car.dim.width / 2.0f;
+    Em[0].x = car.blueprint.back_overhang - parking.blueprint.length / 2.0f;
+    Em[0].y = car.blueprint.width / 2.0f;
 
     // Initial position
     Xi = car.position().x;
     Yi = car.position().y;
 
     // Final position
-    Xf = parking.position().x + parking.dim.length / 2.0f;
-    Yf = parking.position().y - car.dim.width / 2.0f;
+    Xf = parking.position().x + parking.blueprint.length / 2.0f;
+    Yf = parking.position().y - car.blueprint.width / 2.0f;
 
     // Give extra space to avoid the rear overhang of the ego car collides with
     // the parked car back the ego car.
@@ -207,8 +213,8 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             std::cout << "Initial maneuver: forward + left" << std::endl;
             C[i].x = Em[i].x;
             C[i].y = Em[i].y + Rwmin;
-            theta_t[i] = asinf((parking.dim.length / 2.0f - C[i].x) / Remin);
-            theta_s[i] = asinf((car.dim.length - car.dim.back_overhang) / Remin);
+            theta_t[i] = asinf((parking.blueprint.length / 2.0f - C[i].x) / Remin);
+            theta_s[i] = asinf((car.blueprint.length - car.blueprint.back_overhang) / Remin);
             theta_E[i] = theta_t[i] - theta_s[i];
             theta_sum[i] = theta_E[i];
             Em[i + 1].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI3_2);
@@ -232,8 +238,8 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             std::cout << "Even iteration: forward + left" << std::endl;
             C[i].x = 2.0f * Em[i].x - C[i - 1].x;
             C[i].y = 2.0f * Em[i].y - C[i - 1].y;
-            theta_t[i] = asinf((parking.dim.length / 2.0f - C[i].x) / Remin);
-            theta_s[i] = asinf((car.dim.length - car.dim.back_overhang) / Remin);
+            theta_t[i] = asinf((parking.blueprint.length / 2.0f - C[i].x) / Remin);
+            theta_s[i] = asinf((car.blueprint.length - car.blueprint.back_overhang) / Remin);
             theta_E[i] = theta_t[i] - theta_sum[i - 1] - theta_s[i];
             theta_sum[i] = theta_sum[i - 1] + theta_E[i];
             Em[i + 1].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI3_2);
@@ -252,10 +258,10 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             float x = C[i].x;
             float y = C[i].y;
 
-            float w = POW2(Remin) - POW2((parking.dim.length / 2.0f) - x);
-            std::cout << "Can leave ? " << (y - sqrtf(w)) << " > " << parking.dim.width << "?" << std::endl;
+            float w = POW2(Remin) - POW2((parking.blueprint.length / 2.0f) - x);
+            std::cout << "Can leave ? " << (y - sqrtf(w)) << " > " << parking.blueprint.width << "?" << std::endl;
             std::cout << "Putain C.x=" << x << ", C.y=" << y << ", Remin=" << Remin << std::endl;
-            if ((w >= 0.0f) && (y - sqrtf(w) > parking.dim.width))
+            if ((w >= 0.0f) && (y - sqrtf(w) > parking.blueprint.width))
             {
                 std::cout << "Can leave!!!!" << std::endl;
                 break;
@@ -274,10 +280,10 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             std::cout << "Even iteration: backward + right" << std::endl;
             C[i].x = 2.0f * Em[i].x - C[i - 1].x;
             C[i].y = 2.0f * Em[i].y - C[i - 1].y;
-            Rrg[i] = sqrtf(POW2(car.dim.back_overhang) + POW2(Rimin + car.dim.width));
-            std::cout << (Rimin + car.dim.width) / Rrg[i] << ", " << (C[i].x + parking.dim.length / 2.0f) / Rrg[i] << std::endl;
-            theta_p[i] = acosf((Rimin + car.dim.width) / Rrg[i]);
-            theta_g[i] = acosf((C[i].x + parking.dim.length / 2.0f) / Rrg[i]);
+            Rrg[i] = sqrtf(POW2(car.blueprint.back_overhang) + POW2(Rimin + car.blueprint.width));
+            std::cout << (Rimin + car.blueprint.width) / Rrg[i] << ", " << (C[i].x + parking.blueprint.length / 2.0f) / Rrg[i] << std::endl;
+            theta_p[i] = acosf((Rimin + car.blueprint.width) / Rrg[i]);
+            theta_g[i] = acosf((C[i].x + parking.blueprint.length / 2.0f) / Rrg[i]);
             theta_E[i] = PI_2 - theta_sum[i - 1] - theta_p[i] - theta_g[i];
             theta_sum[i] = theta_sum[i - 1] + theta_E[i];
             Em[i + 1].x = C[i].x + Rwmin * cosf(theta_sum[i] + PI_2);
@@ -394,7 +400,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
 
     // Stop the car to make turn wheels
     m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-    m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+    m_steerings.add(car.blueprint.max_steering_angle, DURATION_TO_TURN_WHEELS);
 
     // Turning circles: Consome path starting from the latest
     size_t i = m_maneuvers;
@@ -408,7 +414,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
         {
             std::cout << "T111: " << t << std::endl;
             m_speeds.add(-VMAX, t);
-            m_steerings.add(-car.dim.max_steering_angle, t);
+            m_steerings.add(-car.blueprint.max_steering_angle, t);
         }
 
         // Lastest turn to leave the parking spot
@@ -416,7 +422,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
         {
             std::cout << "T222: " << t << std::endl;
             m_speeds.add(-VMAX, t);
-            m_steerings.add(car.dim.max_steering_angle, t);
+            m_steerings.add(car.blueprint.max_steering_angle, t);
         }
 
         // Driving forward while turning to the left
@@ -424,7 +430,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
         {
             std::cout << "T333: " << t << std::endl;
             m_speeds.add(-VMAX, t);
-            m_steerings.add(car.dim.max_steering_angle, t);
+            m_steerings.add(car.blueprint.max_steering_angle, t);
         }
 
         // Driving backward while turning to the right
@@ -432,16 +438,16 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
         {
             std::cout << "T444: " << t << std::endl;
             m_speeds.add(VMAX, t);
-            m_steerings.add(-car.dim.max_steering_angle, t);
+            m_steerings.add(-car.blueprint.max_steering_angle, t);
         }
 
         // Stop the car to make turn wheels
         m_speeds.add(0.0f, DURATION_TO_TURN_WHEELS);
-        m_steerings.add(car.dim.max_steering_angle, DURATION_TO_TURN_WHEELS);
+        m_steerings.add(car.blueprint.max_steering_angle, DURATION_TO_TURN_WHEELS);
     }
 
     // Centering the car inside its parking spot
-    t = std::abs((parking.dim.length - car.dim.length) / 2.0f) / VMAX;
+    t = std::abs((parking.blueprint.length - car.blueprint.length) / 2.0f) / VMAX;
     m_speeds.add(VMAX, t);
     m_steerings.add(0.0f, t);
 

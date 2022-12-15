@@ -23,7 +23,7 @@
 #ifndef PARALLEL_TRAJECTORY_HPP
 #  define PARALLEL_TRAJECTORY_HPP
 
-#  include "SelfParking/Trajectories/Trajectory.hpp"
+#  include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
 
 // *****************************************************************************
 //! \brief Compute the trajectory allowing the car to park. For parallel parking
@@ -39,6 +39,15 @@ public:
 private:
 
     //--------------------------------------------------------------------------
+    //! \brief Compute the trajectory path when the car needs 1 maneuver:
+    //! - condition: parking.blueprint.length >= Lmin
+    //!    ../../../doc/pics/ParallelLeavingCondition.png
+    //! - Step: ../../../doc/pics/ParallelFinalStep.png
+    //! Equations: ../../../doc/pics/ParallelManeuversEq.png
+    //--------------------------------------------------------------------------
+    size_t computePath1Trial(Car const& car, Parking const& parking);
+
+    //--------------------------------------------------------------------------
     //! \brief Compute the trajectory path when the car needs N maneuvers
     //! Loop:
     //! - Step 1:  ../../../doc/pics/ParallelStep1.png
@@ -48,8 +57,12 @@ private:
     //! Equations: ../../../doc/pics/ParallelManeuversEq.png
     //--------------------------------------------------------------------------
     size_t computePathNTrials(Car const& car, Parking const& parking);
-    size_t computePath1Trial(Car const& car, Parking const& parking);
 
+    //--------------------------------------------------------------------------
+    //! \brief Generate ramp of speed, acceleration and angle of the wheel.
+    //! \param[in] VMAX: max speed
+    //! \param[in] ADES: desired acceleration
+    //--------------------------------------------------------------------------
     void generateReferences(Car const& car, Parking const& parking,
                             float const VMAX, float const ADES);
 private:

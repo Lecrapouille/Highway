@@ -23,6 +23,7 @@
 #  define TURNING_RADIUS_HPP
 
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
+#  include <cmath>
 
 // *****************************************************************************
 //! \brief The turning radius is the radius of the circle created by a
@@ -51,13 +52,13 @@ struct TurningRadius
         const float p = dim.front_overhang;
 
         // R: turning radius of the fake front wheel [m]
-        middle = e / sinf(steering);
+        middle = e / std::sin(steering);
 
         // Ri: Inner turning radius [m]
-        internal = sqrtf(middle * middle - e * e) - (w / 2.0f);
+        internal = std::sqrt(middle * middle - e * e) - (w / 2.0f);
 
         // Re: External (outer) turning radius [m]
-        external = sqrtf((internal + w) * (internal + w) + (e + p) * (e + p));
+        external = std::sqrt((internal + w) * (internal + w) + (e + p) * (e + p));
 
         // Largeur balayee [m]
         bal = external - internal;
