@@ -27,7 +27,8 @@
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
 #  include "Simulator/Vehicle/VehiclePhysics.hpp"
 #  include "Simulator/Vehicle/ECU.hpp"
-#  include "Simulator/Sensors/Radar.hpp"
+#  include "Simulator/Sensors/Antenne.hpp" // FIXME
+#  include "Simulator/Sensors/Antenne.hpp" // FIXME
 #  include <memory>
 #  include <functional>
 
@@ -90,25 +91,14 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    template<class SENSOR, class BLUEPRINT, typename... Args>
-    SENSOR& addSensor(BP const& bp)
+    template<class SENSOR, class BP/*, typename... Args*/>
+    SENSOR& addSensor(BP const& bp/*, Args&&... args*/)
     {
-        std::shared_ptr<SENSOR> sensor =
-            std::make_shared<SENSOR>(bp, std::forward<Args>(args)...);
+        std::shared_ptr<SENSOR> sensor = std::make_shared<SENSOR>(bp);
         m_sensors.push_back(sensor);
-        m_shape->addSensor(sensor);
+        m_shape->addSensorShape(sensor);
+        //sensor->init(std::forward<Args>(args)...);
         return *sensor;
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief
-    //-------------------------------------------------------------------------
-    Radar& addRadar(RadarBluePrint const& bp)
-    {
-        std::shared_ptr<Radar> radar = std::make_shared<Radar>(bp);
-        m_sensors.push_back(radar);
-        m_shape->addSensor(radar);
-        return *radar;
     }
 
     //-------------------------------------------------------------------------
@@ -411,7 +401,7 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    inline std::vector<std::shared_ptr<Radar>> const& sensors() const
+    inline std::vector<std::shared_ptr<Antenne>> const& sensors() const
     {
         return m_sensors;
     }
@@ -443,7 +433,7 @@ protected:
     //! \brief Simulate Electronic Control Unit
     std::vector<ECU*> m_ecus;
     //! \brief FIXME https://github.com/Lecrapouille/Highway/issues/7
-    std::vector<std::shared_ptr<Radar>> m_sensors;
+    std::vector<std::shared_ptr<Antenne>> m_sensors;
     //! \brief The shape of the vehicle, dimension, wheel positions
     std::unique_ptr<VehicleShape<BLUEPRINT>> m_shape;
     //! \brief Kinematic, Dynamic model of the vehicle

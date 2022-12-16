@@ -39,17 +39,17 @@ class Car;
 //! \brief A sensor shape is just a blue print used inside of the vehicle shape
 //! for orienting automatically the sensor when the vehicle shape is turned.
 // ****************************************************************************
-struct AntenneBluePrint: /*public DynamicActor,*/ public SensorBluePrint
+struct AntenneBluePrint: public DynamicActor, public SensorBluePrint//, public SensorShape
 {
    //--------------------------------------------------------------------------
    //! \brief Set the sensor attitude (position and heading orientation)
    //--------------------------------------------------------------------------
-   AntenneBluePrint(sf::Vector2f off, float ori)
-     : SensorBluePrint(off, ori)
+   AntenneBluePrint(sf::Vector2f off, float ori, float r)
+     : SensorBluePrint(off, ori), range(r)
    {}
 
-   //! \brief Oriented bounding box
-   sf::RectangleShape obb;
+   //! \brief Mmaximum range of radar [meter].
+   float const range;
 };
 
 // ****************************************************************************
@@ -57,7 +57,7 @@ struct AntenneBluePrint: /*public DynamicActor,*/ public SensorBluePrint
 //! not realist for works as a bug entenna and detect oriented boundind boxes
 //! collisions.
 // ****************************************************************************
-class Antenne
+class Antenne: public SensorShape // AntenneBluePrint
 {
 public:
 
@@ -67,7 +67,7 @@ public:
    //! \fixme should be in constructor but since a vehicle has a sensors but its
    //! shape holds AntenneShape we had to split it. I dunno how to fix that.
    //--------------------------------------------------------------------------
-   void init(AntenneBluePrint& shape, const float range);
+   Antenne(AntenneBluePrint const& shape);//, const float range);
 
    //--------------------------------------------------------------------------
    //! \brief Is the sensor collides to the given bounding box ?
@@ -75,18 +75,20 @@ public:
    //! \param[inout] p the point of collision.
    //! \return true if the sensor has detected a box.
    //--------------------------------------------------------------------------
-   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p) const;
+   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p);// FIXME const;
 
-   inline AntenneBluePrint const& shape() const
+   /*inline AntenneBluePrint const& shape() const
    {
       assert(m_shape != nullptr);
       return *m_shape;
-   }
+   }*/
 
 private:
 
    // FIXME ideally AntenneShape& if possible to replace init() by the constructor!
-   AntenneBluePrint* m_shape = nullptr;
+   //AntenneBluePrint* m_shape = nullptr;
+   //! \brief
+   AntenneBluePrint const blueprint;
 };
 
 #endif

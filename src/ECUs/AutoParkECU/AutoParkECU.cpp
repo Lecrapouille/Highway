@@ -242,25 +242,14 @@ void AutoParkECU::StateMachine::update(float const dt, AutoParkECU& ecu)
 AutoParkECU::AutoParkECU(Car& car, std::vector<std::unique_ptr<Car>> const& cars)
   : ECU(), m_ego(car), m_cars(cars)
 {
-    std::cout << "AutoParkECU" << std::endl;
-
-    std::vector<std::shared_ptr<SensorShape>> const& sensors = car.shape().sensors();
-    float const range = 10.0f;
-
-    m_radars.resize(sensors.size());
-    size_t i = sensors.size();
-    while (i--)
-    {
-        m_radars[i].init(*reinterpret_cast<AntenneBluePrint*>(sensors[i].get()), range);
-    }
+    std::cout << "AutoParkECU created" << std::endl;
 }
 
 //-----------------------------------------------------------------------------
 void AutoParkECU::update(float const dt)
 {
-   std::cout << "AutoParkECU update" << std::endl;
+   // std::cout << "AutoParkECU update" << std::endl;
    m_statemachine.update(dt, *this);
-   //ecu.m_ego.update(dt);
 }
 
 //-----------------------------------------------------------------------------
@@ -270,24 +259,25 @@ bool AutoParkECU::detect() // FIXME retourner un champ de bit 1 bool par capteur
 {
     sf::Vector2f p; // FIXME to be returned
 
-    if (m_radars.size() == 0u)
+    auto& radars = m_ego.sensors();
+    if (radars.size() == 0u)
         return false;
 
     switch (m_ego.turningIndicator())
     {
         case TurningIndicator::Right:
-            assert(m_radars.size() >= CarBluePrint::WheelName::RR);
+            assert(radars.size() >= CarBluePrint::WheelName::RR);
             for (auto const& car: m_cars)
             {
-                if (m_radars[CarBluePrint::WheelName::RR].detects(car->obb(), p))
+                if (radars[CarBluePrint::WheelName::RR]->detects(car->obb(), p))
                     return true;
             }
             break;
         case TurningIndicator::Left:
-            assert(m_radars.size() >= CarBluePrint::WheelName::RL);
+            assert(radars.size() >= CarBluePrint::WheelName::RL);
             for (auto const& car: m_cars)
             {
-                if (m_radars[CarBluePrint::WheelName::RL].detects(car->obb(), p))
+                if (radars[CarBluePrint::WheelName::RL]->detects(car->obb(), p))
                     return true;
             }
             break;

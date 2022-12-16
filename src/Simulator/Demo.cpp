@@ -45,6 +45,30 @@ static void simulation_react_to(Simulator& simulator, size_t key)
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: customize the ego vehicle.
 //-----------------------------------------------------------------------------
+static void add_sensors(Car& car, AutoParkECU& ecu)
+{
+    // 4 radars: 1 one each wheel (to make simple)
+    constexpr float range = 20.0f;
+    const float offx = car.blueprint.wheelbase;
+    const float offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1f / 2.0f;
+    static const std::map<CarBluePrint::WheelName, AntenneBluePrint> blueprints = {
+        { CarBluePrint::WheelName::FL, { sf::Vector2f(offx,  offy),  90.0f, range } },
+        { CarBluePrint::WheelName::FR, { sf::Vector2f(offx, -offy), -90.0f, range } },
+        { CarBluePrint::WheelName::RL, { sf::Vector2f(0.0f,  offy),  90.0f, range } },
+        { CarBluePrint::WheelName::RR, { sf::Vector2f(0.0f, -offy), -90.0f, range } },
+    };
+
+    for (auto const& bp: blueprints)
+    {
+        Antenne& antenne = car.addSensor<Antenne, AntenneBluePrint>(bp.second);
+        // TODO
+        // ecu.observe(antenne)
+    }
+}
+
+//-----------------------------------------------------------------------------
+//! \brief "Hello simulation" demo: customize the ego vehicle.
+//-----------------------------------------------------------------------------
 static Car& customize(City const& city, Car& car)
 {
     // Add ECUs
@@ -52,13 +76,7 @@ static Car& customize(City const& city, Car& car)
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city.cars());
 
     // Add sensors.
-    //Radar& r = car.addSensor<Radar, RadarBluePrint>(
-    //    RadarBluePrint(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f),
-    //    90.0f, 20.0f, 2.0f));
-    Antenne& a = car.addSensor<Antenne, AntenneBluePrint>(
-        AntenneBluePrint(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f),
-    // TODO add Observer pattern
-    // ecu.observe(r)
+    add_sensors(car, ecu);
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()

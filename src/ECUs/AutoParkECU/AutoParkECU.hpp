@@ -242,8 +242,6 @@ private:
     AutoParkECU::Scanner m_scanner;
     //! \brief
     StateMachine m_statemachine;
-    //! \brief Sensors
-    std::vector<Antenne> m_radars;
     //! \brief Trajectory
     std::unique_ptr<CarTrajectory> m_trajectory = nullptr;
     //! \brief Trigger for doing parking

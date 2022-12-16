@@ -30,28 +30,28 @@
 #  include <cassert>
 
 //-----------------------------------------------------------------------------
-void Antenne::init(AntenneBluePrint& shape, const float range)
+Antenne::Antenne(AntenneBluePrint const& blueprint_)
+   : SensorShape(blueprint_), blueprint(blueprint_)
 {
-   m_shape = &shape;
-   m_shape->obb.setSize(sf::Vector2f(range, 0.1f));
-   m_shape->obb.setOrigin(0.0f, m_shape->obb.getSize().y / 2);
-   m_shape->obb.setFillColor(sf::Color(165, 42, 42));
-   m_shape->obb.setOutlineThickness(ZOOM);
-   m_shape->obb.setOutlineColor(sf::Color::Blue);
+   //m_shape = &shape;
+   m_obb.setSize(sf::Vector2f(blueprint.range, 0.1f));
+   m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
+   //m_obb.setFillColor(sf::Color(165, 42, 42));
+   //m_obb.setOutlineThickness(ZOOM);
+   m_obb.setOutlineColor(sf::Color::Blue);
 }
 
 //-----------------------------------------------------------------------------
-bool Antenne::detects(sf::RectangleShape const& shape, sf::Vector2f& p) const
+bool Antenne::detects(sf::RectangleShape const& shape, sf::Vector2f& p) // FIXME const
 {
-   assert(m_shape != nullptr);
-   bool res = ::collide(m_shape->obb, shape, p);
+   bool res = ::collide(m_obb, shape, p);
    if (res)
    {
-      m_shape->obb.setFillColor(sf::Color::Red);
+      m_obb.setFillColor(sf::Color::Red);
    }
    else
    {
-      m_shape->obb.setFillColor(sf::Color::Green);
+      m_obb.setFillColor(sf::Color::Green);
    }
    return res;
 }

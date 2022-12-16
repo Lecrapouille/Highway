@@ -69,7 +69,7 @@ public:
    //! \param[inout] p the point of collision.
    //! \return true if the sensor has detected a box.
    //--------------------------------------------------------------------------
-   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p);// const;
+   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p);// FIXME  const;
 
    Arc const& coverageArea()
    {

@@ -77,7 +77,8 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     // Car sensors
     for (auto const& it: car.sensors())
     {
-        target.draw(it->coverageArea(), states);
+        // Radar: target.draw(it->coverageArea(), states);
+        target.draw(it->obb(), states);
     }
 
     // Turning indicator
