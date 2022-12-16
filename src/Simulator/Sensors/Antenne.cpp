@@ -25,20 +25,12 @@
 //
 // For more information, please refer to <https://unlicense.org>
 
-#  include "ECUs/AutoParkECU/Antenne.hpp" // FIXME temporary
-//#  include "Common/Utils.hpp"
+#  include "Sensors/Antenne.hpp"
 #  include "Math/Collide.hpp"
 #  include <cassert>
 
 //-----------------------------------------------------------------------------
-void AntenneShape::set(sf::Vector2f const& p, float const orientation_)
-{
-   obb.setPosition(p);
-   obb.setRotation(orientation_);
-}
-
-//-----------------------------------------------------------------------------
-void Antenne::init(AntenneShape& shape, const float range)
+void Antenne::init(AntenneBluePrint& shape, const float range)
 {
    m_shape = &shape;
    m_shape->obb.setSize(sf::Vector2f(range, 0.1f));
@@ -46,13 +38,6 @@ void Antenne::init(AntenneShape& shape, const float range)
    m_shape->obb.setFillColor(sf::Color(165, 42, 42));
    m_shape->obb.setOutlineThickness(ZOOM);
    m_shape->obb.setOutlineColor(sf::Color::Blue);
-}
-
-//-----------------------------------------------------------------------------
-void Antenne::set(sf::Vector2f const& p, float const orientation)
-{
-   assert(m_shape != nullptr);
-   m_shape->set(p, orientation);
 }
 
 //-----------------------------------------------------------------------------

@@ -160,6 +160,14 @@ public:
         return BLUEPRINT::WheelName::MAX;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief Return shapes of sensors
+    //--------------------------------------------------------------------------
+    inline std::vector<std::shared_ptr<SensorShape>> const& sensors() const
+    {
+        return m_sensors;
+    }
+
 private:
 
     //! \brief Dimension of the vehicle

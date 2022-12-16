@@ -48,18 +48,30 @@ static void simulation_react_to(Simulator& simulator, size_t key)
 static Car& customize(City const& city, Car& car)
 {
     // Add ECUs
-    car.addECU<AutoParkECU>(car, city.cars()); // FIXME how to avoid adding car ?
+    // FIXME how to avoid adding car (shall be implicit) and cars (pass City) ?
+    AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city.cars());
+
+    // Add sensors.
+    //Radar& r = car.addSensor<Radar, RadarBluePrint>(
+    //    RadarBluePrint(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f),
+    //    90.0f, 20.0f, 2.0f));
+    Antenne& a = car.addSensor<Antenne, AntenneBluePrint>(
+        AntenneBluePrint(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f),
+    // TODO add Observer pattern
+    // ecu.observe(r)
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()
     {
-        //car.turningIndicator(false, m_turning_right ^ true);
+        bool turning_right = (car.turningIndicator() == TurningIndicator::Right);
+        car.turningIndicator(false, turning_right ^ true);
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageUp, [&car]()
     {
-        //car.turningIndicator(m_turning_left ^ true, false);
+        bool turning_left = (car.turningIndicator() == TurningIndicator::Left);
+        car.turningIndicator(turning_left ^ true, false);
     });
 
     // Make the car reacts from the keyboard: set car speed (kinematic).

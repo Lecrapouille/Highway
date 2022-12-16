@@ -90,6 +90,19 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
+    template<class SENSOR, class BLUEPRINT, typename... Args>
+    SENSOR& addSensor(BP const& bp)
+    {
+        std::shared_ptr<SENSOR> sensor =
+            std::make_shared<SENSOR>(bp, std::forward<Args>(args)...);
+        m_sensors.push_back(sensor);
+        m_shape->addSensor(sensor);
+        return *sensor;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
     Radar& addRadar(RadarBluePrint const& bp)
     {
         std::shared_ptr<Radar> radar = std::make_shared<Radar>(bp);

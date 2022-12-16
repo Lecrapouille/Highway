@@ -244,17 +244,15 @@ AutoParkECU::AutoParkECU(Car& car, std::vector<std::unique_ptr<Car>> const& cars
 {
     std::cout << "AutoParkECU" << std::endl;
 
-#if 0 // FIXME
-    auto const& sensors = car.shape().sensors();
+    std::vector<std::shared_ptr<SensorShape>> const& sensors = car.shape().sensors();
     float const range = 10.0f;
 
     m_radars.resize(sensors.size());
     size_t i = sensors.size();
     while (i--)
     {
-        m_radars[i].init(sensors[i], range);
+        m_radars[i].init(*reinterpret_cast<AntenneBluePrint*>(sensors[i].get()), range);
     }
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -266,29 +264,35 @@ void AutoParkECU::update(float const dt)
 }
 
 //-----------------------------------------------------------------------------
+// FIXME for the moment a single sensor
+// FIXME simulate defectuous sensor
 bool AutoParkECU::detect() // FIXME retourner un champ de bit 1 bool par capteur
 {
-    sf::Vector2f p; // TODO to be returned
+    sf::Vector2f p; // FIXME to be returned
 
-    for (auto const& car: m_cars)
+    if (m_radars.size() == 0u)
+        return false;
+
+    switch (m_ego.turningIndicator())
     {
-        // TODO for the moment a single sensor
-        // TODO simulate defectuous sensor
-        switch (m_ego.turningIndicator())
-        {
-            case TurningIndicator::Right:
-                assert(m_radars.size() >= CarBluePrint::WheelName::RR);
+        case TurningIndicator::Right:
+            assert(m_radars.size() >= CarBluePrint::WheelName::RR);
+            for (auto const& car: m_cars)
+            {
                 if (m_radars[CarBluePrint::WheelName::RR].detects(car->obb(), p))
                     return true;
-                break;
-            case TurningIndicator::Left:
-                assert(m_radars.size() >= CarBluePrint::WheelName::RL);
+            }
+            break;
+        case TurningIndicator::Left:
+            assert(m_radars.size() >= CarBluePrint::WheelName::RL);
+            for (auto const& car: m_cars)
+            {
                 if (m_radars[CarBluePrint::WheelName::RL].detects(car->obb(), p))
                     return true;
-                break;
-            default:
-                break;
-        }
+            }
+            break;
+        default:
+            break;
     }
 
     return false;
