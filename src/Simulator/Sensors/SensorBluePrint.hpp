@@ -23,13 +23,14 @@
 #  define SENSOR_BLUEPRINT_HPP
 
 #  include <SFML/Graphics/RectangleShape.hpp>
+#  include "Math/Math.hpp"
 
 struct SensorBluePrint
 {
    // FIXME: why needed ?
    SensorBluePrint() {}
    SensorBluePrint(sf::Vector2f off, float ori)
-     : offset(off), orientation(ori)
+     : offset(off), orientation(DEG2RAD(ori))
    {}
 
    //! \brief Relative position from the car shape position (middle rear axle)

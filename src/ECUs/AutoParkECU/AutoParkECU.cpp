@@ -242,7 +242,7 @@ void AutoParkECU::StateMachine::update(float const dt, AutoParkECU& ecu)
 AutoParkECU::AutoParkECU(Car& car, std::vector<std::unique_ptr<Car>> const& cars)
   : ECU(), m_ego(car), m_cars(cars)
 {
-    std::cout << "AutoParkECU created" << std::endl;
+    LOGI("AutoParkECU created");
 }
 
 //-----------------------------------------------------------------------------
@@ -255,11 +255,13 @@ void AutoParkECU::update(float const dt)
 //-----------------------------------------------------------------------------
 // FIXME for the moment a single sensor
 // FIXME simulate defectuous sensor
+// FIXME this is not the good location for calling sensors::datect => move this
+// inside car::update()
 bool AutoParkECU::detect() // FIXME retourner un champ de bit 1 bool par capteur
 {
     sf::Vector2f p; // FIXME to be returned
 
-    auto& radars = m_ego.sensors();
+    auto const& radars = m_ego.sensors();
     if (radars.size() == 0u)
         return false;
 
@@ -301,5 +303,5 @@ bool AutoParkECU::updateTrajectory(float const dt)
     if (m_trajectory == nullptr)
         return true;
 
-    return false; // FIXME m_trajectory->update(m_control, dt);
+    return m_trajectory->update(m_ego, dt);
 }

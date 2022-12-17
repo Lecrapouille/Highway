@@ -22,6 +22,7 @@
 #ifndef BLUEPRINTS_HPP
 #  define BLUEPRINTS_HPP
 
+#  include "MyLogger/Logger.hpp" 
 #  include <map>
 #  include <unordered_map>
 #  include <vector>
@@ -63,8 +64,8 @@ public:
         if (!database<BLUEPRINT>().insert(
                 typename std::map<std::string, BLUEPRINT>::value_type(name, blueprint)).second)
         {
-            std::cerr << "Cannot add " << name << " in BluePrints database beause"
-                      << " this entry already exists" << std::endl;
+            LOGE("Cannot add %s in BluePrints database beause"
+                 " this entry already exists", name);
             return false;
         }
 
@@ -118,7 +119,7 @@ private:
             // Hold list of created heterogeneous stacks for their destruction
             m_erase_functions.emplace_back([](std::string& s)
             {
-                std::cout << "erase database" << std::endl;
+                LOGI("Erase database");
                 m_databases.erase(s);
             });
 

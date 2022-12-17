@@ -116,7 +116,7 @@ public:
     virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;
     //! \brief
     //! \return false if no need to update (end of references)
-    virtual bool update(VehicleControl& control, float const dt);
+    virtual bool update(Car& car, float const dt);
     virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
 
 protected:

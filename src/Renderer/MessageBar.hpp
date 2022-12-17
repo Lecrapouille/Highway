@@ -22,6 +22,7 @@
 #ifndef MESSAGEBAR_HPP
 #  define MESSAGEBAR_HPP
 
+#  include "MyLogger/Logger.hpp"
 #  include <iostream>
 
 // *****************************************************************************
@@ -39,7 +40,7 @@ struct MessageBar : public sf::Drawable
 
     void entry(const std::string& message, sf::Color const& color)
     {
-        std::cerr << message << std::endl;
+        LOGI("%s", message.c_str());
         m_message = message;
         m_shape.setFillColor(color);
         m_text.setString(m_message);

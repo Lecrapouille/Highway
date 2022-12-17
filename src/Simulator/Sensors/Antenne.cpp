@@ -39,6 +39,10 @@ Antenne::Antenne(AntenneBluePrint const& blueprint_)
    //m_obb.setFillColor(sf::Color(165, 42, 42));
    //m_obb.setOutlineThickness(ZOOM);
    m_obb.setOutlineColor(sf::Color::Blue);
+
+   // FIXME to be cleaned
+   static int id = 0;
+   m_id = id++;
 }
 
 //-----------------------------------------------------------------------------

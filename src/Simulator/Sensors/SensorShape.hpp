@@ -24,7 +24,7 @@
 
 #  include "Sensors/SensorBluePrint.hpp"
 #  include "Math/Math.hpp"
-
+#include <iostream> // FIXME
 // ****************************************************************************
 //! \brief A sensor shape is just a blue print used inside of the vehicle shape
 //! for orienting automatically the sensor when the vehicle shape is turned.
@@ -41,7 +41,7 @@ public:
     {
         // Origin on the middle of the rear wheel axle
         //m_obb.setSize(sf::Vector2f(range, 0.1f));
-        //m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
+        m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
         m_obb.setFillColor(sf::Color(165, 42, 42));
         m_obb.setOutlineThickness(ZOOM);
 
@@ -56,8 +56,8 @@ public:
     {
         m_position = position;
         m_heading = heading;
-        m_obb.setPosition(position);
         m_obb.setRotation(RAD2DEG(heading + blueprint.orientation));
+        m_obb.setPosition(position + HEADING(blueprint.offset, heading));
     }
 
     //--------------------------------------------------------------------------

@@ -22,6 +22,7 @@
 #ifndef VEHICLE_HPP
 #  define VEHICLE_HPP
 
+#  include "MyLogger/Logger.hpp"
 #  include "Simulator/Actor.hpp"
 #  include "Simulator/Vehicle/Wheel.hpp"
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
@@ -84,7 +85,7 @@ public:
                       float const steering = 0.0f)
     {
         m_physics->init(acceleration, speed, position, heading);
-        //todo m_control->init(0.0f, speed, position, heading);
+        // TODO m_control->init(0.0f, speed, position, heading);
         this->update_wheels(speed, steering);
     }
 
@@ -95,6 +96,7 @@ public:
     SENSOR& addSensor(BP const& bp/*, Args&&... args*/)
     {
         std::shared_ptr<SENSOR> sensor = std::make_shared<SENSOR>(bp);
+        LOGI("Sensor %u attached to vehicle %s", sensor->m_id, name.c_str());
         m_sensors.push_back(sensor);
         m_shape->addSensorShape(sensor);
         //sensor->init(std::forward<Args>(args)...);
@@ -128,6 +130,7 @@ public:
             it->update(dt);
         }
 
+        // TBD: here loop of sensors::update() ?
         m_control->update(dt);
         m_physics->update(dt);
         update_wheels(m_physics->speed(), m_control->get_steering());

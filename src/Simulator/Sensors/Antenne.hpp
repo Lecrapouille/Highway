@@ -83,6 +83,9 @@ public:
       return *m_shape;
    }*/
 
+//TODO
+int m_id = 0;
+
 private:
 
    // FIXME ideally AntenneShape& if possible to replace init() by the constructor!

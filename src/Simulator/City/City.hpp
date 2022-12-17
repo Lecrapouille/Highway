@@ -145,6 +145,16 @@ public:
         return m_cars;
     }
 
+    std::vector<std::unique_ptr<Car>> const& ghosts() const
+    {
+        return m_ghosts;
+    }
+
+    std::unique_ptr<Car> const& ego() const
+    {
+        return m_ego;
+    }
+
     //-------------------------------------------------------------------------
     //! \brief Return the list of parkings.
     //-------------------------------------------------------------------------
@@ -186,16 +196,15 @@ protected:
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
     template<class CAR>
-    CAR& createCar(const char* model, const char* name, sf::Color color, float const acceleration,
-                   float const speed, sf::Vector2f const& position,
-                   float const heading, float const steering)
+    std::unique_ptr<CAR> createCar(const char* model, const char* name, sf::Color color,
+                                   float const acceleration, float const speed,
+                                   sf::Vector2f const& position, float const heading,
+                                   float const steering)
     {
         std::unique_ptr<CAR> car = std::make_unique<CAR>(model, color);
         car->name = name;
         car->init(acceleration, speed, position, heading, steering);
-        m_cars.push_back(std::move(car));
-
-        return static_cast<CAR&>(*m_cars.back());
+        return car;
     }
 
 protected:
@@ -204,6 +213,10 @@ protected:
     //SpatialHashGrid m_grid;
     //! \brief Container of cars
     std::vector<std::unique_ptr<Car>> m_cars;
+    //! \brief Container of purely displayed cars
+    std::vector<std::unique_ptr<Car>> m_ghosts;
+    //! \brief The autonomous cars (TODO for the moment only one is managed)
+    std::unique_ptr<Car> m_ego = nullptr;
     //! \brief Container of parking slots
     std::vector<std::unique_ptr<Parking>> m_parkings;
     // TODO roads and bounding boxes of static objects, pedestrians

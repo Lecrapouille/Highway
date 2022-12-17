@@ -227,11 +227,11 @@ void Simulator::update(const float dt)
     for (auto& it: m_city.cars())
     {
         it->update(dt);
-        if (it->isEgo())
-        {
-            collisions(*it);
-        }
     }
+
+    // Ego vehicle
+    m_ego->update(dt);
+    collisions(*m_ego);
 
     // Make the camera follows the car
     if (m_follow != nullptr)
@@ -266,10 +266,16 @@ void Simulator::drawSimulation(sf::View const& view)
     }
 
     // Draw ghost cars
-    /*for (auto const& it: m_city.ghosts())
-      {
-      Renderer::draw(*it, m_renderer);
-      }*/
+    for (auto const& it: m_city.ghosts())
+    {
+        Renderer::draw(*it, m_renderer);
+    }
+
+    // Ego vehicle
+    if (m_city.ego() != nullptr)
+    {
+        Renderer::draw(*m_city.ego(), m_renderer);
+    }
 }
 
 //------------------------------------------------------------------------------

@@ -23,24 +23,25 @@
 #include "ECUs/AutoParkECU/Trajectories/ParallelTrajectory.hpp"
 //#include "SelfParking/Trajectories/DiagonalTrajectory.hpp"
 //#include "SelfParking/Trajectories/PerpendicularTrajectory.hpp"
-#include "Vehicle/VehicleControl.hpp"
+#include "Vehicle/Car.hpp"
 
 //------------------------------------------------------------------------------
-bool CarTrajectory::update(VehicleControl& control, float const dt)
+bool CarTrajectory::update(Car& car, float const dt)
 {
     m_time += dt;
 
     if (USE_KINEMATIC)
     {
-        control.set_ref_speed(m_speeds.get(m_time));
-        control.set_ref_steering(m_steerings.get(m_time));
+        car.refSpeed(m_speeds.get(m_time));
+        car.refSteering(m_steerings.get(m_time));
 
         return !m_speeds.end(m_time);
     }
     else
     {
-        control.set_ref_acceleration(m_accelerations.get(m_time), dt);
-        control.set_ref_steering_rate(m_steerings.get(m_time), dt);
+        std::cerr << "Not yet implemented" << std::endl;
+        //car.refAcceleration(m_accelerations.get(m_time), dt);
+        //control.refSteeringRate(m_steerings.get(m_time), dt);
 
         return !m_accelerations.end(m_time);
     }

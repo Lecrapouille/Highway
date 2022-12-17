@@ -48,7 +48,7 @@ static void simulation_react_to(Simulator& simulator, size_t key)
 static void add_sensors(Car& car, AutoParkECU& ecu)
 {
     // 4 radars: 1 one each wheel (to make simple)
-    constexpr float range = 20.0f;
+    constexpr float range = 10.0f;
     const float offx = car.blueprint.wheelbase;
     const float offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1f / 2.0f;
     static const std::map<CarBluePrint::WheelName, AntenneBluePrint> blueprints = {
