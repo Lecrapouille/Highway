@@ -60,6 +60,12 @@ DEFINES += -Wno-switch-enum -Wno-undef -Wno-unused-parameter -Wno-pedantic
 DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 
 ###################################################
+# MyLogger
+
+THIRDPART_LIBS += $(abspath $(THIRDPART)/MyLogger/build/libmylogger.a.0.1)
+INCLUDES += -I$(THIRDPART)/MyLogger/include
+
+###################################################
 # Make the list of compiled files used both by the
 # library and application
 #

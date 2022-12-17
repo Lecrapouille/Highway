@@ -8,6 +8,7 @@ data/Scenarios/*.dylib
 data/Scenarios/*.dll
 data/Scenarios/*.lib
 data/Scenarios/*.a
+external/MyLogger
 .vscode
 doc/html
 
