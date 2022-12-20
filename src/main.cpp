@@ -71,6 +71,7 @@ static void init_config()
         project::info::log_name.c_str(),
         project::info::log_path.c_str()
     ));
+    LOGI("Search path: %s", project::info::data_path.c_str());
 }
 
 // -----------------------------------------------------------------------------
@@ -82,7 +83,10 @@ static int start_highway(int argc, char* const argv[])
 
     // Load fonts
     if (!FontManager::instance().load("main font", "font.ttf"))
+    {
+        LOGA("Failed init the application %s", argv[0]);
         return EXIT_FAILURE;
+    }
 
     // SFML application
     Application app(WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -108,6 +112,7 @@ static int start_highway(int argc, char* const argv[])
         }
         else if (fs::exists(argv[1]))
         {
+            LOGI("Started %s with scenario %s", argv[0], argv[1]);
             app.push<GUIMainMenu>("GUIMainMenu");
             app.push<GUISimulation>("GUISimulation", argv[1]);
         }
@@ -138,12 +143,14 @@ int main(int argc, char* argv[])
     }
     catch (std::string const& msg)
     {
-        std::cerr << "Fatal: " << msg << std::endl;
+        LOGC("%s", msg.c_str());
+        std::cerr << "Caught exception: " << msg << std::endl;
         return EXIT_FAILURE;
     }
     catch (std::exception const& e)
     {
-        std::cerr << "Fatal: " << e.what() << std::endl;
+        LOGC("%s", e.what());
+        std::cerr << "Caught exception: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 }

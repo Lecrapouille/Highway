@@ -19,6 +19,7 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
+#include "MyLogger/Logger.hpp"
 #include <dlfcn.h>
 #include <functional>
 #include <string>
@@ -74,6 +75,7 @@ public:
             }
             catch(std::logic_error &e)
             {
+                LOGX("%s", e.what());
                 return false;
             }
         }
@@ -170,7 +172,7 @@ public:
         void* addr = address(symbol);
         if (addr == nullptr)
         {
-            //std::cerr << error() << std::endl;
+            LOGX("%s", error().c_str());
             throw std::logic_error(error());
         }
         return reinterpret_cast<T*>(addr);
@@ -201,6 +203,7 @@ private:
     {
         if (msg == nullptr)
             return ;
+        LOGE("%s", msg);
         m_error += std::string("- ") + msg + '\n';
     }
 

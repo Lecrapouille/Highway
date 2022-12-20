@@ -29,6 +29,9 @@
 #ifdef __APPLE__
 std::string osx_get_resources_dir(std::string const& file)
 {
+    struct stat exists; // folder exists ?
+    std::string path;
+
     CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
     char resourcePath[PATH_MAX];
     if (CFURLGetFileSystemRepresentation(resourceURL, true,
@@ -40,11 +43,28 @@ std::string osx_get_resources_dir(std::string const& file)
             CFRelease(resourceURL);
         }
 
-        std::string path(resourcePath) + "/" + file;
+        path = std::string(resourcePath) + "/" + file;
+        if (stat(path.c_str(), &exists) == 0)
+        {
+            return path;
+        }
+    }
+
+#ifdef DATADIR
+    path = std::string(DATADIR) + "/" + file;
+    if (stat(path.c_str(), &exists) == 0)
+    {
+        return path;
+    }
+#endif
+
+    path = "data/" + file;
+    if (stat(path.c_str(), &exists) == 0)
+    {
         return path;
     }
 
-    return {};
+    return file;
 }
 #endif
 

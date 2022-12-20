@@ -22,6 +22,7 @@
 #ifndef MESSAGEBAR_HPP
 #  define MESSAGEBAR_HPP
 
+#  include <SFML/Graphics.hpp>
 #  include "MyLogger/Logger.hpp"
 #  include <iostream>
 

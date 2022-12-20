@@ -19,6 +19,7 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
+#include "MyLogger/Logger.hpp"
 #include "Renderer/FontManager.hpp"
 #include <iostream>
 
@@ -26,13 +27,15 @@
 bool FontManager::load(const char* name, const char* ttf)
 {
     std::unique_ptr<sf::Font> font = std::make_unique<sf::Font>();
-    if (font->loadFromFile(Path::instance().expand(ttf)))
+    std::string path(Path::instance().expand(ttf));
+    if (font->loadFromFile(path))
     {
         m_fonts[name] = std::move(font);
         return true;
     }
 
     // An error is already displayed on the console
+    LOGE("Failed loading font %s", path.c_str());
     return false;
 }
 

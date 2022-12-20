@@ -64,7 +64,15 @@ DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 ###################################################
 # Compile against the Highway shared library
 #
-LINKER_FLAGS += $(abspath $(P)/$(BUILD)/libhighway.$(SO).$(shell cat $(P)/VERSION.txt))
+PKG_LIBS = sfml-graphics
+THIRDPART_LIBS += $(abspath $(P)/$(BUILD)/libhighway.a)
+
+###################################################
+# MacOS X
+#
+ifeq ($(ARCHI),Darwin)
+LINKER_FLAGS += -framework CoreFoundation
+endif
 
 ###################################################
 # Compile the scenario and install it on the scenario
@@ -75,8 +83,8 @@ LINKER_FLAGS += $(abspath $(P)/$(BUILD)/libhighway.$(SO).$(shell cat $(P)/VERSIO
 .PHONY: all
 all: $(SHARED_LIB_TARGET)
 	@$(call print-to,"Installing","$(SHARED_LIB_TARGET)","$(SCENARIO_DIR)","")
-	@rm $(SCENARIO_DIR)/$(basename $(basename $(SHARED_LIB_TARGET:lib%=%))) || echo ""
-	@cp $(BUILD)/$(SHARED_LIB_TARGET) $(SCENARIO_DIR)/$(basename $(basename $(SHARED_LIB_TARGET:lib%=%)))
+	@-rm $(SCENARIO_DIR)/$(SHARED_LIB_TARGET_NOVERSION)
+	@cp $(BUILD)/$(SHARED_LIB_TARGET) $(SCENARIO_DIR)/$(SHARED_LIB_TARGET_NOVERSION)
 
 ###################################################
 # Sharable informations between all Makefiles

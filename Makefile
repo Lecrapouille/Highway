@@ -103,7 +103,7 @@ LINKER_FLAGS += -lpthread -ldl
 ifeq ($(ARCHI),Darwin)
 BUILD_MACOS_APP_BUNDLE = 1
 APPLE_IDENTIFIER = lecrapouille
-MACOS_BUNDLE_ICON = data/Drive.icns
+MACOS_BUNDLE_ICON = data/Highway.icns
 LINKER_FLAGS += -framework CoreFoundation
 endif
 

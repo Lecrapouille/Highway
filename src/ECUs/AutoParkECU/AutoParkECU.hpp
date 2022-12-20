@@ -180,8 +180,6 @@ private:
         States m_state = States::IDLE;
         //! \brief Parking spot scanner state machine.
         AutoParkECU::Scanner m_scanner;
-        //! \brief Parking spot dimension if and only the scan found one
-        Parking* m_parking = nullptr;
     }; // class StateMachine
 
 public:
