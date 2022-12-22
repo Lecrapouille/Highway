@@ -22,6 +22,7 @@
 #  define MOVABLE_HPP
 
 #  include <SFML/System/Vector2.hpp>
+#  include "Math/Units.hpp"
 
 // *****************************************************************************
 //! \brief Base class for computing physic.
@@ -46,7 +47,8 @@ public:
     //!   the rear axle) [meter].
     //! \param[in] heading: the initial yaw angle of the vehicle [radian].
     //--------------------------------------------------------------------------
-    virtual void init(float acceleration, float speed, sf::Vector2f position, float heading)
+    virtual void init(MeterPerSecondSquared const acceleration, MeterPerSecond const speed,
+                      sf::Vector2<Meter> const position, Radian const heading)
     {
         m_acceleration = acceleration;
         m_speed = speed;
@@ -57,12 +59,12 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Update discrete time equations from continuous time equations.
     //--------------------------------------------------------------------------
-    virtual void update(float const dt) = 0;
+    virtual void update(Second const dt) = 0;
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return longitudinal acceleration [meter/second^2].
     //--------------------------------------------------------------------------
-    inline float acceleration() const
+    inline MeterPerSecondSquared acceleration() const
     {
         return m_acceleration;
     }
@@ -70,7 +72,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the longitudinal speed [meter/second].
     //--------------------------------------------------------------------------
-    inline float speed() const
+    inline MeterPerSecond speed() const
     {
         return m_speed;
     }
@@ -79,7 +81,7 @@ public:
     //! \brief Const getter: return the position of the middle of the rear axle
     //! inside the world coordinates.
     //--------------------------------------------------------------------------
-    inline sf::Vector2f position() const
+    inline sf::Vector2<Meter> position() const
     {
         return m_position;
     }
@@ -87,7 +89,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
-    inline float heading() const
+    inline Radian heading() const
     {
         return m_heading;
     }
@@ -95,13 +97,13 @@ public:
 protected:
 
     //! \brief Longitudinal acceleration [meter / second / second].
-    float m_acceleration;
+    MeterPerSecondSquared m_acceleration;
     //! \brief Longitudinal speed [meter / second].
-    float m_speed;
+    MeterPerSecond m_speed;
     //! \brief World position of the car (its center of the rear axle) [meter].
-    sf::Vector2f m_position;
+    sf::Vector2<Meter> m_position;
     //! \brief Yaw angle of the vehicle [radian].
-    float m_heading;
+    Radian m_heading;
 };
 
 #endif

@@ -33,7 +33,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Update discrete time equations from continuous time equations.
     //--------------------------------------------------------------------------
-    virtual void update(float const dt) override
+    virtual void update(Second const dt) override
     {
 
     }

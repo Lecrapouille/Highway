@@ -41,6 +41,7 @@ include $(M)/Makefile.header
 #
 INCLUDES += -I.. -I$(P)/src -I$(P)/src/Simulator
 INCLUDES += -I$(THIRDPART)/MyLogger/include
+INCLUDES += -I$(THIRDPART)/units/include
 
 ###################################################
 # Inform Makefile where to find *.cpp and *.o files

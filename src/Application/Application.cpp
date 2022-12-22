@@ -115,7 +115,7 @@ void Application::loop(uint8_t const rate)
         {
             timeSinceLastUpdate -= time_per_frame;
             gui->onHandleInput();
-            gui->onUpdate(time_per_frame.asSeconds());
+            gui->onUpdate(Second(time_per_frame.asSeconds()));
         }
 
         // Rendering

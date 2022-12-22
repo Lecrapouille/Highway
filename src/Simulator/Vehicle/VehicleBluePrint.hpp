@@ -21,6 +21,7 @@
 #ifndef VEHICLE_BLUEPRINT_HPP
 #  define VEHICLE_BLUEPRINT_HPP
 
+#  include "Math/Units.hpp"
 #  include <SFML/Graphics.hpp>
 #  include <array>
 
@@ -30,13 +31,13 @@
 struct WheelBluePrint
 {
     //! \brief Relative position from the car shape position (middle rear axle)
-    sf::Vector2f offset;
+    sf::Vector2<Meter> offset;
     //! \brief current position and altitude inside the world coordinate.
-    sf::Vector2f position; // FIXME to be moved outside + 3D
+    sf::Vector2<Meter> position; // FIXME to be moved outside + 3D
     //! \brief Rayon roue [meter]
-    float radius;
+    Meter radius;
     //! \brief Epaisseur roue [meter] (only used for the rendering)
-    float width;
+    Meter width;
 };
 
 // *************************************************************************
@@ -60,23 +61,23 @@ struct CarBluePrint
     //! \param[in] wr: wheel radius [meter]
     //! \param[in] tc: turning diameter [meter]
     //----------------------------------------------------------------------
-    CarBluePrint(const float l, const float w, const float wb, const float bo,
-                 const float wr, const float td);
+    CarBluePrint(const Meter l, const Meter w, const Meter wb, const Meter bo,
+                 const Meter wr, const Meter td);
 
     //! \brief Vehicle length [meter]
-    float length;
+    Meter length;
     //! \brief Vehicle width [meter]
-    float width;
+    Meter width;
     //! \brief Wheel to wheel distance along width [meter]
-    float track;
+    Meter track;
     //! \brief Wheel to wheel distance along the length [meter]
-    float wheelbase;
+    Meter wheelbase;
     //! \brief Porte a faux arriere [meter]
-    float back_overhang;
+    Meter back_overhang;
     //! \brief Porte a faux avant [meter]
-    float front_overhang;
+    Meter front_overhang;
     //! \brief Limit of control.outputs.steering angle absolute angle [rad]
-    float max_steering_angle;
+    Radian max_steering_angle;
     //! \brief Blue prints for the wheels
     std::array<WheelBluePrint, WheelName::MAX> wheels;
 };
@@ -99,21 +100,21 @@ struct TrailerBluePrint
     //! \param[in] bo: back overhang [meter]
     //! \param[in] wr: wheel radius [meter]
     //--------------------------------------------------------------------------
-    TrailerBluePrint(const float l, const float w, const float d,
-                     const float bo, const float wr);
+    TrailerBluePrint(const Meter l, const Meter w, const Meter d,
+                     const Meter bo, const Meter wr);
 
     //! \brief Vehicle length [meter]
-    float length;
+    Meter length;
     //! \brief Vehicle width [meter]
-    float width;
+    Meter width;
     //! \brief Wheel to wheel distance along width [meter]
-    float track;
+    Meter track;
     //! \brief Wheel to wheel distance along the length [meter]
-    float wheelbase;
+    Meter wheelbase;
     //! \brief Porte a faux arriere [meter]
-    float back_overhang;
+    Meter back_overhang;
     //! \brief Width of the fork [meter] (only used for the rendering)
-    float fork_width = 0.1f;
+    Meter fork_width = 0.1_m;
     //! \brief Blue prints for the wheels
     std::array<WheelBluePrint, WheelName::MAX> wheels;
 };

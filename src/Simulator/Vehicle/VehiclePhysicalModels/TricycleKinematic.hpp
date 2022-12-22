@@ -51,7 +51,7 @@ public:
     //  - theta is the car heading (yaw) [radian]
     //  - delta is the steering angle [radian]
     //--------------------------------------------------------------------------
-    virtual void update(float const dt) override;
+    virtual void update(Second const dt) override;
 };
 
 #endif

@@ -28,7 +28,7 @@ Radar::Radar(RadarBluePrint const& blueprint_)//SensorBluePrint const& blueprint
    : SensorShape(blueprint_), blueprint(blueprint_)//, fov(fov_), range(range_),
      //m_coverage_area(0.0f, 0.0f, blueprint.range, blueprint.orientation - blueprint.fov, blueprint.orientation + blueprint.fov)
 {
-   m_obb.setSize(sf::Vector2f(blueprint.range, 0.1f));
+   m_obb.setSize(sf::Vector2f(float(blueprint.range.value()), 0.1f));
    m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
    m_obb.setOutlineColor(sf::Color::Blue);
 }

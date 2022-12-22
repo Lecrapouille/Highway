@@ -22,6 +22,7 @@
 #ifndef WHEEL_HPP
 #  define WHEEL_HPP
 
+#  include "Math/Units.hpp"
 #  include "Simulator/Actor.hpp"
 
 // *****************************************************************************
@@ -31,9 +32,9 @@
 struct Wheel : public DynamicActor
 {
     //! \brief Yaw angle [rad].
-    float steering;
+    Radian steering;
     //! \brief Angular speed [meter / second]
-    float speed;
+    MeterPerSecond speed;
 };
 
 #endif

@@ -28,6 +28,7 @@
 //! The adaptation is made for the usage of this particular project.
 // *****************************************************************************
 
+#  include "Math/Units.hpp"
 #  include <SFML/Graphics.hpp>
 #  include <SFML/System.hpp>
 #  include <stack>
@@ -168,7 +169,7 @@ public:
         //! \param[in] dt the number of seconds spent this the previous call
         //! (delta time).
         //----------------------------------------------------------------------
-        virtual void onUpdate(const float dt) = 0;
+        virtual void onUpdate(const Second dt) = 0;
 
         //----------------------------------------------------------------------
         //! \brief Internal methods called by the Application class when the GUI

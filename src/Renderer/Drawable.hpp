@@ -26,6 +26,7 @@
 //! \file this file complete the SFML library by adding extra shapes to display.
 // *****************************************************************************
 
+#  include "Math/Units.hpp"
 #  include <SFML/Graphics.hpp>
 
 // *****************************************************************************
@@ -57,6 +58,9 @@ class Circle: public sf::Drawable
 public:
 
     Circle(float x, float y, float r, sf::Color color = sf::Color::Red);
+    Circle(Meter x, Meter y, float r, sf::Color color = sf::Color::Red)
+      : Circle(float(x.value()), float(y.value()), r, color)
+    {}
 
 private:
 
@@ -86,7 +90,10 @@ public:
     //! \param[in] ending angle [degree]
     //! \param[in] color
     //----------------------------------------------------------------------
-    Arc(float x, float y, float radius, float start, float end, sf::Color color);
+    Arc(float x, float y, float radius, Degree start, Degree end, sf::Color color);
+    Arc(Meter x, Meter y, Meter radius, Degree start, Degree end, sf::Color color)
+      : Arc(float(x.value()), float(y.value()), float(radius.value()), start, end, color)
+    {}
 
     //----------------------------------------------------------------------
     //! \brief Dummy constructor. Shall be completed with init().
@@ -102,7 +109,7 @@ public:
     //! \param[in] ending angle [degree]
     //! \param[in] color
     //----------------------------------------------------------------------
-    void init(float x, float y, float r, float start, float end, sf::Color color);
+    void init(float x, float y, float r, Degree start, Degree end, sf::Color color);
 
 private:
 
@@ -127,7 +134,10 @@ private:
         //! \param[in] ending angle [degree]
         //! \param[in] Number of points composing the arc.
         //----------------------------------------------------------------------
-        ArcShape(float radius, float start, float end, std::size_t pointCount);
+        ArcShape(float radius, Degree start, Degree end, std::size_t pointCount);
+        ArcShape(Meter radius, Degree start, Degree end, std::size_t pointCount)
+          :  ArcShape(float(radius.value()), start, end, pointCount)
+        {}
         ArcShape() = default;
 
         //----------------------------------------------------------------------
@@ -143,8 +153,8 @@ private:
 
     private:
 
-        float m_start; // [deg]
-        float m_end; // [deg]
+        Degree m_start; // [deg]
+        Degree m_end; // [deg]
     };
 
     ArcShape m_shape;
@@ -158,7 +168,10 @@ class Arrow: public sf::Drawable
 public:
 
     Arrow(const float xa, const float ya, const float xb, const float yb, sf::Color color = sf::Color::Red);
-
+    Arrow(const Meter xa, const Meter ya, const Meter xb, const Meter yb, sf::Color color = sf::Color::Red)
+      : Arrow(float(xa.value()), float(ya.value()), float(xb.value()) ,float(yb.value()), color)
+    {}
+    
 private:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override final

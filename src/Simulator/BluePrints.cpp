@@ -33,17 +33,17 @@ void BluePrints::init()
     BluePrints::init<CarBluePrint>(
         {
             // https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html
-            { "Renault.Twingo", { 3.615f, 1.646f, 2.492f, 0.494f, 0.328f, 10.0f } },
+            { "Renault.Twingo", { 3.615_m, 1.646_m, 2.492_m, 0.494_m, 0.328_m, 10.0_m } },
             // https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png
-            { "Citroen.DS3", { 4.118f, 1.79f, 2.558f, 0.7f, 0.328f, 10.4f } },
+            { "Citroen.DS3", { 4.118_m, 1.79_m, 2.558_m, 0.7_m, 0.328_m, 10.4_m } },
             // https://www.bsegfr.com/images/books/5/8/index.47.jpg
-            { "Citroen.C3", { 3.941f, 1.728f, 2.466f, 0.66f, 0.328f, 10.7f } },
+            { "Citroen.C3", { 3.941_m, 1.728_m, 2.466_m, 0.66_m, 0.328_m, 10.7_m } },
             // https://www.vehikit.fr/nissan
-            { "Nissan.NV200", { 4.321f, 1.219f, 2.725f, 0.840f, 0.241f, 10.6f} },
+            { "Nissan.NV200", { 4.321_m, 1.219_m, 2.725_m, 0.840_m, 0.241_m, 10.6_m} },
             // https://audimediacenter-a.akamaihd.net/system/production/media/78914/images/82a9fc874e33b8db4c849665c633c5148c3212d0/A196829_full.jpg?1582526293
-            { "Audi.A6", { 4.951f, 1.902f, 2.924f, 1.105f, 0.328f, 11.7f } },
+            { "Audi.A6", { 4.951_m, 1.902_m, 2.924_m, 1.105_m, 0.328_m, 11.7_m } },
             //
-            { "Mini.Cooper", { 3.62f, 1.68f, 2.46f, 0.58f, 0.328f, 10.7f } },
+            { "Mini.Cooper", { 3.62_m, 1.68_m, 2.46_m, 0.58_m, 0.328_m, 10.7_m } },
         });
 
     //-------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void BluePrints::init()
     //-------------------------------------------------------------------------
     BluePrints::init<TrailerBluePrint>(
         {
-            { "generic", { 1.646f, 1.646f, 2.5f, 0.494f, 0.2f } },
+            { "generic", { 1.646_m, 1.646_m, 2.5_m, 0.494_m, 0.2_m } },
         });
 
     //-------------------------------------------------------------------------
@@ -63,12 +63,12 @@ void BluePrints::init()
     //-------------------------------------------------------------------------
     BluePrints::init<ParkingBluePrint>(
         {
-            { "epi.0", { 5.0f, 2.0f, 0u } },
-            { "epi.45", { 4.8f, 2.2f, 45u } },
-            { "epi.60", { 5.15f, 2.25f, 60u } },
-            { "epi.75", { 5.1f, 2.25f, 75u } },
-            { "epi.90", { 5.0f, 2.3f, 90u } },
-            { "creneau", { 5.0f, 2.0f, 0u } },
-            { "bataille", { 5.0f, 2.3f, 90u } },
+            { "epi.0", { 5.0_m, 2.0_m, 0u } },
+            { "epi.45", { 4.8_m, 2.2_m, 45u } },
+            { "epi.60", { 5.15_m, 2.25_m, 60u } },
+            { "epi.75", { 5.1_m, 2.25_m, 75u } },
+            { "epi.90", { 5.0_m, 2.3_m, 90u } },
+            { "creneau", { 5.0_m, 2.0_m, 0u } },
+            { "bataille", { 5.0_m, 2.3_m, 90u } },
         });
 }

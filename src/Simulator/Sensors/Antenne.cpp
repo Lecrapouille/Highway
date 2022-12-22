@@ -34,7 +34,7 @@ Antenne::Antenne(AntenneBluePrint const& blueprint_)
    : SensorShape(blueprint_), blueprint(blueprint_)
 {
    //m_shape = &shape;
-   m_obb.setSize(sf::Vector2f(blueprint.range, 0.1f));
+   m_obb.setSize(sf::Vector2f(float(blueprint.range.value()), 0.1f));
    m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
    //m_obb.setFillColor(sf::Color(165, 42, 42));
    //m_obb.setOutlineThickness(ZOOM);

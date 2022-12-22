@@ -18,6 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
+
 #  include "Simulator/Vehicle/Trailer.hpp"
 //FIXME#  include "Vehicle/VehiclePhysicalModels/TrailerKinematic.hpp"
 
@@ -30,11 +31,11 @@ Trailer::Trailer(const char* name_, sf::Color const& color_)
 }
 
 //------------------------------------------------------------------------------
-void Trailer::update_wheels(float const speed, float const steering)
+void Trailer::update_wheels(MeterPerSecond const speed, Radian const steering)
 {
     m_wheels[TrailerBluePrint::WheelName::RL].speed = speed;
     m_wheels[TrailerBluePrint::WheelName::RR].speed = speed;
 
-    m_wheels[TrailerBluePrint::WheelName::RL].steering = 0.0f;
-    m_wheels[TrailerBluePrint::WheelName::RR].steering = 0.0f;
+    m_wheels[TrailerBluePrint::WheelName::RL].steering = 0.0_rad;
+    m_wheels[TrailerBluePrint::WheelName::RR].steering = 0.0_rad;
 }

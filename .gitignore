@@ -9,6 +9,7 @@ data/Scenarios/*.dll
 data/Scenarios/*.lib
 data/Scenarios/*.a
 external/MyLogger
+external/units
 .vscode
 doc/html
 .DS_Store

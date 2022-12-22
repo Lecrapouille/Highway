@@ -26,7 +26,7 @@
 #include "Vehicle/Car.hpp"
 
 //------------------------------------------------------------------------------
-bool CarTrajectory::update(Car& car, float const dt)
+bool CarTrajectory::update(Car& car, Second const dt)
 {
     m_time += dt;
 
@@ -40,8 +40,8 @@ bool CarTrajectory::update(Car& car, float const dt)
     else
     {
         std::cerr << "Not yet implemented" << std::endl;
-        //car.refAcceleration(m_accelerations.get(m_time), dt);
-        //control.refSteeringRate(m_steerings.get(m_time), dt);
+        //car.refAcceleration(m_accelerations.get(t), dt);
+        //control.refSteeringRate(m_steerings.get(t), dt);
 
         return !m_accelerations.end(m_time);
     }

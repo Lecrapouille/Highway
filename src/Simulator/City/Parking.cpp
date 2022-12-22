@@ -24,8 +24,8 @@
 #include "Vehicle/Car.hpp"
 
 //------------------------------------------------------------------------------
-ParkingBluePrint::ParkingBluePrint(float const l, float const w, size_t const a)
-    : length(l), width(w), angle(DEG2RAD(float(a))), deg(a)
+ParkingBluePrint::ParkingBluePrint(Meter const l, Meter const w, size_t const a)
+    : length(l), width(w), angle(Degree(float(a))), deg(a)
 {}
 
 //------------------------------------------------------------------------------
@@ -50,19 +50,20 @@ static Parking::Type convert(size_t angle) // [deg]
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingBluePrint const& bp, sf::Vector2f const& position)
-    : blueprint(bp), type(convert(bp.deg)), m_shape(sf::Vector2f(bp.length, bp.width))
+Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position)
+    : blueprint(bp), type(convert(bp.deg)),
+      m_shape(sf::Vector2f(float(bp.length.value()), float(bp.width.value())))
 {
-    m_shape.setOrigin(sf::Vector2f(0.0f, bp.width / 2.0f));
-    m_shape.setRotation(RAD2DEG(bp.angle));
-    m_shape.setPosition(position);
+    m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value() / 2.0)));
+    m_shape.setRotation(float(Degree(bp.angle)));
+    m_shape.setPosition(float(position.x), float(position.y));
     m_shape.setFillColor(sf::Color::White);
     m_shape.setOutlineThickness(ZOOM);
     m_shape.setOutlineColor(sf::Color::Black);
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingBluePrint const& d, sf::Vector2f const& p, Car& car)
+Parking::Parking(ParkingBluePrint const& d, sf::Vector2<Meter> const& p, Car& car)
     : Parking(d, p)
 {
     m_car = &car;
@@ -76,9 +77,9 @@ void Parking::bind(Car& car)
     //if (m_car != nullptr)
     //    throw "Car already bound on parking spot";
 
-    float x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
-    sf::Vector2f const offset(x, 0.0f);
-    car.init(0.0f, 0.0f, position() + HEADING(offset, blueprint.angle), heading(), 0.0f);
+    Meter x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
+    sf::Vector2<Meter> const offset(x, 0.0_m);
+    car.init(0.0_mps / 1.0_s, 0.0_mps, position() + HEADING(offset, blueprint.angle), heading(), 0.0_rad);
 
     //car.bind();
     m_car = &car;

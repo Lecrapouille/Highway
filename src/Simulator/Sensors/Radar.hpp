@@ -36,14 +36,14 @@ class Car; // FIXME: publi Sensor
 struct RadarBluePrint: public DynamicActor, public SensorBluePrint
 {
    // FIXME: why needed ?
-   RadarBluePrint(sf::Vector2f off, float ori, float f, float r)
+   RadarBluePrint(sf::Vector2<Meter> const off, Degree const ori, Degree const f, Meter const r)
      : SensorBluePrint(off, ori), fov(f), range(r)
    {}
 
    //! \brief Field Of View: Angular field of view of radar [deg].
-   float const fov;
+   Degree const fov;
    //! \brief Mmaximum range of radar [meter].
-   float const range;
+   Meter const range;
 };
 
 // ****************************************************************************
@@ -73,7 +73,9 @@ public:
 
    Arc const& coverageArea()
    {
-      m_coverage_area.init(m_position.x, m_position.y, blueprint.range,
+      m_coverage_area.init(float(m_position.x.value()), 
+                           float(m_position.y.value()), 
+                           float(blueprint.range.value()),
                            blueprint.orientation + m_heading - blueprint.fov,
                            blueprint.orientation + m_heading + blueprint.fov,
                            sf::Color::Red);

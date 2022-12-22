@@ -22,6 +22,7 @@
 #ifndef ECU_HPP
 #  define ECU_HPP
 
+#  include "Math/Units.hpp"
 #  include "Common/Components.hpp"
 
 // ****************************************************************************
@@ -35,7 +36,7 @@ public:
 
 public:
 
-   virtual void update(float const dt) = 0;
+   virtual void update(Second const dt) = 0;
 };
 
 // ****************************************************************************

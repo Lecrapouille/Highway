@@ -23,47 +23,47 @@
 #include "Math/Math.hpp"
 #include <cassert>
 
-constexpr float WHEEL_WIDTH = 0.1f;
+constexpr Meter WHEEL_WIDTH = 0.1_m;
 
 //------------------------------------------------------------------------------
-CarBluePrint::CarBluePrint(const float l, const float w, const float wb,
-                           const float bo, const float wr, const float td)
+CarBluePrint::CarBluePrint(const Meter l, const Meter w, const Meter wb,
+                           const Meter bo, const Meter wr, const Meter td)
     : length(l), width(w), track(width - WHEEL_WIDTH), wheelbase(wb),
       back_overhang(bo), front_overhang(length - wheelbase - back_overhang)
 {
-    max_steering_angle = asinf(wheelbase / (0.5f * td));
-    assert(max_steering_angle > 0.0f);
-    assert(max_steering_angle < DEG2RAD(90.0f));
+    max_steering_angle = units::math::asin(wheelbase / (0.5f * td));
+    assert(max_steering_angle > 0.0_deg);
+    assert(max_steering_angle < 90.0_deg);
 
-    const float K = track / 2.0f;
-    wheels[WheelName::FL].offset = sf::Vector2f(wheelbase, K);
-    wheels[WheelName::FR].offset = sf::Vector2f(wheelbase, -K);
-    wheels[WheelName::RL].offset = sf::Vector2f(0.0f, K);
-    wheels[WheelName::RR].offset = sf::Vector2f(0.0f, -K);
+    const Meter K = track / 2.0f;
+    wheels[WheelName::FL].offset = sf::Vector2<Meter>(wheelbase, K);
+    wheels[WheelName::FR].offset = sf::Vector2<Meter>(wheelbase, -K);
+    wheels[WheelName::RL].offset = sf::Vector2<Meter>(0.0_m, K);
+    wheels[WheelName::RR].offset = sf::Vector2<Meter>(0.0_m, -K);
 
     size_t i = WheelName::MAX;
     while (i--)
     {
-        wheels[i].position = sf::Vector2f(NAN, NAN);
+        wheels[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
         wheels[i].radius = wr;
         wheels[i].width = WHEEL_WIDTH;
     }
 }
 
 //------------------------------------------------------------------------------
-TrailerBluePrint::TrailerBluePrint(const float l, const float w, const float d,
-                                   const float bo, const float wr)
+TrailerBluePrint::TrailerBluePrint(const Meter l, const Meter w, const Meter d,
+                                   const Meter bo, const Meter wr)
     : length(l), width(w), track(width - WHEEL_WIDTH), wheelbase(d),
       back_overhang(bo)
 {
-    const float K = track / 2.0f;
-    wheels[WheelName::RL].offset = sf::Vector2f(0.0f, -K);
-    wheels[WheelName::RR].offset = sf::Vector2f(0.0f, K);
+    const Meter K = track / 2.0f;
+    wheels[WheelName::RL].offset = sf::Vector2<Meter>(0.0_m, -K);
+    wheels[WheelName::RR].offset = sf::Vector2<Meter>(0.0_m, K);
 
     size_t i = WheelName::MAX;
     while (i--)
     {
-        wheels[i].position = sf::Vector2f(NAN, NAN);
+        wheels[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
         wheels[i].radius = wr;
         wheels[i].width = WHEEL_WIDTH;
     }

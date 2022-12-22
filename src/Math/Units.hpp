@@ -19,24 +19,22 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#ifndef TRAILER_HPP
-#  define TRAILER_HPP
+#ifndef SI_UNITS_HPP
+#  define SI_UNITS_HPP
 
-#  include "Simulator/Vehicle/Vehicle.hpp"
-#  include "Simulator/BluePrints.hpp"
+#  pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#      include "units.h"
+#   pragma GCC diagnostic pop
 
-// ****************************************************************************
-//! \brief
-// ****************************************************************************
-class Trailer: public Vehicle<TrailerBluePrint>
-{
-public:
+using namespace units::literals;
 
-    Trailer(const char* name, sf::Color const& color);
-
-private:
-
-    virtual void update_wheels(MeterPerSecond const speed, Radian const steering) override;
-};
+using Meter = units::length::meter_t;
+using Radian = units::angle::radian_t;
+using Degree = units::angle::degree_t;
+using RadianPerSecond = units::angular_velocity::radians_per_second_t;
+using MeterPerSecondSquared = units::acceleration::meters_per_second_squared_t;
+using MeterPerSecond = units::velocity::meters_per_second_t;
+using Second = units::time::second_t;
 
 #endif

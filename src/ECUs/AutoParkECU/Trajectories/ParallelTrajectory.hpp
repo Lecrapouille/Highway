@@ -60,30 +60,31 @@ private:
 
     //--------------------------------------------------------------------------
     //! \brief Generate ramp of speed, acceleration and angle of the wheel.
-    //! \param[in] VMAX: max speed
-    //! \param[in] ADES: desired acceleration
+    //! \param[in] VMAX: max speed [m/s]
+    //! \param[in] ADES: desired acceleration [m/s/s]
     //--------------------------------------------------------------------------
     void generateReferences(Car const& car, Parking const& parking,
-                            float const VMAX, float const ADES);
+                            MeterPerSecond const VMAX, MeterPerSecondSquared const ADES);
 private:
 
     //! \brief Minimal turning radius for the internal point of the car.
-    float Rimin;
+    Meter Rimin;
     //! \brief Minimal turning radius for the external point of the car.
-    float Remin;
+    Meter Remin;
     //! \brief Minimal turning radius for the external point of the car.
-    float Rwmin;
+    Meter Rwmin;
     //! \brief Minimal turning radius for the external point of the car.
-    float Lmin;
+    Meter Lmin;
     //! \brief Number needed of maneuvers for parking the car (change of gear)
     size_t m_maneuvers = 0u;
     //! \brief X-Y world coordinates of the middle rear axle of the ego car.
-    std::vector<sf::Vector2f> Em;
+    std::vector<sf::Vector2<Meter>> Em;
     //! \brief X-Y world coordinates of the immedite center of rotations.
-    std::vector<sf::Vector2f> C;
-    float Xs, Ys, Xi, Yi, Xf, Yf, Xt, Yt;
+    std::vector<sf::Vector2<Meter>> C;
+    Meter Xs, Ys, Xi, Yi, Xf, Yf, Xt, Yt;
     //! \brief
-    std::vector<float> theta_E, theta_t, theta_s, theta_p, theta_g, theta_sum, Rrg;
+    std::vector<Radian> theta_E, theta_t, theta_s, theta_p, theta_g, theta_sum;
+    std::vector<Meter> Rrg;
 };
 
 #endif

@@ -211,7 +211,7 @@ void Simulator::collisions(Car& ego)
 }
 
 //------------------------------------------------------------------------------
-void Simulator::update(const float dt)
+void Simulator::update(const Second dt)
 {
     // Hot reload the scenario
     autoreload();
@@ -236,7 +236,8 @@ void Simulator::update(const float dt)
     // Make the camera follows the car
     if (m_follow != nullptr)
     {
-        m_camera = m_follow->position();
+        const sf::Vector2<Meter> p = m_follow->position();
+        m_camera = sf::Vector2f(float(p.x.value()), float(p.y.value()));
     }
 }
 

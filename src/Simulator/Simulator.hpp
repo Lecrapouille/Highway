@@ -112,7 +112,7 @@ public:
     //! \brief Update the simuation states.
     //! \param[in] dt: delta time in seconds from the previous call.
     //-------------------------------------------------------------------------
-    void update(const float dt);
+    void update(const Second dt);
 
     //-------------------------------------------------------------------------
     //! \brief Draw the world, city, its entities (cars, parkings ...) and the
@@ -184,9 +184,9 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Return the simulation elapsed time.
     //-------------------------------------------------------------------------
-    inline sf::Time elapsedTime() const
+    inline Second elapsedTime() const
     {
-        return m_elpased_time + m_clock.getElapsedTime();
+        return Second((m_elpased_time + m_clock.getElapsedTime()).asSeconds());
     }
 
     //-------------------------------------------------------------------------

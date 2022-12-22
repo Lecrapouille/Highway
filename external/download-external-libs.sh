@@ -15,7 +15,7 @@ ARCHI="$1"
 TARGET="$2"
 
 ### Delete all previous directories to be sure to have and compile fresh code source.
-rm -fr MyLogger 2> /dev/null
+rm -fr MyLogger units 2> /dev/null
 
 function cloning
 {
@@ -29,3 +29,8 @@ function cloning
 ### Basic logger for my GitHub C++ projects 
 ### License: GPL-3.0
 cloning Lecrapouille/MyLogger
+
+#### Library for unit conversion library
+#### License: MIT
+cloning nholthaus/units
+(cd units/include && mkdir units && cp units.h units/units.h)

@@ -64,7 +64,7 @@ public:
     //! the world coordinates.
     //! \return the reference of the created parking.
     //-------------------------------------------------------------------------
-    Parking& addParking(const char* type, sf::Vector2f const& position);
+    Parking& addParking(const char* type, sf::Vector2<Meter> const& position);
 
     //-------------------------------------------------------------------------
     //! \brief Create or replace the ego vehicle (the autonomous vehicle). The
@@ -74,12 +74,12 @@ public:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
+    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
-    Car& addEgo(const char* model, sf::Vector2f const& position,
-                float const heading = 0.0f, float const speed = 0.0f);
+    Car& addEgo(const char* model, sf::Vector2<Meter> const& position,
+                Degree const heading = 0.0_deg, MeterPerSecond const speed = 0.0_mps);
 
     //-------------------------------------------------------------------------
     //! \brief Create or replace the ego vehicle (the autonomous vehicle). The
@@ -89,14 +89,14 @@ public:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
+    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
+    //! \param[in] steering: initial steering angle (in degree). By default: 0
     //! rad.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
-    Car& addCar(const char* model, sf::Vector2f const& position, float const heading,
-                float const speed, float const steering = 0.0f);
+    Car& addCar(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
+                MeterPerSecond const speed, Degree const steering = 0.0_deg);
 
     //-------------------------------------------------------------------------
     //! \brief Create a parked car. The car instance is hold by the simulation
@@ -118,13 +118,13 @@ public:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
+    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
+    //! \param[in] steering: initial steering angle (in degree). By default: 0
     //! rad.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
-    Car& addGhost(const char* model, sf::Vector2f const& position, float const heading,
-                  float const steering); // FIXME stored in m_cars or m_ghosts or move it simulator
+    Car& addGhost(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
+                  Degree const steering); // FIXME stored in m_cars or m_ghosts or move it simulator
 
     //-------------------------------------------------------------------------
     //! \brief Find and return the address of the desired car from its name.
@@ -166,9 +166,9 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Return the altitude at the given coordinates. TODO
     //-------------------------------------------------------------------------
-    float altitude(sf::Vector2f const& position)
+    Meter altitude(sf::Vector2f const& position)
     {
-        return 0.0f; // Not implemented yet
+        return 0.0_m; // Not implemented yet
     }
 
     //-------------------------------------------------------------------------
@@ -189,17 +189,17 @@ protected:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in radian.
+    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in radian) ). By default: 0
+    //! \param[in] steering: initial steering angle (in degree). By default: 0
     //! rad.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
     template<class CAR>
     std::unique_ptr<CAR> createCar(const char* model, const char* name, sf::Color color,
-                                   float const acceleration, float const speed,
-                                   sf::Vector2f const& position, float const heading,
-                                   float const steering)
+                                   MeterPerSecondSquared const acceleration, MeterPerSecond const speed,
+                                   sf::Vector2<Meter> const& position, Degree const heading,
+                                   Degree const steering)
     {
         std::unique_ptr<CAR> car = std::make_unique<CAR>(model, color);
         car->name = name;

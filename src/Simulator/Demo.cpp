@@ -48,14 +48,14 @@ static void simulation_react_to(Simulator& simulator, size_t key)
 static void add_sensors(Car& car, AutoParkECU& ecu)
 {
     // 4 radars: 1 one each wheel (to make simple)
-    constexpr float range = 10.0f;
-    const float offx = car.blueprint.wheelbase;
-    const float offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1f / 2.0f;
+    constexpr Meter range = 10.0_m;
+    const Meter offx = car.blueprint.wheelbase;
+    const Meter offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1_m / 2.0f;
     static const std::map<CarBluePrint::WheelName, AntenneBluePrint> blueprints = {
-        { CarBluePrint::WheelName::FL, { sf::Vector2f(offx,  offy),  90.0f, range } },
-        { CarBluePrint::WheelName::FR, { sf::Vector2f(offx, -offy), -90.0f, range } },
-        { CarBluePrint::WheelName::RL, { sf::Vector2f(0.0f,  offy),  90.0f, range } },
-        { CarBluePrint::WheelName::RR, { sf::Vector2f(0.0f, -offy), -90.0f, range } },
+        { CarBluePrint::WheelName::FL, { sf::Vector2<Meter>(offx,   offy),  90.0_deg, range } },
+        { CarBluePrint::WheelName::FR, { sf::Vector2<Meter>(offx,  -offy), -90.0_deg, range } },
+        { CarBluePrint::WheelName::RL, { sf::Vector2<Meter>(0.0_m,  offy),  90.0_deg, range } },
+        { CarBluePrint::WheelName::RR, { sf::Vector2<Meter>(0.0_m, -offy), -90.0_deg, range } },
     };
 
     for (auto const& bp: blueprints)
@@ -95,25 +95,25 @@ static Car& customize(City const& city, Car& car)
     // Make the car reacts from the keyboard: set car speed (kinematic).
     car.callback(sf::Keyboard::Up, [&car]()
     {
-        car.refSpeed(1.0f);
+        car.refSpeed(1.0_mps);
     });
 
     // Make the car reacts from the keyboard: make the car stopped (kinematic).
     car.callback(sf::Keyboard::Down, [&car]()
     {
-        car.refSpeed(0.0f);
+        car.refSpeed(0.0_mps);
     });
 
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Right, [&car]()
     {
-        car.refSteering(car.refSteering() - 0.1f);
+        car.refSteering(car.refSteering() - 0.1_deg);
     });
 
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Left, [&car]()
     {
-        car.refSteering(car.refSteering() + 0.1f);
+        car.refSteering(car.refSteering() + 0.1_deg);
     });
 
     return car;
@@ -136,7 +136,7 @@ static Car& create_city(City& city)
     // Create parallel or perpendicular or diagnoal parking slots
     const int angle = 0u;
     std::string dim = "epi." + std::to_string(angle);
-    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
+    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m)); // .attachTo(road1, offset);
     Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
     Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
     Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
@@ -148,7 +148,7 @@ static Car& create_city(City& city)
     city.addCar("Renault.Twingo", parking3);
 
     // Self-parking car (dynamic). Always be the last in the container
-    return customize(city, city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
+    return customize(city, city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
 }
 
 //-----------------------------------------------------------------------------

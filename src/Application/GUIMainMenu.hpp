@@ -47,7 +47,7 @@ private: // Derived from Application::GUI
     //-------------------------------------------------------------------------
     //! \brief Update the simulation.
     //-------------------------------------------------------------------------
-    virtual void onUpdate(const float dt) override;
+    virtual void onUpdate(const Second dt) override;
 
     //-------------------------------------------------------------------------
     //! \brief Manage mouse and keyboard events.

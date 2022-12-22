@@ -67,13 +67,13 @@ Circle::Circle(float x, float y, float r, sf::Color color)
 }
 
 //------------------------------------------------------------------------------
-Arc::Arc(float x, float y, float r, float start, float end, sf::Color color)
+Arc::Arc(float x, float y, float r, Degree start, Degree end, sf::Color color)
 {
     init(x, y, r, start, end, color);
 }
 
 //------------------------------------------------------------------------------
-void Arc::init(float x, float y, float r, float start, float end, sf::Color color)
+void Arc::init(float x, float y, float r, Degree start, Degree end, sf::Color color)
 {
     m_shape = ArcShape(r, start, end, 100);
 
@@ -123,9 +123,9 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf:
 }
 
 //------------------------------------------------------------------------------
-Arc::ArcShape::ArcShape(float radius, float start, float end, std::size_t pointCount)
+Arc::ArcShape::ArcShape(float radius, Degree start, Degree end, std::size_t pointCount)
     : CircleShape(radius, pointCount + 2),
-      m_start(DEG2RAD(start)), m_end(DEG2RAD(end))
+      m_start(start), m_end(end)
 {}
 
 //------------------------------------------------------------------------------
@@ -135,9 +135,9 @@ sf::Vector2f Arc::ArcShape::getPoint(std::size_t index) const
         return getOrigin();
 
     float const r = getRadius();
-    float angle = m_start + float(index - 1) * m_end / float(getPointCount() -1);
-    float x = std::cos(angle) * r;
-    float y = std::sin(angle) * r;
+    Degree angle = m_start + m_end * (float(index - 1) / float(getPointCount() -1));
+    float x = units::math::cos(angle) * r;
+    float y = units::math::sin(angle) * r;
 
     return sf::Vector2f(r + x, r + y);
 }

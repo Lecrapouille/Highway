@@ -74,7 +74,7 @@ private:
         //! \return if the parking has found, or not found or still searching an
         //! empty spot.
         //----------------------------------------------------------------------
-        Scanner::Status update(float const dt, Car& car, bool detected);
+        Scanner::Status update(Second const dt, Car& car, bool detected);
 
         //----------------------------------------------------------------------
         //! \brief Return detected parking iff Status == SUCCEEDED.
@@ -117,9 +117,9 @@ private:
         AutoParkECU::Scanner::States m_state = AutoParkECU::Scanner::States::IDLE;
         //! \brief Memorize the car position when the first car has been
         //! detected.
-        sf::Vector2f m_position = sf::Vector2f(0.0f, 0.0f);
+        sf::Vector2<Meter> m_position = sf::Vector2<Meter>(0.0_m, 0.0_m);
         //! \brief Estimation of the empty spot length.
-        float m_distance = 0.0f;
+        Meter m_distance = 0.0_m;
         //! \brief Memorize the parking spot once detected.
         std::unique_ptr<Parking> m_parking = nullptr;
     }; // class Scan
@@ -148,7 +148,7 @@ private:
         //! \param[in] dt: delta time in seconds.
         //! \param[inout] ecu: the reference of the ego car's ECU.
         //----------------------------------------------------------------------
-        void update(float const dt, AutoParkECU& ecu);
+        void update(Second const dt, AutoParkECU& ecu);
 
     private:
 
@@ -189,7 +189,7 @@ public:
 
 public:
 
-   virtual void update(float const dt) override;
+   virtual void update(Second const dt) override;
 
     //-------------------------------------------------------------------------
     //! \brief Return true if the car has a trajectory and this case trajectory()
@@ -229,7 +229,7 @@ private:
     //! \brief Update the trajectory (get current references and make it use
     //! by cruise controller).
     //-------------------------------------------------------------------------
-    bool updateTrajectory(float const dt);
+    bool updateTrajectory(Second const dt);
 
 private:
 

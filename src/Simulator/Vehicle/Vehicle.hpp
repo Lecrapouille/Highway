@@ -80,9 +80,9 @@ public:
     //! \param[in] speed: initial longitudinal speed [m/s] (usually 0).
     //! \param[in] steering: initial front wheels orientation [rad] (usually 0).
     //-------------------------------------------------------------------------
-    virtual void init(float const acceleration, float const speed,
-                      sf::Vector2f const& position, float const heading,
-                      float const steering = 0.0f)
+    virtual void init(MeterPerSecondSquared const acceleration, MeterPerSecond const speed,
+                      sf::Vector2<Meter> const& position, Radian const heading,
+                      Radian const steering = 0.0_deg)
     {
         m_physics->init(acceleration, speed, position, heading);
         // TODO m_control->init(0.0f, speed, position, heading);
@@ -122,7 +122,7 @@ public:
     //-------------------------------------------------------------------------
     // External or internal: collides with city and sensor detecs city ???
     //-------------------------------------------------------------------------
-    virtual void update(float const dt)
+    virtual void update(Second const dt)
     {
         for (auto& it: m_ecus)
         {
@@ -144,7 +144,7 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    virtual void update_wheels(float const speed, float const steering) = 0;
+    virtual void update_wheels(MeterPerSecond const speed, Radian const steering) = 0;
 
     //-------------------------------------------------------------------------
     //! \brief Attach a trailer at the end of the link of trailers. The position
@@ -246,7 +246,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return longitudinal acceleration [meter/second^2].
     //--------------------------------------------------------------------------
-    inline float acceleration() const
+    inline MeterPerSecondSquared acceleration() const
     {
         return m_physics->acceleration();
     }
@@ -254,15 +254,16 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Set the reference longitudinal speed [m/s].
     //-------------------------------------------------------------------------
-    void refSpeed(float const speed)
+    void refSpeed(MeterPerSecond const speed)
     {
-        m_control->set_ref_speed(constrain(speed, -11.0f, 50.f)); // -40 .. +180 km/h
+        m_control->set_ref_speed(speed);
+            // FIXME constrain(speed, -11.0_mps, 50.0_mps)); // -40 .. +180 km/h
     }
 
     //-------------------------------------------------------------------------
     //! \brief Get the reference longitudinal speed [m/s].
     //-------------------------------------------------------------------------
-    float refSpeed() const
+    MeterPerSecond refSpeed() const
     {
         return m_control->get_ref_speed();
     }
@@ -270,16 +271,16 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Set the reference steering angle [rad].
     //-------------------------------------------------------------------------
-    void refSteering(float const angle)
+    void refSteering(Radian const angle)
     {
-        const float m = blueprint.max_steering_angle;
+        const Radian m = blueprint.max_steering_angle;
         m_control->set_ref_steering(constrain(angle, -m, m));
     }
 
     //-------------------------------------------------------------------------
     //! \brief Get the reference steering angle [rad].
     //-------------------------------------------------------------------------
-    float refSteering() const
+    Radian refSteering() const
     {
         return m_control->get_ref_steering();
     }
@@ -287,7 +288,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the longitudinal speed [meter/second].
     //--------------------------------------------------------------------------
-    inline float speed() const
+    inline MeterPerSecond speed() const
     {
         return m_physics->speed();
     }
@@ -296,7 +297,7 @@ public:
     //! \brief Const getter: return the position of the middle of the rear axle
     //! inside the world coordinates.
     //--------------------------------------------------------------------------
-    inline sf::Vector2f position() const
+    inline sf::Vector2<Meter> position() const
     {
         return m_physics->position();
     }
@@ -304,7 +305,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
-    inline float heading() const
+    inline Radian heading() const
     {
         return m_physics->heading();
     }
@@ -312,7 +313,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the steering angle [rad].
     //--------------------------------------------------------------------------
-    inline float steering() const
+    inline Radian steering() const
     {
         return m_wheels[0].steering;
     }

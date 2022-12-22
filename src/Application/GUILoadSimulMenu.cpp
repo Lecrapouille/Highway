@@ -151,7 +151,7 @@ void GUILoadSimulMenu::onHandleInput()
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onUpdate(const float dt)
+void GUILoadSimulMenu::onUpdate(const Second dt)
 {}
 
 //------------------------------------------------------------------------------

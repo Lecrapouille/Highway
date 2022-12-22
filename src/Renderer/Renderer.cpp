@@ -34,7 +34,9 @@ void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::Render
 {
     sf::RectangleShape const& shape = parking.obb();
     target.draw(shape, states);
-    target.draw(Circle(parking.position().x, parking.position().y, ZOOM, sf::Color::Black), states);
+    target.draw(Circle(float(parking.position().x.value()), 
+                       float(parking.position().y.value()), 
+                       ZOOM, sf::Color::Black), states);
 }
 
 //------------------------------------------------------------------------------
@@ -61,7 +63,8 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     body.setOutlineThickness(ZOOM);
     body.setOutlineColor(sf::Color::Blue);
     target.draw(body, states);
-    target.draw(Circle(car.position().x, car.position().y, ZOOM, sf::Color::Black));
+    target.draw(Circle(float(car.position().x.value()),
+                       float(car.position().y.value()), ZOOM, sf::Color::Black));
 
     // Car wheels
     size_t i = car.wheels().size();

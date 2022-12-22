@@ -156,7 +156,7 @@ void GUISimulation::onHandleInput()
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::onUpdate(const float dt) // FIXME to be threaded
+void GUISimulation::onUpdate(const Second dt) // FIXME to be threaded
 {
     if (simulator.continuing())
     {

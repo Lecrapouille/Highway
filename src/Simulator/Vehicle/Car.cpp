@@ -33,7 +33,7 @@ Car::Car(const char* name_, sf::Color const& color_)
 }
 
 //------------------------------------------------------------------------------
-void Car::update_wheels(float const speed, float const steering)
+void Car::update_wheels(MeterPerSecond const speed, Radian const steering)
 {
     m_wheels[CarBluePrint::WheelName::FL].speed = speed;
     m_wheels[CarBluePrint::WheelName::FR].speed = speed;
@@ -42,6 +42,6 @@ void Car::update_wheels(float const speed, float const steering)
 
     m_wheels[CarBluePrint::WheelName::FL].steering = steering;
     m_wheels[CarBluePrint::WheelName::FR].steering = steering;
-    m_wheels[CarBluePrint::WheelName::RL].steering = 0.0f;
-    m_wheels[CarBluePrint::WheelName::RR].steering = 0.0f;
+    m_wheels[CarBluePrint::WheelName::RL].steering = 0.0_rad;
+    m_wheels[CarBluePrint::WheelName::RR].steering = 0.0_rad;
 }

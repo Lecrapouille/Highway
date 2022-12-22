@@ -34,9 +34,9 @@ const char* simulation_name()
 // TODO restart_simulation_after
 bool halt_simulation_when(Simulator const& simulator)
 {
-    HALT_SIMULATION_WHEN((simulator.elapsedTime() > sf::seconds(60.0f)),
+    HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
                          "Time simulation slipped");
-    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0f),
+    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
                          "Ego car is outside the parking");
     HALT_SIMULATION_WHEN(simulator.ego().collided(),
                          "Ego car collided");
@@ -86,25 +86,25 @@ static Car& customize(Car& car)
     // Make the car reacts from the keyboard: set car speed (kinematic).
     car.callback(sf::Keyboard::Up, [&car]()
     {
-        car.refSpeed(1.0f);
+        car.refSpeed(1.0_mps);
     });
 
     // Make the car reacts from the keyboard: make the car stopped (kinematic).
     car.callback(sf::Keyboard::Down, [&car]()
     {
-        car.refSpeed(0.0f);
+        car.refSpeed(0.0_mps);
     });
 
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Right, [&car]()
     {
-        car.refSteering(car.refSteering() - 0.1f);
+        car.refSteering(car.refSteering() - 0.1_deg);
     });
 
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Left, [&car]()
     {
-        car.refSteering(car.refSteering() + 0.1f);
+        car.refSteering(car.refSteering() + 0.1_deg);
     });
 
     return car;
@@ -123,7 +123,7 @@ Car& create_city(City& city)
     // Create parallel or perpendicular or diagnoal parking slots
     const int angle = 0u;
     std::string dim = "epi." + std::to_string(angle);
-    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2f(97.5f, 100.0f)); // .attachTo(road1, offset);
+    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m)); // .attachTo(road1, offset);
     Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
     Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
     Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
@@ -135,5 +135,5 @@ Car& create_city(City& city)
     city.addCar("Renault.Twingo", parking3);
 
     // Self-parking car (dynamic). Always be the last in the container
-    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2f(0.0f, 5.0f)));
+    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
 }

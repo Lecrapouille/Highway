@@ -121,7 +121,7 @@ void GUIMainMenu::onHandleInput()
 }
 
 //------------------------------------------------------------------------------
-void GUIMainMenu::onUpdate(const float dt)
+void GUIMainMenu::onUpdate(const Second /*dt*/)
 {}
 
 //------------------------------------------------------------------------------

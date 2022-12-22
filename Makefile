@@ -66,6 +66,11 @@ THIRDPART_LIBS += $(abspath $(THIRDPART)/MyLogger/build/libmylogger.a.0.1)
 INCLUDES += -I$(THIRDPART)/MyLogger/include
 
 ###################################################
+# SI units
+
+INCLUDES += -I$(THIRDPART)/units/include
+
+###################################################
 # Make the list of compiled files used both by the
 # library and application
 #

@@ -18,6 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
+
 #ifndef VEHICLESHAPE_HPP
 #  define VEHICLESHAPE_HPP
 
@@ -48,11 +49,15 @@ public:
         : m_blueprint(blueprint)
     {
         // Origin on the middle of the rear wheel axle
-        m_obb.setSize(sf::Vector2f(m_blueprint.length, m_blueprint.width));
-        m_obb.setOrigin(m_blueprint.back_overhang, m_obb.getSize().y / 2);
+        const sf::Vector2f s(float(m_blueprint.length.value()), 
+                             float(m_blueprint.width.value()));
+        m_obb.setSize(s);
+        const sf::Vector2f o(float(m_blueprint.back_overhang.value()), 
+                             m_obb.getSize().y / 2.0f);
+        m_obb.setOrigin(o);
 
         // Undefined states
-        update(sf::Vector2f(NAN, NAN), NAN);
+        update(sf::Vector2<Meter>(Meter(NAN), Meter(NAN)), Radian(NAN));
     }
 
     //--------------------------------------------------------------------------
@@ -68,11 +73,11 @@ public:
     //! \brief Refresh the position and heading of shape and child shapes (ie
     //! sensor shapes).
     //--------------------------------------------------------------------------
-    void update(sf::Vector2f const& position, float const heading)
+    void update(sf::Vector2<Meter> const& position, Radian const heading)
     {
         // Update body shape
-        m_obb.setPosition(position);
-        m_obb.setRotation(RAD2DEG(heading));
+        m_obb.setPosition(float(position.x.value()), float(position.y.value()));
+        m_obb.setRotation(float(Degree(heading).value()));
         m_heading = heading;
 
         // Update wheel shape
@@ -112,15 +117,16 @@ public:
     //! \param[in] nth the nth wheel: shall be < BLUEPRINT::WheelName::MAX.
     //! \param[in] heading the heading of the vehicle in radian.
     //--------------------------------------------------------------------------
-    inline sf::RectangleShape obb_wheel(size_t const nth, float steering) const
+    inline sf::RectangleShape obb_wheel(size_t const nth, Radian steering) const
     {
         assert(nth < m_blueprint.wheels.size());
         auto const& w = m_blueprint.wheels[nth];
 
-        sf::RectangleShape shape(sf::Vector2f(w.radius * 2.0f, w.width));
+        sf::Vector2f s(float(w.radius.value() * 2.0), float(w.width.value()));
+        sf::RectangleShape shape(s);
         shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
-        shape.setPosition(w.position);
-        shape.setRotation(RAD2DEG(m_heading + steering));
+        shape.setPosition(float(w.position.x.value()), float(w.position.y.value()));
+        shape.setRotation(float(Degree(m_heading + steering)));
         return shape;
     }
 
@@ -139,15 +145,16 @@ public:
     //! \brief Const getter: return the position of the middle of the rear axle
     //! inside the world coordinates [meter].
     //--------------------------------------------------------------------------
-    inline sf::Vector2f position() const
+    inline sf::Vector2<Meter> position() const
     {
-        return  m_obb.getPosition();
+        const auto p = m_obb.getPosition();
+        return sf::Vector2<Meter>(p.x, p.y);
     }
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
-    inline float heading() const
+    inline Radian heading() const
     {
         return m_heading;
     }
@@ -178,7 +185,7 @@ private:
     sf::RectangleShape m_obb;
     //! \brief Cache m_obb::getOrientation() in radian: avoid to convert from degree
     //! since SFML uses radians.
-    float m_heading;
+    Radian m_heading;
 };
 
 #endif

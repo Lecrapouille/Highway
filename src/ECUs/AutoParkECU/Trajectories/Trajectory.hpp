@@ -31,6 +31,7 @@ class VehicleControl;
 
 static const bool USE_KINEMATIC = true;
 
+template<class T>
 class References
 {
 private:
@@ -44,12 +45,12 @@ private:
         //! \brief param[in] v: value [generic type]
         //! \brief param[in] t: duration [generic time]
         //----------------------------------------------------------------------
-        TimedValue(float v, float t)
+        TimedValue(T v, Second t)
             : value(v), time(t)
         {}
 
-        float value;
-        float time;
+        T value;
+        Second time;
     };
 
 public:
@@ -61,20 +62,20 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    void add(float const value, float const duration)
+    void add(T const value, Second const duration)
     {
-        assert(duration >= 0.0f);
+        assert(duration >= 0.0_s);
 
-        float time = m_references.empty() ? 0.0f : m_references.back().time;
+        Second time = m_references.empty() ? 0.0_s : m_references.back().time;
         m_references.push_back(TimedValue(value, time + duration));
     }
 
     //--------------------------------------------------------------------------
-    float get(float const time)
+    T get(Second const time)
     {
         if (m_references.size() == 0u)
         {
-            return 0.0f;
+            return T(0.0);
         }
 
         const size_t N = m_references.size() - 1u;
@@ -89,10 +90,10 @@ public:
             }
         }
 
-        return 0.0f;
+        return T(0.0);
     }
 
-    bool end(float const time)
+    bool end(Second const time)
     {
         return m_references.empty() || (time >= m_references.back().time);
     }
@@ -116,19 +117,19 @@ public:
     virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;
     //! \brief
     //! \return false if no need to update (end of references)
-    virtual bool update(Car& car, float const dt);
+    virtual bool update(Car& car, Second const dt);
     virtual void draw(sf::RenderTarget& /*target*/, sf::RenderStates /*states*/) const {};
 
 protected:
 
     //! \brief Integration time
-    float m_time = 0.0f;
+    Second m_time = 0.0_s;
     //! \brief Timed reference for the car accelerations.
-    References m_accelerations;
+    References<MeterPerSecondSquared> m_accelerations;
     //! \brief Timed reference for the car speeds.
-    References m_speeds;
+    References<MeterPerSecond> m_speeds;
     //! \brief Timed reference for front wheel angles.
-    References m_steerings;
+    References<Radian> m_steerings;
 };
 
 #endif

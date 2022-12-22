@@ -44,12 +44,12 @@ struct AntenneBluePrint: public DynamicActor, public SensorBluePrint//, public S
    //--------------------------------------------------------------------------
    //! \brief Set the sensor attitude (position and heading orientation)
    //--------------------------------------------------------------------------
-   AntenneBluePrint(sf::Vector2f off, float ori, float r)
+   AntenneBluePrint(sf::Vector2<Meter> const off, Radian const ori, Meter const r)
      : SensorBluePrint(off, ori), range(r)
    {}
 
    //! \brief Mmaximum range of radar [meter].
-   float const range;
+   Meter const range;
 };
 
 // ****************************************************************************

@@ -35,7 +35,7 @@ public:
 
 private:
 
-    virtual void update_wheels(float const speed, float const steering) override;
+    virtual void update_wheels(MeterPerSecond const speed, Radian const steering) override;
 };
 
 #endif

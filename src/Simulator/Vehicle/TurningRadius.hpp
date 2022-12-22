@@ -45,20 +45,20 @@ struct TurningRadius
     //! \param[in] dim: the vehicle dimension.
     //! \param[in] steering: the desired steerin angle [rad].
     //--------------------------------------------------------------------------
-    TurningRadius(CarBluePrint const& dim, float const steering)
+    TurningRadius(CarBluePrint const& dim, Radian const steering)
     {
-        const float e = dim.wheelbase;
-        const float w = dim.width;
-        const float p = dim.front_overhang;
+        const Meter e = dim.wheelbase;
+        const Meter w = dim.width;
+        const Meter p = dim.front_overhang;
 
         // R: turning radius of the fake front wheel [m]
-        middle = e / std::sin(steering);
+        middle = e / units::math::sin(steering);
 
         // Ri: Inner turning radius [m]
-        internal = std::sqrt(middle * middle - e * e) - (w / 2.0f);
+        internal = units::math::sqrt(middle * middle - e * e) - (w / 2.0f);
 
         // Re: External (outer) turning radius [m]
-        external = std::sqrt((internal + w) * (internal + w) + (e + p) * (e + p));
+        external = units::math::sqrt((internal + w) * (internal + w) + (e + p) * (e + p));
 
         // Largeur balayee [m]
         bal = external - internal;
@@ -69,15 +69,15 @@ struct TurningRadius
 
     //! \brief turning radius of the virtual wheel located in the middle of the
     //! front axle [meter].
-    float middle;
+    Meter middle;
     //! \brief turning radius of the internal wheel [meter].
-    float internal;
+    Meter internal;
     //! \brief turning radius of the external wheel [meter].
-    float external;
+    Meter external;
     //! \brief Largeur balayee [meter]
-    float bal;
+    Meter bal;
     //! \brief Surlargeur [meter]
-    float sur;
+    Meter sur;
 };
 
 #endif

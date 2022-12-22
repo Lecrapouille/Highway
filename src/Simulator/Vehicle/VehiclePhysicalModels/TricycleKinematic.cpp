@@ -21,11 +21,12 @@
 
 #include "Vehicle/VehiclePhysicalModels/TricycleKinematic.hpp"
 
-void TricycleKinematic::update(float const dt)
+void TricycleKinematic::update(Second const dt)
 {
-    const float wb = m_shape.blueprint().wheelbase;
+    const Radian u = 1_rad;
+    const Meter wb = m_shape.blueprint().wheelbase;
     m_speed = m_control.outputs.speed;
-    m_heading += dt * m_speed * tanf(m_control.outputs.steering) / wb;
-    m_position.x += dt * m_speed * cosf(m_heading);
-    m_position.y += dt * m_speed * sinf(m_heading);
+    m_heading += dt * m_speed * u * units::math::tan(m_control.outputs.steering) / wb;
+    m_position.x += dt * m_speed * units::math::cos(m_heading);
+    m_position.y += dt * m_speed * units::math::sin(m_heading);
 }

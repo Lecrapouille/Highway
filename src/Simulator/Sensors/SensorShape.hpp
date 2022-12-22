@@ -46,18 +46,22 @@ public:
         m_obb.setOutlineThickness(ZOOM);
 
         // Undefined states
-        update(sf::Vector2f(NAN, NAN), NAN);
+        update(sf::Vector2<Meter>(Meter(NAN), Meter(NAN)), Radian(NAN));
     }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    void update(sf::Vector2f const& position, float const heading)
+    void update(sf::Vector2<Meter> const& position, Radian const heading)
     {
         m_position = position;
         m_heading = heading;
-        m_obb.setRotation(RAD2DEG(heading + blueprint.orientation));
-        m_obb.setPosition(position + HEADING(blueprint.offset, heading));
+
+        const Degree a = heading + blueprint.orientation;
+        const sf::Vector2<Meter> p = position + HEADING(blueprint.offset, heading);
+
+        m_obb.setRotation(float(a.value()));
+        m_obb.setPosition(float(p.x.value()), float(p.y.value()));
     }
 
     //--------------------------------------------------------------------------
@@ -75,8 +79,8 @@ public:
 
 protected:
 
-   sf::Vector2f m_position;
-   float m_heading;
+   sf::Vector2<Meter> m_position;
+   Radian m_heading;
    //! \brief Oriented bounding box
    sf::RectangleShape m_obb;
 };

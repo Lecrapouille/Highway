@@ -22,13 +22,15 @@
 #ifndef FOO_HPP
 #  define FOO_HPP
 
+#  include "Math/Units.hpp"
 #  include <SFML/System/Vector2.hpp>
 #  include <SFML/System/Vector3.hpp>
 #  include <cmath>
 
-constexpr float RAD2DEG(float const r) { return r * 57.295779513f; }
-constexpr float DEG2RAD(float const d) { return d * 0.01745329251994f; }
-constexpr float POW2(float const x)  { return x * x; }
+//constexpr float RAD2DEG(float const r) { return r * 57.295779513f; }
+//constexpr float DEG2RAD(float const d) { return d * 0.01745329251994f; }
+template<class T>
+constexpr T POW2(T const x)  { return x * x; }
 
 template<typename T>
 inline T constrain(T const value, T const lower, T const upper)
@@ -52,15 +54,15 @@ inline float DISTANCE(sf::Vector2f const& a, sf::Vector2f const& b)
    return sqrtf(POW2(b.x - a.x) + POW2(b.y - a.y));
 }
 
-constexpr float ARC_LENGTH(float const angle, float const radius) // [rad] * [m]
+constexpr Meter ARC_LENGTH(Radian const angle, Meter const radius) // [rad] * [m]
 {
-   return angle * radius;
+   return angle.value() * radius;
 }
 
-inline sf::Vector2f HEADING(sf::Vector2f const& p, float const a)
+inline sf::Vector2<Meter> HEADING(sf::Vector2<Meter> const& p, Radian const a)
 {
-   return sf::Vector2f(cosf(a) * p.x - sinf(a) * p.y,
-                       sinf(a) * p.x + cosf(a) * p.y);
+   return sf::Vector2<Meter>(units::math::cos(a) * p.x - units::math::sin(a) * p.y,
+                             units::math::sin(a) * p.x + units::math::cos(a) * p.y);
 }
 
 inline sf::Vector3f HEADING3F(sf::Vector2f const& p, float const a)

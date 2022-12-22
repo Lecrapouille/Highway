@@ -22,6 +22,8 @@
 #ifndef VEHICLE_CONTROL_HPP
 #  define VEHICLE_CONTROL_HPP
 
+#  include "Math/Units.hpp"
+
 class VehicleControl
 {
 public:
@@ -31,8 +33,8 @@ public:
     //----------------------------------------------------------------------
     struct References
     {
-        float speed = 0.0f;
-        float steering = 0.0f;
+        MeterPerSecond speed = 0.0_mps;
+        Radian steering = 0.0_rad;
     };
 
     //----------------------------------------------------------------------
@@ -49,14 +51,14 @@ public:
     //----------------------------------------------------------------------
     struct Outputs
     {
-        float speed = 0.0f;
-        float steering = 0.0f;
+        MeterPerSecond speed = 0.0_mps;
+        Radian steering = 0.0_rad;
     };
 
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_ref_speed(float const speed)
+    void set_ref_speed(MeterPerSecond const speed)
     {
         ref.speed = speed;
     }
@@ -64,7 +66,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    float get_ref_speed()
+    MeterPerSecond get_ref_speed()
     {
         return ref.speed;
     }
@@ -72,7 +74,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_ref_steering(float const steering)
+    void set_ref_steering(Radian const steering)
     {
         ref.steering = steering;
     }
@@ -80,7 +82,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    float get_ref_steering()
+    Radian get_ref_steering()
     {
         return ref.steering;
     }
@@ -88,7 +90,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    float get_steering()
+    Radian get_steering()
     {
         return outputs.steering;
     }
@@ -96,7 +98,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    float get_speed()
+    MeterPerSecond get_speed()
     {
         return outputs.speed;
     }
@@ -104,7 +106,7 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_ref_acceleration(float const acc, float const dt)
+    void set_ref_acceleration(MeterPerSecondSquared const acc, Second const dt)
     {
         ref.speed += acc * dt;
     }
@@ -112,9 +114,9 @@ public:
     //----------------------------------------------------------------------
     //! \brief
     //----------------------------------------------------------------------
-    void set_ref_steering_rate(float const steering, float const dt)
+    void set_ref_steering_rate(RadianPerSecond const steering_rate, Second const dt)
     {
-        ref.steering += steering * dt;
+        ref.steering += steering_rate * dt;
     }
 
     //----------------------------------------------------------------------
@@ -123,9 +125,9 @@ public:
 // TODO init
 
     //----------------------------------------------------------------------
-    //! \brief
+    //! \brief TODO
     //----------------------------------------------------------------------
-    void update(float const /*dt*/ /*, sensors*/)
+    void update(Second const /*dt*/ /*, sensors*/)
     {
         //
         outputs.speed = ref.speed;

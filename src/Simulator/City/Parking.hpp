@@ -44,14 +44,14 @@ struct ParkingBluePrint
     //! \param[in] a parking lane angle [deg] (0°: parallel, 90°:
     //! perpendicular).
     //----------------------------------------------------------------------
-    ParkingBluePrint(float const l, float const w, size_t const a);
+    ParkingBluePrint(Meter const l, Meter const w, size_t const a);
 
     //! \brief Vehicle length [meter]
-    float length;
+    Meter length;
     //! \brief Vehicle width [meter]
-    float width;
+    Meter width;
     //! \brief Orientation [rad]
-    float angle;
+    Radian angle;
     //! \brief Orientation [deg]
     size_t deg;
 };
@@ -85,7 +85,7 @@ public:
     //! \note the parking lane orientation is providen by ParkingBluePrint.
     //! \note we do not manage the orientation in the world coordinate.
     //--------------------------------------------------------------------------
-    Parking(ParkingBluePrint const& blueprint, sf::Vector2f const& position, Car& car);
+    Parking(ParkingBluePrint const& blueprint, sf::Vector2<Meter> const& position, Car& car);
 
     //--------------------------------------------------------------------------
     //! \brief Empty parking slot.
@@ -95,7 +95,7 @@ public:
     //! \note the parking local orientation is providen by ParkingBluePrint.
     //! \note we do not manage the orientation in the world coordinate.
     //--------------------------------------------------------------------------
-    Parking(ParkingBluePrint const& d, sf::Vector2f const& position);
+    Parking(ParkingBluePrint const& d, sf::Vector2<Meter> const& position);
 
     //--------------------------------------------------------------------------
     //! \brief Copy operator. Ugly code needed because of const member vriables.
@@ -144,15 +144,16 @@ public:
     //! \brief Const position in the world coordinates of the middle of the left
     //! lane. Once placed in the world the parking slot cannot be displaced.
     //--------------------------------------------------------------------------
-    sf::Vector2f const& position() const
+    sf::Vector2<Meter> position() const
     {
-        return m_shape.getPosition();
+        sf::Vector2f p(m_shape.getPosition());
+        return { Meter(p.x), Meter(p.y) };
     }
 
     //-------------------------------------------------------------------------
     //! \brief Const getter: return the oriented bounding box of the parking.
     //-------------------------------------------------------------------------
-    inline float heading() const
+    inline Radian heading() const
     {
         return blueprint.angle; // FIXME
     }
@@ -168,11 +169,12 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Helper method to place the next parking along the X-axis.
     //--------------------------------------------------------------------------
-    sf::Vector2f delta() const
+    sf::Vector2<Meter> delta() const
     { // FIXME not working for diagnonal spot
-        sf::Vector2f p = HEADING(sf::Vector2f(blueprint.length, blueprint.width),
-                                 -blueprint.angle);
-        return sf::Vector2f(p.x, 0.0f); // W
+        sf::Vector2<Meter> p =
+           HEADING(sf::Vector2<Meter>(blueprint.length, blueprint.width),
+                   -blueprint.angle);
+        return sf::Vector2<Meter>(p.x, 0.0_m); // W
     }
 
     //--------------------------------------------------------------------------
