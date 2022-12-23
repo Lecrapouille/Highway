@@ -61,13 +61,13 @@ DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 
 ###################################################
 # MyLogger
-
+#
 THIRDPART_LIBS += $(abspath $(THIRDPART)/MyLogger/build/libmylogger.a.0.1)
 INCLUDES += -I$(THIRDPART)/MyLogger/include
 
 ###################################################
 # SI units
-
+#
 INCLUDES += -I$(THIRDPART)/units/include
 
 ###################################################
@@ -79,7 +79,7 @@ COMMON_OBJS = Howard.o KeyBindings.o Application.o PetriNet.o PetriEditor.o
 ###################################################
 # Make the list of compiled files for the library
 #
-LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o
+LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o Prolog.o
 LIB_OBJS += FontManager.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o Antenne.o # FIXME Antenne temporaire
@@ -99,7 +99,7 @@ OBJS += $(LIB_OBJS) main.o
 # Set Libraries. For knowing which libraries
 # is needed please read the external/README.md file.
 #
-PKG_LIBS = sfml-graphics
+PKG_LIBS += sfml-graphics swipl
 LINKER_FLAGS += -lpthread -ldl
 
 ###################################################

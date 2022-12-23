@@ -65,7 +65,7 @@ DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 ###################################################
 # Compile against the Highway shared library
 #
-PKG_LIBS = sfml-graphics
+PKG_LIBS += sfml-graphics swipl
 THIRDPART_LIBS += $(abspath $(P)/$(BUILD)/libhighway.a)
 
 ###################################################
