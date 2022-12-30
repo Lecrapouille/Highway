@@ -55,6 +55,9 @@ public:
     //-------------------------------------------------------------------------
     void reset();
 
+    Road& addRoad(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
+         Meter const width, std::array<size_t, TrafficSide::Max> lanes);
+
     //-------------------------------------------------------------------------
     //! \brief Add a parking slot in the world at the given position. The
     //! parking instance is hold by the simulation instance.
@@ -164,6 +167,14 @@ public:
     }
 
     //-------------------------------------------------------------------------
+    //! \brief Return the list of parkings.
+    //-------------------------------------------------------------------------
+    std::vector<std::unique_ptr<Road>>& roads()
+    {
+        return m_roads;
+    }
+
+    //-------------------------------------------------------------------------
     //! \brief Return the altitude at the given coordinates. TODO
     //-------------------------------------------------------------------------
     Meter altitude(sf::Vector2f const& position)
@@ -212,13 +223,15 @@ protected:
     //! \brief
     //SpatialHashGrid m_grid;
     //! \brief Container of cars
-    std::vector<std::unique_ptr<Car>> m_cars;
+    std::vector<std::unique_ptr<Car>> m_cars; // FIXME weak_ptr
     //! \brief Container of purely displayed cars
     std::vector<std::unique_ptr<Car>> m_ghosts;
     //! \brief The autonomous cars (TODO for the moment only one is managed)
     std::unique_ptr<Car> m_ego = nullptr;
+    //! \brief Container of roads
+    std::vector<std::unique_ptr<Road>> m_roads; // FIXME: graph<Road, Carrefour> or Lanes
     //! \brief Container of parking slots
-    std::vector<std::unique_ptr<Parking>> m_parkings;
+    std::vector<std::unique_ptr<Parking>> m_parkings; // FIXME non pointers
     // TODO roads and bounding boxes of static objects, pedestrians
     // TODO grid to detect collisions and detect objects around
 

@@ -30,6 +30,28 @@
 //}
 
 //------------------------------------------------------------------------------
+void Renderer::draw(Lane const& lane, sf::RenderTarget& target, sf::RenderStates const& states)
+{
+    sf::RectangleShape const& shape = lane.shape();
+    target.draw(shape, states);
+    target.draw(Circle(shape.getPosition().x, shape.getPosition().y,
+                       ZOOM, sf::Color::Black), states);
+}
+
+//------------------------------------------------------------------------------
+void Renderer::draw(Road const& road, sf::RenderTarget& target, sf::RenderStates const& states)
+{
+    size_t side = TrafficSide::Max;
+    while (side--)
+    {
+        for (auto const& it: road.m_lanes[side])
+        {
+            draw(*it, target, states);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     sf::RectangleShape const& shape = parking.obb();

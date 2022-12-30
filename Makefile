@@ -84,7 +84,7 @@ LIB_OBJS += FontManager.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o Antenne.o # FIXME Antenne temporaire
 LIB_OBJS += Car.o Trailer.o
-LIB_OBJS += Pedestrian.o Parking.o BluePrints.o City.o
+LIB_OBJS += Pedestrian.o Parking.o Road.o BluePrints.o City.o
 LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o GUILoadSimulMenu.o
 LIB_OBJS += Trajectory.o ParallelTrajectory.o AutoParkECU.o
 # PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o

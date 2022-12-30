@@ -54,6 +54,22 @@ inline float DISTANCE(sf::Vector2f const& a, sf::Vector2f const& b)
    return sqrtf(POW2(b.x - a.x) + POW2(b.y - a.y));
 }
 
+inline Meter DISTANCE(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
+{
+   return units::math::sqrt(units::math::pow<2>(b.x - a.x) + units::math::pow<2>(b.y - a.y));
+}
+
+inline Radian ORIENTATION(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
+{
+   const auto teta = (b.y - a.y) / (b.x - a.x);
+   Radian angle(units::math::atan(teta));
+   if (b.x < a.x)
+      angle += 180.0_deg;
+   else if (b.y < a.y)
+      angle += 360.0_deg;
+   return angle;
+}
+
 constexpr Meter ARC_LENGTH(Radian const angle, Meter const radius) // [rad] * [m]
 {
    return angle.value() * radius;

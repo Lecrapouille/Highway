@@ -24,6 +24,7 @@
 
 #  include "Simulator/Actor.hpp"
 #  include "Math/Math.hpp"
+#  include "Math/Units.hpp"
 #  include <SFML/Graphics/RectangleShape.hpp>
 #  include <ostream>
 #  include <cassert>

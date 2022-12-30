@@ -79,14 +79,14 @@ static Car& customize(City const& city, Car& car)
     add_sensors(car, ecu);
 
     // Make the car reacts from the keyboard: enable the turning indicator.
-    car.callback(sf::Keyboard::PageDown, [&car]()
+    car.callback(sf::Keyboard::A, [&car]()
     {
         bool turning_right = (car.turningIndicator() == TurningIndicator::Right);
         car.turningIndicator(false, turning_right ^ true);
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
-    car.callback(sf::Keyboard::PageUp, [&car]()
+    car.callback(sf::Keyboard::S, [&car]()
     {
         bool turning_left = (car.turningIndicator() == TurningIndicator::Left);
         car.turningIndicator(turning_left ^ true, false);
@@ -133,14 +133,22 @@ static bool halt_simulation_when(Simulator const& simulator)
 //-----------------------------------------------------------------------------
 static Car& create_city(City& city)
 {
+    std::string parking_type = "epi." + std::to_string(0u); // parallel slots
+    const Meter l = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
+    constexpr size_t number_parkings = 4u; 
+
+    // Create roads
+    LaneBluePrint lbp(2.5_m, 10.0_m, 0.0_deg);
+    Road& road1 = city.addRoad(sf::Vector2<Meter>(97.5_m, 100.0_m), 
+                               sf::Vector2<Meter>(97.5_m + number_parkings * l, 100.0_m), 
+                               2.5_m, {1u, 1u});
+
     // Create parallel or perpendicular or diagnoal parking slots
-    const int angle = 0u;
-    std::string dim = "epi." + std::to_string(angle);
-    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m)); // .attachTo(road1, offset);
-    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
-    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
-    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
-    city.addParking(dim.c_str(), parking3.position() + parking3.delta());
+    Parking& parking0 = city.addParking(parking_type.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m)); // .attachTo(road1, offset); => { Road::offset() }
+    Parking& parking1 = city.addParking(parking_type.c_str(), parking0.position() + parking0.delta());
+    Parking& parking2 = city.addParking(parking_type.c_str(), parking1.position() + parking1.delta());
+    Parking& parking3 = city.addParking(parking_type.c_str(), parking2.position() + parking2.delta());
+    city.addParking(parking_type.c_str(), parking3.position() + parking3.delta());
 
     // Add parked cars (static)
     city.addCar("Renault.Twingo", parking0);

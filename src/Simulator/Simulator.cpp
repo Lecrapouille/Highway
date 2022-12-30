@@ -255,6 +255,11 @@ void Simulator::drawSimulation(sf::View const& view)
     //Renderer::draw(m_city.grid(), m_renderer);
 
     // Draw the city
+    for (auto const& it: m_city.roads())
+    {
+        Renderer::draw(*it, m_renderer);
+    }
+
     for (auto const& it: m_city.parkings())
     {
         Renderer::draw(*it, m_renderer);

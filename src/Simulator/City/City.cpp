@@ -50,6 +50,14 @@ Car* City::get(const char* name)
 }
 
 //------------------------------------------------------------------------------
+Road& City::addRoad(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
+         Meter const width, std::array<size_t, TrafficSide::Max> lanes)
+{
+    m_roads.push_back(std::make_unique<Road>(start, stop, width, lanes));
+    return *m_roads.back();
+}
+
+//------------------------------------------------------------------------------
 Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position)
 {
     m_parkings.push_back(std::make_unique<Parking>(BluePrints::get<ParkingBluePrint>(type), position));
