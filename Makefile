@@ -71,12 +71,6 @@ INCLUDES += -I$(THIRDPART)/MyLogger/include
 INCLUDES += -I$(THIRDPART)/units/include
 
 ###################################################
-# Make the list of compiled files used both by the
-# library and application
-#
-COMMON_OBJS = Howard.o KeyBindings.o Application.o PetriNet.o PetriEditor.o
-
-###################################################
 # Make the list of compiled files for the library
 #
 LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o Prolog.o
