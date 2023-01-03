@@ -28,7 +28,6 @@ class Parking;
 class Lane;
 class Road;
 class Car;
-class Autonomous;
 //class SpatialHashGrid;
 
 // *****************************************************************************
@@ -42,7 +41,6 @@ public:
     static void draw(Lane const& lane, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
     static void draw(Road const& road, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
     static void draw(Car const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
-    static void draw(Autonomous const& Car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
     //static void draw(SpatialHashGrid const& grid, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
 };
 

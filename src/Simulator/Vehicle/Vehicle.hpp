@@ -119,6 +119,10 @@ public:
         return ecu;
     }
 
+    template<class T> bool hasECU() const { return hasComponent<T>(); } // FIXME iff T inherit from ECU
+    template<class T> T& getECU() { return getComponent<T>(); }
+    template<class T> T const& getECU() const { return getComponent<T>(); }
+
     //-------------------------------------------------------------------------
     // External or internal: collides with city and sensor detecs city ???
     //-------------------------------------------------------------------------
@@ -396,7 +400,7 @@ public:
     //! starting by "ego".
     //! FIXME https://github.com/Lecrapouille/Highway/issues/6
     //-------------------------------------------------------------------------
-    virtual bool isEgo()
+    virtual bool isEgo() const
     {
         return (name.size() >= 3u) && (name[0] == 'e') && (name[1] == 'g') &&
                (name[2] == 'o');

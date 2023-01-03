@@ -303,5 +303,11 @@ bool AutoParkECU::updateTrajectory(Second const dt)
     if (m_trajectory == nullptr)
         return true;
 
-    return m_trajectory->update(m_ego, dt);
+    if (m_trajectory->update(m_ego, dt))
+        return true;
+
+    // End of the trajectory, delete it since we no longer need it (this will avoid
+    // rendering it i.e.)
+    m_trajectory = nullptr;
+    return false;
 }

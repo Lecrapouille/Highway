@@ -21,6 +21,7 @@
 
 #include "Renderer/Renderer.hpp"
 #include "City/City.hpp"
+#include "ECUs/AutoParkECU/AutoParkECU.hpp" // FIXME to be removed
 
 //------------------------------------------------------------------------------
 //void Renderer::draw(SpatialHashGrid const& hashgrid, sf::RenderTarget& target, sf::RenderStates const& states)
@@ -62,21 +63,6 @@ void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::Render
 }
 
 //------------------------------------------------------------------------------
-void Renderer::draw(Autonomous const& car, sf::RenderTarget& target, sf::RenderStates const& states)
-{
-    Car const& c = *reinterpret_cast<const Car*>(&car);
-    draw(c, target, states);
-
-#if 0
-    // Debug Trajectory
-    if (car.hasTrajectory())
-    {
-        car.trajectory().draw(target, states);
-    }
-#endif
-}
-
-//------------------------------------------------------------------------------
 void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     // Car body.
@@ -109,4 +95,15 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     // Turning indicator
 
     // TODO Trailers
+
+    // Debug Trajectory
+    // FIXME find better solution. Shall not know AutoParkECU but ECU and maybe ECU::draw
+    if (car.isEgo() && car.hasECU<AutoParkECU>())
+    {
+        AutoParkECU const& ecu = car.getECU<AutoParkECU>();
+        if (ecu.hasTrajectory())
+        {
+            ecu.trajectory().draw(target, states);
+        }
+    }
 }

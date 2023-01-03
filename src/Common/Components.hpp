@@ -119,6 +119,21 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    //! \brief
+    // -------------------------------------------------------------------------
+    template<class ComponentType>
+    bool hasComponent() const
+    {
+        for (auto && component: m_components)
+        {
+            if (component->isClassType(ComponentType::Type))
+                return true;
+        }
+
+        return false;
+    }
+
+    // -------------------------------------------------------------------------
     //! \brief Find and return the first component of given type (including if
     //! ancestor are of the given type).
     //!
@@ -132,6 +147,19 @@ public:
         {
             if (component->isClassType(ComponentType::Type))
                 return *static_cast<ComponentType*>(component.get());
+        }
+
+        //return *std::unique_ptr<ComponentType>(nullptr);
+        throw std::out_of_range("No component found");
+    }
+
+    template<class ComponentType>
+    ComponentType const& getComponent() const
+    {
+        for (auto && component: m_components)
+        {
+            if (component->isClassType(ComponentType::Type))
+                return *static_cast<const ComponentType*>(component.get());
         }
 
         //return *std::unique_ptr<ComponentType>(nullptr);
