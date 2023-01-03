@@ -19,8 +19,9 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#  include "Simulator/Vehicle/Trailer.hpp"
-//FIXME#  include "Vehicle/VehiclePhysicalModels/TrailerKinematic.hpp"
+#include "Simulator/Vehicle/Trailer.hpp"
+// FIXME https://github.com/Lecrapouille/Highway/issues/16
+// #include "Vehicle/VehiclePhysicalModels/TrailerKinematic.hpp"
 
 //------------------------------------------------------------------------------
 Trailer::Trailer(const char* name_, sf::Color const& color_)

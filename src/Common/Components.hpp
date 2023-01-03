@@ -29,6 +29,9 @@
 #  include <vector>
 #  include <memory> // unique_ptr
 
+// TBD https://github.com/Lecrapouille/Highway/issues/21
+// Use https://github.com/skypjack/entt ?
+
 // *****************************************************************************
 //! \brief FNV-1a 32bit hashing algorithm.
 //! See https://gist.github.com/Lee-R/3839813

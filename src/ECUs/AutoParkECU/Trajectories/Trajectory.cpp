@@ -48,17 +48,24 @@ bool CarTrajectory::update(Car& car, Second const dt)
 }
 
 //------------------------------------------------------------------------------
-// FIXME a supprimer
 CarTrajectory::Ptr CarTrajectory::create(Parking::Type const type)
 {
     switch (type)
     {
     case Parking::Type::Parallel:
         return std::make_unique<ParallelTrajectory>();
-    //case Parking::Type::Perpendicular:
-    //    return std::make_unique<PerpTrajectory>();
-    //default:
-    //    return std::make_unique<DiagonalTrajectory>();
+    case Parking::Type::Perpendicular:
+        // FIXME https://github.com/Lecrapouille/Highway/issues/33
+        // return std::make_unique<PerpTrajectory>();
+        assert(false && "Not yet implemented");
+        break;
+    case Parking::Type::Diagonal45:
+    case Parking::Type::Diagonal60:
+    case Parking::Type::Diagonal75:
+        // FIXME https://github.com/Lecrapouille/Highway/issues/33
+        // return std::make_unique<DiagonalTrajectory>();
+        assert(false && "Not yet implemented");
+        break;
     default:
         assert(false && "Not yet implemented");
         break;

@@ -241,12 +241,13 @@ void Simulator::update(const Second dt)
     }
 }
 
+//------------------------------------------------------------------------------
+// TBD https://github.com/Lecrapouille/Highway/issues/19
+// TBD https://github.com/Lecrapouille/Highway/issues/18
 // Mauvaise facon de faire:
 // class DrawableCity<City>(City& city) : m_city(city)
 // { City& m_city; draw() { }
 // };
-
-//------------------------------------------------------------------------------
 void Simulator::drawSimulation(sf::View const& view)
 {
     m_renderer.setView(view);

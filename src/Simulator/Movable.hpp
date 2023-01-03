@@ -28,6 +28,7 @@
 //! \brief Base class for computing physic.
 // *****************************************************************************
 class Movable // TODO faire NonMovable qui retourne speed et acc = 0
+              // https://github.com/Lecrapouille/Highway/issues/20
 {
 public:
 

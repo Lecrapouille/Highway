@@ -61,7 +61,7 @@ public:
 //! \brief Simple car dynamic using the tricycle dynamic equations.
 //! The position (x, y) of the car is the middle of the rear axle.
 // *****************************************************************************
-class TricycleDynamic: public VehiclePhysics
+class TricycleDynamic: public VehiclePhysics // FIXME https://github.com/Lecrapouille/Highway/issues/34
 {
 public:
 

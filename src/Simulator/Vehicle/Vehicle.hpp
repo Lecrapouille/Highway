@@ -28,8 +28,8 @@
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
 #  include "Simulator/Vehicle/VehiclePhysics.hpp"
 #  include "Simulator/Vehicle/ECU.hpp"
-#  include "Simulator/Sensors/Antenne.hpp" // FIXME
-#  include "Simulator/Sensors/Antenne.hpp" // FIXME
+//#  include "Simulator/Sensors/Radar.hpp" // FIXME https://github.com/Lecrapouille/Highway/issues/7
+#  include "Simulator/Sensors/Antenne.hpp" // FIXME https://github.com/Lecrapouille/Highway/issues/7
 #  include <memory>
 #  include <functional>
 
@@ -119,7 +119,7 @@ public:
         return ecu;
     }
 
-    template<class T> bool hasECU() const { return hasComponent<T>(); } // FIXME iff T inherit from ECU
+    template<class T> bool hasECU() const { return hasComponent<T>(); } // TODO iff T inherit from ECU
     template<class T> T& getECU() { return getComponent<T>(); }
     template<class T> T const& getECU() const { return getComponent<T>(); }
 

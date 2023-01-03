@@ -37,6 +37,7 @@ bool PerpTrajectory::init(Car& car, Parking const& parking, bool const entering)
 }
 
 //------------------------------------------------------------------------------
+// https://github.com/Lecrapouille/Highway/issues/33
 bool PerpTrajectory::computePathPlanning(Car const& car, Parking const& parking, bool const entering)
 {
     if (entering)

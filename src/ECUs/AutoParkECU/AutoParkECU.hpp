@@ -24,7 +24,7 @@
 
 #  include "Vehicle/ECU.hpp"
 #  include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
-#  include "Sensors/Antenne.hpp" // FIXME should have to refer to it
+#  include "Sensors/Antenne.hpp" // FIXME should have to refer to it https://github.com/Lecrapouille/Highway/issues/30
 #  include <atomic>
 #  include <deque>
 
@@ -44,7 +44,7 @@ private:
     //! state machine is made in SelfParkingScanParking.cpp: Detect the first
     //! parked car, then detect the empty spot, then detect the next parked car.
     // *************************************************************************
-    class Scanner
+    class Scanner // FIXME https://github.com/Lecrapouille/Highway/issues/25
     {
         //! \brief Define the differents states of the state machine: Detect the
         //! first parked car, then detect the empty spot, then detect the next
@@ -130,7 +130,7 @@ private:
     //! compute the reference speed and reference steering angle for the cruise
     //! controler.
     // *************************************************************************
-    class StateMachine
+    class StateMachine // FIXME https://github.com/Lecrapouille/Highway/issues/25
     {
         //! \brief Define the differents states of the state machine: wait the
         //! event to start parking, scan parked cars, compute the trajectory to
@@ -235,7 +235,7 @@ private:
 
     Car& m_ego;
     //! \brief The list of parked needed for simulate radar
-    std::vector<std::unique_ptr<Car>> const& m_cars; // FIXME: to be removed use World
+    std::vector<std::unique_ptr<Car>> const& m_cars; // FIXME: to be removed use World https://github.com/Lecrapouille/Highway/issues/26
     //! \brief
     AutoParkECU::Scanner m_scanner;
     //! \brief

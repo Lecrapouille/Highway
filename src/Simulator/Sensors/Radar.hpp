@@ -27,11 +27,11 @@
 #  include "Renderer/Drawable.hpp"
 #  include <cassert>
 
+// https://github.com/Lecrapouille/Highway/issues/7
 // FIXME class Sensor: Observer { detect() => notify } utiliser la lib gtk + forward declaration
-
-class Car; // FIXME: publi Sensor
-
 // TODO https://www.mathworks.com/help/driving/ref/drivingradardatagenerator-system-object.html
+
+class Car; // FIXME: https://github.com/Lecrapouille/Highway/issues/26
 
 struct RadarBluePrint: public DynamicActor, public SensorBluePrint
 {

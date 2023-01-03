@@ -40,6 +40,7 @@ bool DiagonalTrajectory::init(Car& car, Parking const& parking, bool const enter
 }
 
 //------------------------------------------------------------------------------
+// https://github.com/Lecrapouille/Highway/issues/33
 bool DiagonalTrajectory::computePathPlanning(Car const& car, Parking const& parking, bool const entering)
 {
     if (entering)

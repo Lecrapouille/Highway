@@ -21,7 +21,7 @@
 
 #include "Renderer/Renderer.hpp"
 #include "City/City.hpp"
-#include "ECUs/AutoParkECU/AutoParkECU.hpp" // FIXME to be removed
+#include "ECUs/AutoParkECU/AutoParkECU.hpp" // FIXME to be removed https://github.com/Lecrapouille/Highway/issues/15
 
 //------------------------------------------------------------------------------
 //void Renderer::draw(SpatialHashGrid const& hashgrid, sf::RenderTarget& target, sf::RenderStates const& states)
@@ -92,11 +92,11 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
         target.draw(it->obb(), states);
     }
 
-    // Turning indicator
+    // Turning indicator https://github.com/Lecrapouille/Highway/issues/17
 
-    // TODO Trailers
+    // TODO Trailers https://github.com/Lecrapouille/Highway/issues/16
 
-    // Debug Trajectory
+    // Debug Trajectory https://github.com/Lecrapouille/Highway/issues/15
     // FIXME find better solution. Shall not know AutoParkECU but ECU and maybe ECU::draw
     if (car.isEgo() && car.hasECU<AutoParkECU>())
     {
@@ -107,3 +107,7 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
         }
     }
 }
+
+// TBD https://github.com/Lecrapouille/Highway/issues/18
+// Draw City from void Simulator::drawSimulation()
+// void Renderer::draw(City const& city, sf::RenderTarget& target, sf::RenderStates const& states)

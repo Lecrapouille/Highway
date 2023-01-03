@@ -73,9 +73,10 @@ static Car& customize(City const& city, Car& car)
 {
     // Add ECUs
     // FIXME how to avoid adding car (shall be implicit) and cars (pass City) ?
+    // https://github.com/Lecrapouille/Highway/issues/26
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city.cars());
 
-    // Add sensors.
+    // Add sensors. FIXME https://github.com/Lecrapouille/Highway/issues/10
     add_sensors(car, ecu);
 
     // Make the car reacts from the keyboard: enable the turning indicator.

@@ -24,6 +24,9 @@
 #include "Simulator/City/Parking.hpp"
 #include <iostream>
 
+// FIXME https://github.com/Lecrapouille/Highway/issues/14
+// How to access to MessageBar to remove std::cout << ?
+
 //-------------------------------------------------------------------------
 AutoParkECU::Scanner::Status
 AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
@@ -89,11 +92,12 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
                       << " because distance is too short (" << m_distance << " m)" << std::endl;
             m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         }
-        else if (detected || m_distance >= 6.4_m) // FIXME should be Lmin
+        else if (detected || m_distance >= 6.4_m) // FIXME should be Lmin https://github.com/Lecrapouille/Highway/issues/32
         {
             car.refSpeed(0.0_mps);
 
             // TODO Missing detection of the type of parking type. FIXME 2.0 m: parking width
+            // https://github.com/Lecrapouille/Highway/issues/32
             ParkingBluePrint dim(m_distance, 2.0_m, 0u);
             m_parking = std::make_unique<Parking>(dim, sf::Vector2<Meter>(m_position.x, m_position.y - 5.0_m)); // FIXME calculer la profondeur
             std::cout << "Scan: Parking spot detected: " << *m_parking << std::endl;
@@ -140,7 +144,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
         if ((ecu.m_ego.turningIndicator() == TurningIndicator::Left) || 
             (ecu.m_ego.turningIndicator() == TurningIndicator::Right))
         {
-            if (true) // TODO car.isParked()
+            if (true) // TODO car.isParked() https://github.com/Lecrapouille/Highway/issues/28
             {
                 // The car is not parked: start scanning parked cars
                 m_state = AutoParkECU::StateMachine::States::SCAN_PARKING_SPOTS;
@@ -198,7 +202,8 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
         }
         else
         {
-            std::cout << "SORRY I do not know how to leave by myself" << std::endl;
+            // FIXME https://github.com/Lecrapouille/Highway/issues/29
+            std::cerr << "SORRY I do not know how to leave by myself. Not yet implemented" << std::endl;
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         break;
@@ -253,13 +258,15 @@ void AutoParkECU::update(Second const dt)
 }
 
 //-----------------------------------------------------------------------------
-// FIXME for the moment a single sensor
+// https://github.com/Lecrapouille/Highway/issues/30
+// FIXME for the moment a single sensor is used
 // FIXME simulate defectuous sensor
-// FIXME this is not the good location for calling sensors::datect => move this
-// inside car::update()
-bool AutoParkECU::detect() // FIXME retourner un champ de bit 1 bool par capteur
+// FIXME this is not the good location for calling sensors::detect => move this
+// inside the vehicle update() and memorize detections.
+// FIXME retourner un champ de bit 1 bool par capteur
+bool AutoParkECU::detect()
 {
-    sf::Vector2f p; // FIXME to be returned
+    sf::Vector2f p; // FIXME to be returned https://github.com/Lecrapouille/Highway/issues/31
 
     auto const& radars = m_ego.sensors();
     if (radars.size() == 0u)
@@ -291,7 +298,7 @@ bool AutoParkECU::detect() // FIXME retourner un champ de bit 1 bool par capteur
 }
 
 //-----------------------------------------------------------------------------
-bool AutoParkECU::park(Parking const& parking, bool const entering) // TODO proper
+bool AutoParkECU::park(Parking const& parking, bool const entering)
 {
    m_trajectory = CarTrajectory::create(parking.type);
    return m_trajectory->init(m_ego, parking, entering);

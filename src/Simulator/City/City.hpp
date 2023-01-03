@@ -221,7 +221,7 @@ protected:
 protected:
 
     //! \brief
-    //SpatialHashGrid m_grid;
+    //SpatialHashGrid m_grid; FIXME https://github.com/Lecrapouille/Highway/issues/23
     //! \brief Container of cars
     std::vector<std::unique_ptr<Car>> m_cars; // FIXME weak_ptr
     //! \brief Container of purely displayed cars
@@ -229,7 +229,7 @@ protected:
     //! \brief The autonomous cars (TODO for the moment only one is managed)
     std::unique_ptr<Car> m_ego = nullptr;
     //! \brief Container of roads
-    std::vector<std::unique_ptr<Road>> m_roads; // FIXME: graph<Road, Carrefour> or Lanes
+    std::vector<std::unique_ptr<Road>> m_roads; // FIXME: graph<Road, Carrefour> or Lanes https://github.com/Lecrapouille/Highway/issues/24
     //! \brief Container of parking slots
     std::vector<std::unique_ptr<Parking>> m_parkings; // FIXME non pointers
     // TODO roads and bounding boxes of static objects, pedestrians

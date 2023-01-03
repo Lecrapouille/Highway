@@ -37,4 +37,7 @@ using MeterPerSecondSquared = units::acceleration::meters_per_second_squared_t;
 using MeterPerSecond = units::velocity::meters_per_second_t;
 using Second = units::time::second_t;
 
+// TODO https://github.com/Lecrapouille/Highway/issues/13
+// using units::math::cos() vs std::cos()
+
 #endif

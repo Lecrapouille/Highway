@@ -24,7 +24,7 @@
 #ifdef __APPLE__
 #  include <CoreFoundation/CFBundle.h>
 #endif
-#include <iostream>//FIXME
+
 //------------------------------------------------------------------------------
 #ifdef __APPLE__
 std::string osx_get_resources_dir(std::string const& file)

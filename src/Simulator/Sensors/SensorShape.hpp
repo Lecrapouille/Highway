@@ -24,7 +24,7 @@
 
 #  include "Sensors/SensorBluePrint.hpp"
 #  include "Math/Math.hpp"
-#include <iostream> // FIXME
+
 // ****************************************************************************
 //! \brief A sensor shape is just a blue print used inside of the vehicle shape
 //! for orienting automatically the sensor when the vehicle shape is turned.

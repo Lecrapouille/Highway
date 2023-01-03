@@ -22,6 +22,9 @@
 #ifndef FOO_HPP
 #  define FOO_HPP
 
+// FIXME https://github.com/Lecrapouille/Highway/issues/11
+// Clean this file
+
 #  include "Math/Units.hpp"
 #  include <SFML/System/Vector2.hpp>
 #  include <SFML/System/Vector3.hpp>

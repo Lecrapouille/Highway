@@ -26,6 +26,7 @@
 #  include <map>
 #  include <memory>
 
+// TODO https://github.com/Lecrapouille/Highway/issues/22
 class Monitoring
 {
 public:

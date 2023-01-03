@@ -160,6 +160,7 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
 }
 
 //------------------------------------------------------------------------------
+// FIXME https://github.com/Lecrapouille/Highway/issues/27
 size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& parking)
 {
     std::cout << "#############################" << std::endl;
