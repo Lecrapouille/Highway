@@ -134,18 +134,20 @@ static bool halt_simulation_when(Simulator const& simulator)
 static Car& create_city(City& city)
 {
     std::string parking_type = "epi." + std::to_string(0u); // parallel slots
-    const Meter l = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
-    constexpr size_t number_parkings = 4u; 
+    const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
+    const Meter road_width = 2.5_m;
+    const sf::Vector2<Meter> p(97.5_m, 100.0_m); // Initial position of the road
+    const std::array<size_t, TrafficSide::Max> lanes{1u, 1u}; // Number of lanes constituing the road
+    constexpr size_t number_parkings = 4u; // Number of parking slots along the road
 
     // Create roads
-    LaneBluePrint lbp(2.5_m, 10.0_m, 0.0_deg);
-    Road& road1 = city.addRoad(sf::Vector2<Meter>(97.5_m, 100.0_m), 
-                               sf::Vector2<Meter>(97.5_m + number_parkings * l, 100.0_m), 
-                               2.5_m, {1u, 1u});
+    Road& road1 = city.addRoad(p, sf::Vector2<Meter>(p.x + + float(number_parkings) * parking_length, p.y),
+                               road_width, lanes);
 
     // Create parallel or perpendicular or diagnoal parking slots
-    Parking& parking0 = city.addParking(parking_type.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m)); // .attachTo(road1, offset); => { Road::offset() }
-    Parking& parking1 = city.addParking(parking_type.c_str(), parking0.position() + parking0.delta());
+    const sf::Vector2<Meter> p1(p.x + double(lanes[TrafficSide::RightHand]) * road_width, p.y); // Initial position of the parking slots
+    Parking& parking0 = city.addParking(parking_type.c_str(), p1); // FIXME .attachTo(road1, offset); => { Road::offset() }
+    Parking& parking1 = city.addParking(parking_type.c_str(), parking0.position() + parking0.delta()); // FIXME .attachTo(parking0 ...
     Parking& parking2 = city.addParking(parking_type.c_str(), parking1.position() + parking1.delta());
     Parking& parking3 = city.addParking(parking_type.c_str(), parking2.position() + parking2.delta());
     city.addParking(parking_type.c_str(), parking3.position() + parking3.delta());
