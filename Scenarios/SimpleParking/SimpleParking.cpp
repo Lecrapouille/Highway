@@ -98,13 +98,13 @@ static Car& customize(Car& car)
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Right, [&car]()
     {
-        car.refSteering(car.refSteering() - 0.1_deg);
+        car.refSteering(car.refSteering() - 1.0_deg);
     });
 
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Left, [&car]()
     {
-        car.refSteering(car.refSteering() + 0.1_deg);
+        car.refSteering(car.refSteering() + 1.0_deg);
     });
 
     return car;

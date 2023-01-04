@@ -80,14 +80,14 @@ static Car& customize(City const& city, Car& car)
     add_sensors(car, ecu);
 
     // Make the car reacts from the keyboard: enable the turning indicator.
-    car.callback(sf::Keyboard::A, [&car]()
+    car.callback(sf::Keyboard::PageDown, [&car]()
     {
         bool turning_right = (car.turningIndicator() == TurningIndicator::Right);
         car.turningIndicator(false, turning_right ^ true);
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
-    car.callback(sf::Keyboard::S, [&car]()
+    car.callback(sf::Keyboard::PageUp, [&car]()
     {
         bool turning_left = (car.turningIndicator() == TurningIndicator::Left);
         car.turningIndicator(turning_left ^ true, false);
@@ -108,13 +108,13 @@ static Car& customize(City const& city, Car& car)
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Right, [&car]()
     {
-        car.refSteering(car.refSteering() - 0.1_deg);
+        car.refSteering(car.refSteering() - 1.0_deg);
     });
 
     // Make the car reacts from the keyboard: make the car turns (kinematic).
     car.callback(sf::Keyboard::Left, [&car]()
     {
-        car.refSteering(car.refSteering() + 0.1_deg);
+        car.refSteering(car.refSteering() + 1.0_deg);
     });
 
     return car;

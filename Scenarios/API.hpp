@@ -31,9 +31,9 @@
 #  include "City/City.hpp"
 #  include "Simulator/Simulator.hpp"
 
-//#  ifdef __cplusplus
-//extern "C" {
-//#  endif
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 //-----------------------------------------------------------------------------
 //! \brief C++ function returning the simulation name (used for title and
@@ -100,8 +100,8 @@ Car& create_city(City& city);
 //-----------------------------------------------------------------------------
 void react_to(Simulator& simulator, size_t const key);
 
-//#  ifdef __cplusplus
-//}
-//#  endif
+#  ifdef __cplusplus
+}
+#  endif
 
 #endif /* API_SCENARIO_HPP */

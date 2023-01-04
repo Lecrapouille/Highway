@@ -32,7 +32,7 @@ void City::reset()
 {
     m_car_id = m_ego_id = m_ghost_id = 0u;
 
-    //m_ghosts.clear();
+    m_ghosts.clear();
     m_cars.clear();
     m_parkings.clear();
 }
