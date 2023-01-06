@@ -88,8 +88,10 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     // Car sensors
     for (auto const& it: car.sensors())
     {
+        if (!it->renderable)
+            continue ;
         // Radar: target.draw(it->coverageArea(), states);
-        target.draw(it->obb(), states);
+        target.draw(it->shape.obb(), states);
     }
 
     // Turning indicator https://github.com/Lecrapouille/Highway/issues/17

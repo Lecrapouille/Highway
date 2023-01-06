@@ -28,8 +28,7 @@
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
 #  include "Simulator/Vehicle/VehiclePhysics.hpp"
 #  include "Simulator/Vehicle/ECU.hpp"
-//#  include "Simulator/Sensors/Radar.hpp" // FIXME https://github.com/Lecrapouille/Highway/issues/7
-#  include "Simulator/Sensors/Antenne.hpp" // FIXME https://github.com/Lecrapouille/Highway/issues/7
+#  include "Simulator/Sensors/Sensor.hpp"
 #  include <memory>
 #  include <functional>
 
@@ -92,14 +91,13 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    template<class SENSOR, class BP/*, typename... Args*/>
-    SENSOR& addSensor(BP const& bp/*, Args&&... args*/)
+    template<class SENSOR, class BP, typename... Args>
+    SENSOR& addSensor(BP const& bp, Args&&... args)
     {
-        std::shared_ptr<SENSOR> sensor = std::make_shared<SENSOR>(bp);
-        LOGI("Sensor %u attached to vehicle %s", sensor->m_id, name.c_str());
+        std::shared_ptr<SENSOR> sensor = std::make_shared<SENSOR>(bp, std::forward<Args>(args)...);
+        LOGI("Sensor %s attached to vehicle %s", sensor->name.c_str(), name.c_str());
         m_sensors.push_back(sensor);
-        m_shape->addSensorShape(sensor);
-        //sensor->init(std::forward<Args>(args)...);
+        m_shape->addSensorShape(sensor->shape);
         return *sensor;
     }
 
@@ -134,15 +132,18 @@ public:
             it->update(dt);
         }
 
-        // TBD: here loop of sensors::update() ?
         m_control->update(dt);
         m_physics->update(dt);
         update_wheels(m_physics->speed(), m_control->get_steering());
         m_shape->update(m_physics->position(), m_physics->heading());
-        for (auto& it: m_sensors)
-            it->update(m_physics->position(), m_physics->heading());
+        //for (auto& it: m_sensors) // TBD: here loop of sensors::update() ?
+        //{
+            // TODO it->detects(...); for all collidable in World
+        //}
         if (m_trailer != nullptr)
+        {
             m_trailer->update(dt);
+        }
     }
 
     //-------------------------------------------------------------------------
@@ -409,7 +410,7 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    inline std::vector<std::shared_ptr<Antenne>> const& sensors() const
+    inline std::vector<std::shared_ptr<Sensor>> const& sensors() const
     {
         return m_sensors;
     }
@@ -440,8 +441,8 @@ protected:
 
     //! \brief Simulate Electronic Control Unit
     std::vector<ECU*> m_ecus;
-    //! \brief FIXME https://github.com/Lecrapouille/Highway/issues/7
-    std::vector<std::shared_ptr<Antenne>> m_sensors;
+    //! \brief List of vehicle sensors
+    std::vector<std::shared_ptr<Sensor>> m_sensors;
     //! \brief The shape of the vehicle, dimension, wheel positions
     std::unique_ptr<VehicleShape<BLUEPRINT>> m_shape;
     //! \brief Kinematic, Dynamic model of the vehicle

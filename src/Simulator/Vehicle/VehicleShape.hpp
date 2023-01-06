@@ -24,7 +24,7 @@
 
 #  include "Math/Collide.hpp"
 #  include "Math/Math.hpp"
-#  include "Simulator/Sensors/SensorShape.hpp"
+#  include "Simulator/Sensors/Sensor.hpp"
 #  include <vector>
 #  include <cassert>
 #  include <memory>
@@ -37,7 +37,7 @@
 //! TrailerBluePrint ... see VehicleBlueprint.hpp).
 // *****************************************************************************
 template<class BLUEPRINT>
-class VehicleShape
+class VehicleShape // FIXME better to use scene graph
 {
 public:
 
@@ -64,9 +64,9 @@ public:
     //! \brief Add the shape of the sensor: when the shape is rotationg, sensor
     //! orientation will also be updated (mimic a scene graph hierarchy).
     //--------------------------------------------------------------------------
-    void addSensorShape(std::shared_ptr<SensorShape> shape)
+    void addSensorShape(SensorShape& shape) // FIXME SensorShape const& ?
     {
-       m_sensors.push_back(shape);
+       m_sensor_shapes.push_back(&shape);
     }
 
     //--------------------------------------------------------------------------
@@ -89,7 +89,7 @@ public:
         }
 
         // Update sensor shape
-        for (auto const& it: m_sensors)
+        for (auto const& it: m_sensor_shapes)
         {
             it->update(position, heading);
         }
@@ -170,9 +170,9 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Return shapes of sensors
     //--------------------------------------------------------------------------
-    inline std::vector<std::shared_ptr<SensorShape>> const& sensors() const
+    inline std::vector<SensorShape*> const& sensorShapes() const
     {
-        return m_sensors;
+        return m_sensor_shapes;
     }
 
 private:
@@ -180,7 +180,7 @@ private:
     //! \brief Dimension of the vehicle
     BLUEPRINT m_blueprint;
     //! \brief Sensors shapes
-    std::vector<std::shared_ptr<SensorShape>> m_sensors;
+    std::vector<SensorShape*> m_sensor_shapes;
     //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_obb;
     //! \brief Cache m_obb::getOrientation() in radian: avoid to convert from degree

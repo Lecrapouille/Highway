@@ -1,7 +1,7 @@
 //=====================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
-// Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
+// Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
 //
 // This file is part of Highway.
 //
@@ -19,70 +19,55 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#ifndef SENSOR_SHAPE_HPP
-#  define SENSOR_SHAPE_HPP
+#ifndef CAR_SENSORS_ANTENNA_HPP
+#  define CAR_SENSORS_ANTENNA_HPP
 
-#  include "Sensors/SensorBluePrint.hpp"
-#  include "Math/Math.hpp"
+#  include "Sensors/Sensor.hpp"
 
 // ****************************************************************************
 //! \brief A sensor shape is just a blue print used inside of the vehicle shape
 //! for orienting automatically the sensor when the vehicle shape is turned.
 // ****************************************************************************
-class SensorShape
+struct AntennaBluePrint: public SensorBluePrint
+{
+    //--------------------------------------------------------------------------
+    //! \brief Set the sensor attitude (position and heading orientation)
+    //--------------------------------------------------------------------------
+    AntennaBluePrint(sf::Vector2<Meter> const offset_, Degree const orientation_,
+                     Meter const range_)
+        : SensorBluePrint(offset_, orientation_), range(range_)
+    {}
+
+    //! \brief Mmaximum range of radar [meter].
+    Meter const range;
+};
+
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+class Antenna : public Sensor
 {
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Default constructor: bind a bluiprint and set the sensor rangle.
+    //! \param[in] range [m].
+    //! \fixme should be in constructor but since a vehicle has a sensors but its
+    //! shape holds AntennaShape we had to split it. I dunno how to fix that.
     //--------------------------------------------------------------------------
-    SensorShape(SensorBluePrint const& blueprint_)
-        : blueprint(blueprint_)
-    {
-        // Origin on the middle of the rear wheel axle
-        //m_obb.setSize(sf::Vector2f(range, 0.1f));
-        m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
-        m_obb.setFillColor(sf::Color(165, 42, 42));
-        m_obb.setOutlineThickness(ZOOM);
-
-        // Undefined states
-        update(sf::Vector2<Meter>(Meter(NAN), Meter(NAN)), Radian(NAN));
-    }
+    Antenna(AntennaBluePrint const& blueprint_, const char* name_, sf::Color const& color_);
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Is the sensor collides to the given bounding box ?
+    //! \param[in] shape: the bounding box (of a parked car ie).
+    //! \param[inout] p the point of collision.
+    //! \return true if the sensor has detected a box.
     //--------------------------------------------------------------------------
-    void update(sf::Vector2<Meter> const& position, Radian const heading)
-    {
-        m_position = position;
-        m_heading = heading;
-
-        const Degree a = heading + blueprint.orientation;
-        const sf::Vector2<Meter> p = position + HEADING(blueprint.offset, heading);
-
-        m_obb.setRotation(float(a.value()));
-        m_obb.setPosition(float(p.x.value()), float(p.y.value()));
-    }
-
-    //--------------------------------------------------------------------------
-    //! \brief const getter: return the oriented bounding box (OBB) of the shape.
-    //--------------------------------------------------------------------------
-    inline sf::RectangleShape const& obb() const
-    {
-        return m_obb;
-    }
+    virtual bool detects(sf::RectangleShape const& other, sf::Vector2f& p) override; // FIXME  const;
 
 public:
 
-   //! \brief
-   SensorBluePrint const& blueprint;
-
-protected:
-
-   sf::Vector2<Meter> m_position;
-   Radian m_heading;
-   //! \brief Oriented bounding box
-   sf::RectangleShape m_obb;
+    AntennaBluePrint const& blueprint;
 };
 
 #endif

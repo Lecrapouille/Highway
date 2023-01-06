@@ -23,6 +23,7 @@
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
 
 #define CONTINUE_SIMULATION false
+#include "Sensors/Sensors.hpp"
 
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: return the simulation name.
@@ -45,24 +46,45 @@ static void simulation_react_to(Simulator& simulator, size_t key)
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: customize the ego vehicle.
 //-----------------------------------------------------------------------------
-static void add_sensors(Car& car, AutoParkECU& ecu)
+static void attach_sensors(Car& car, AutoParkECU& ecu)
 {
-    // 4 radars: 1 one each wheel (to make simple)
-    constexpr Meter range = 10.0_m;
-    const Meter offx = car.blueprint.wheelbase;
-    const Meter offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1_m / 2.0f;
-    static const std::map<CarBluePrint::WheelName, AntenneBluePrint> blueprints = {
+    // Blueprints for 4 antennas: 1 placed on each wheel.
+    // Note shall be static since vehicle does not copy blueprints.
+    constexpr Meter range = 4.0_m;
+    Meter offx = car.blueprint.wheelbase;
+    Meter offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1_m / 2.0f; // FIXME
+    static const std::map<CarBluePrint::WheelName, AntennaBluePrint> antenna_blueprints = {
         { CarBluePrint::WheelName::FL, { sf::Vector2<Meter>(offx,   offy),  90.0_deg, range } },
         { CarBluePrint::WheelName::FR, { sf::Vector2<Meter>(offx,  -offy), -90.0_deg, range } },
         { CarBluePrint::WheelName::RL, { sf::Vector2<Meter>(0.0_m,  offy),  90.0_deg, range } },
         { CarBluePrint::WheelName::RR, { sf::Vector2<Meter>(0.0_m, -offy), -90.0_deg, range } },
     };
 
-    for (auto const& bp: blueprints)
+    // Attach antennas to the car
+    for (auto const& bp: antenna_blueprints)
     {
-        Antenne& antenne = car.addSensor<Antenne, AntenneBluePrint>(bp.second);
-        // TODO
-        // ecu.observe(antenne)
+        Antenna& antenna = car.addSensor<Antenna, AntennaBluePrint>(bp.second, "antenna", sf::Color::Blue);
+        antenna.renderable = true;
+        // TODO Observer pattern ecu.observe(antenna)
+        // https://github.com/Lecrapouille/Highway/issues/10
+    }
+
+    // Blueprint for 1 radar.
+    // Note shall be static since vehicle does not copy blueprints.
+    offx = car.blueprint.wheelbase + car.blueprint.front_overhang;
+    offy = 0.0_m;
+    constexpr Degree fov = 45.0_deg;
+    static const std::map<size_t, RadarBluePrint> radar_blueprints = {
+        { 0u, { sf::Vector2<Meter>(offx, offy), 0.0_deg, fov, range } },
+    };
+
+    // Attach radars to the car
+    for (auto const& bp: radar_blueprints)
+    {
+        Radar& radar = car.addSensor<Radar, RadarBluePrint>(bp.second, "radar", sf::Color::Red);
+        radar.renderable = true;
+        // TODO Observer pattern ecu.observe(antenna)
+        // https://github.com/Lecrapouille/Highway/issues/10
     }
 }
 
@@ -72,12 +94,13 @@ static void add_sensors(Car& car, AutoParkECU& ecu)
 static Car& customize(City const& city, Car& car)
 {
     // Add ECUs
-    // FIXME how to avoid adding car (shall be implicit) and cars (pass City) ?
+    // FIXME how to avoid adding car (shall be implicit)
+    // FIXME avoid passing and cars needed for sensors (pass instead City or World.collidable()) ?
     // https://github.com/Lecrapouille/Highway/issues/26
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city.cars());
 
-    // Add sensors. FIXME https://github.com/Lecrapouille/Highway/issues/10
-    add_sensors(car, ecu);
+    // Add sensors.
+    attach_sensors(car, ecu);
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()

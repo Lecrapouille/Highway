@@ -24,7 +24,7 @@
 
 #  include "Vehicle/ECU.hpp"
 #  include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
-#  include "Sensors/Antenne.hpp" // FIXME should have to refer to it https://github.com/Lecrapouille/Highway/issues/30
+#  include "Sensors/Sensor.hpp"
 #  include <atomic>
 #  include <deque>
 

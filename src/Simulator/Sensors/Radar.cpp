@@ -1,7 +1,7 @@
 //=====================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
-// Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
+// Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
 //
 // This file is part of Highway.
 //
@@ -21,29 +21,37 @@
 
 #  include "Sensors/Radar.hpp"
 #  include "Math/Collide.hpp"
-#  include <cassert>
 
-//-----------------------------------------------------------------------------
-Radar::Radar(RadarBluePrint const& blueprint_)//SensorBluePrint const& blueprint_, float const fov_, float const range_)
-   : SensorShape(blueprint_), blueprint(blueprint_)//, fov(fov_), range(range_),
-     //m_coverage_area(0.0f, 0.0f, blueprint.range, blueprint.orientation - blueprint.fov, blueprint.orientation + blueprint.fov)
+//------------------------------------------------------------------------------
+Radar::Radar(RadarBluePrint const& blueprint_, const char* name_, sf::Color const& color_)
+    : Sensor(blueprint_, name_, color_), blueprint(blueprint_)
 {
-   m_obb.setSize(sf::Vector2f(float(blueprint.range.value()), 0.1f));
-   m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
-   m_obb.setOutlineColor(sf::Color::Blue);
+    shape.setSize(0.1_m, 0.1_m);
 }
 
-//-----------------------------------------------------------------------------
-bool Radar::detects(sf::RectangleShape const& shape, sf::Vector2f& p) //const
+//------------------------------------------------------------------------------
+bool Radar::detects(sf::RectangleShape const& other, sf::Vector2f& p)
 {
-   bool res = ::collide(m_obb, shape, p);
-   if (res)
-   {
-      m_obb.setFillColor(sf::Color::Red);
-   }
-   else
-   {
-      m_obb.setFillColor(sf::Color::Green);
-   }
-   return res;
+    bool res = ::collide(shape.obb(), other, p);
+    if (res)
+    {
+        shape.color = sf::Color::Red;
+    }
+    else
+    {
+        shape.color = sf::Color::Green;
+    }
+    return res;
+}
+
+//------------------------------------------------------------------------------
+Arc const& Radar::coverageArea()
+{
+    m_coverage_area.init(float(shape.position().x.value()),
+                         float(shape.position().y.value()),
+                         float(blueprint.range.value()),
+                         blueprint.orientation + shape.heading() - blueprint.fov,
+                         blueprint.orientation + shape.heading() + blueprint.fov,
+                         shape.color);
+    return m_coverage_area;
 }

@@ -1,7 +1,7 @@
 //=====================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
-// Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
+// Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
 //
 // This file is part of Highway.
 //
@@ -19,24 +19,28 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#ifndef SENSOR_BLUEPRINT_HPP
-#  define SENSOR_BLUEPRINT_HPP
+#  include "Sensors/Antenna.hpp"
+#  include "Math/Collide.hpp"
 
-#  include <SFML/Graphics/RectangleShape.hpp>
-#  include "Math/Units.hpp"
-
-struct SensorBluePrint
+//------------------------------------------------------------------------------
+Antenna::Antenna(AntennaBluePrint const& blueprint_, const char* name_,
+                 sf::Color const& color_)
+    : Sensor(blueprint_, name_, color_), blueprint(blueprint_)
 {
-   // FIXME: why needed ?
-   SensorBluePrint() {}
-   SensorBluePrint(sf::Vector2<Meter> const off, Degree const ori)
-     : offset(off), orientation(ori)
-   {}
+    shape.setSize(blueprint.range, 0.1_m);
+}
 
-   //! \brief Relative position from the car shape position (middle rear axle)
-   sf::Vector2<Meter> offset;
-   //! \brief Relative relative orientation
-   Radian orientation;
-};
-
-#endif
+//------------------------------------------------------------------------------
+bool Antenna::detects(sf::RectangleShape const& other, sf::Vector2f& p)
+{
+    bool res = ::collide(shape.obb(), other, p);
+    if (res)
+    {
+        shape.color = sf::Color::Red;
+    }
+    else
+    {
+        shape.color = sf::Color::Green;
+    }
+    return res;
+}

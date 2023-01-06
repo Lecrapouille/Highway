@@ -1,7 +1,7 @@
 //=====================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
-// Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
+// Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
 //
 // This file is part of Highway.
 //
@@ -22,75 +22,60 @@
 #ifndef CAR_SENSORS_RADAR_HPP
 #  define CAR_SENSORS_RADAR_HPP
 
-#  include "Simulator/Actor.hpp"
-#  include "Simulator/Sensors/SensorShape.hpp"
-#  include "Renderer/Drawable.hpp"
-#  include <cassert>
+#  include "Sensors/Sensor.hpp"
 
-// https://github.com/Lecrapouille/Highway/issues/7
-// FIXME class Sensor: Observer { detect() => notify } utiliser la lib gtk + forward declaration
-// TODO https://www.mathworks.com/help/driving/ref/drivingradardatagenerator-system-object.html
-
-class Car; // FIXME: https://github.com/Lecrapouille/Highway/issues/26
-
-struct RadarBluePrint: public DynamicActor, public SensorBluePrint
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+struct RadarBluePrint: public SensorBluePrint
 {
-   // FIXME: why needed ?
-   RadarBluePrint(sf::Vector2<Meter> const off, Degree const ori, Degree const f, Meter const r)
-     : SensorBluePrint(off, ori), fov(f), range(r)
-   {}
+    RadarBluePrint(sf::Vector2<Meter> const offset_, Degree const orientation_,
+                   Degree const fov_, Meter const range_)
+        : SensorBluePrint(offset_, orientation_), fov(fov_), range(range_)
+    {}
 
-   //! \brief Field Of View: Angular field of view of radar [deg].
-   Degree const fov;
-   //! \brief Mmaximum range of radar [meter].
-   Meter const range;
+    //! \brief Field Of View: Angular field of view of radar [deg].
+    Degree const fov;
+    //! \brief Maximum range of radar [meter].
+    Meter const range;
 };
 
 // ****************************************************************************
-//! \brief Very ultra basic sensor detecting parked cars. This sensor is certainly
-//! not realist for works as a bug entenna and detect oriented boundind boxes
-//! collisions.
+//! \brief
 // ****************************************************************************
-class Radar: public SensorShape
+class Radar : public Sensor
 {
 public:
 
-   //--------------------------------------------------------------------------
-   //! \brief Default constructor: bind a bluiprint and set the sensor rangle.
-   //! \param[in] range [m].
-   //! \fixme should be in constructor but since a vehicle has a sensors but its
-   //! shape holds SensorShape we had to split it. I dunno how to fix that.
-   //--------------------------------------------------------------------------
-   Radar(RadarBluePrint const& blueprint);//SensorBluePrint const& blueprint, float const fov, float const range);
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor: bind a bluiprint and set the sensor rangle.
+    //! \param[in] range [m].
+    //! \fixme should be in constructor but since a vehicle has a sensors but its
+    //! shape holds SensorShape we had to split it. I dunno how to fix that.
+    //--------------------------------------------------------------------------
+    Radar(RadarBluePrint const& blueprint_, const char* name_, sf::Color const& color_);
 
-   //--------------------------------------------------------------------------
-   //! \brief Is the sensor collides to the given bounding box ?
-   //! \param[in] shape: the bounding box (of a parked car ie).
-   //! \param[inout] p the point of collision.
-   //! \return true if the sensor has detected a box.
-   //--------------------------------------------------------------------------
-   bool detects(sf::RectangleShape const& shape, sf::Vector2f& p);// FIXME  const;
+    //--------------------------------------------------------------------------
+    //! \brief Is the sensor collides to the given bounding box ?
+    //! \param[in] shape: the bounding box (of a parked car ie).
+    //! \param[inout] p the point of collision.
+    //! \return true if the sensor has detected a box.
+    //--------------------------------------------------------------------------
+    virtual bool detects(sf::RectangleShape const& other, sf::Vector2f& p) override; // FIXME  const;
 
-   Arc const& coverageArea()
-   {
-      m_coverage_area.init(float(m_position.x.value()), 
-                           float(m_position.y.value()), 
-                           float(blueprint.range.value()),
-                           blueprint.orientation + m_heading - blueprint.fov,
-                           blueprint.orientation + m_heading + blueprint.fov,
-                           sf::Color::Red);
-      return m_coverage_area;
-    }
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    Arc const& coverageArea();
 
 public:
 
-   //! \brief
-   RadarBluePrint const blueprint;
+    RadarBluePrint const& blueprint;
 
 private:
 
-   //! \brief Shape of the radar coverage area.
-   Arc m_coverage_area;
+    //! \brief Shape of the radar coverage area.
+    Arc m_coverage_area;
 };
 
 #endif
