@@ -24,7 +24,8 @@
 
 //------------------------------------------------------------------------------
 City::City()
-        //: m_grid(sf::Rect<float>(0.01f, 0.01f, 1024.0f, 1024.0f), sf::Vector2u(16u, 16u))
+        // FIXME https://github.com/Lecrapouille/Highway/issues/23
+        // : m_grid(sf::Rect<float>(0.01f, 0.01f, 1024.0f, 1024.0f), sf::Vector2u(16u, 16u))
 {}
 
 //------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ Car* City::get(const char* name)
 
 //------------------------------------------------------------------------------
 Road& City::addRoad(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
-         Meter const width, std::array<size_t, TrafficSide::Max> lanes)
+                    Meter const width, std::array<size_t, TrafficSide::Max> lanes)
 {
     m_roads.push_back(std::make_unique<Road>(start, stop, width, lanes));
     return *m_roads.back();
@@ -65,7 +66,7 @@ Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position)
 }
 
 //------------------------------------------------------------------------------
-Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position, Degree const heading, 
+Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
                   MeterPerSecond const speed)
 {
     if (m_ego == nullptr)

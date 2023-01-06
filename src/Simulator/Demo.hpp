@@ -24,6 +24,8 @@
 
 #  include "Simulator/Simulator.hpp"
 
+#  define CONTINUE_SIMULATION false
+
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: set the scenario functions mandatory to
 //! create the simulation.

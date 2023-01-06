@@ -70,4 +70,6 @@ CarTrajectory::Ptr CarTrajectory::create(Parking::Type const type)
         assert(false && "Not yet implemented");
         break;
     }
+
+    return nullptr;
 }

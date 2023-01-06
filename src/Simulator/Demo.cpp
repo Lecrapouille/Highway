@@ -21,8 +21,6 @@
 
 #include "Simulator/Demo.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
-
-#define CONTINUE_SIMULATION false
 #include "Sensors/Sensors.hpp"
 
 //-----------------------------------------------------------------------------

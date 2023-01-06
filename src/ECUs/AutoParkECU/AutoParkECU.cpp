@@ -268,7 +268,7 @@ bool AutoParkECU::detect()
 {
     sf::Vector2f p; // FIXME to be returned https://github.com/Lecrapouille/Highway/issues/31
 
-    // FIXME single sesnor used https://github.com/Lecrapouille/Highway/issues/30
+    // FIXME single sensor used https://github.com/Lecrapouille/Highway/issues/30
     auto const& radars = m_ego.sensors();
     if (radars.size() == 0u)
         return false;
