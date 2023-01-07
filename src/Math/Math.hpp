@@ -30,21 +30,65 @@
 #  include <SFML/System/Vector3.hpp>
 #  include <cmath>
 
-//constexpr float RAD2DEG(float const r) { return r * 57.295779513f; }
-//constexpr float DEG2RAD(float const d) { return d * 0.01745329251994f; }
-template<class T>
-constexpr T POW2(T const x)  { return x * x; }
+//-----------------------------------------------------------------------------
+template<class T> inline T POW2(T const x) { return x * x; }
 
+//-----------------------------------------------------------------------------
+//! \brief Linear interpolation.
+//! \param[in] weight is clamped to the range [0, 1].
+template<typename T, typename U>
+inline T lerp(T const from, T const to, U const weight)
+{
+   return from + (to - from) * weight;
+}
+
+//-----------------------------------------------------------------------------
+//! \brief Map a value into a given range.
+template<class T>
+inline T map(T const value, T const start1, T const stop1, T const start2, T const stop2)
+{
+   return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+}
+
+//-----------------------------------------------------------------------------
+//! \brief Constrain value: std::min(std::max(a[i], lower), upper)
 template<typename T>
 inline T constrain(T const value, T const lower, T const upper)
 {
-    if (value < lower)
-        return lower;
-
-    if (value > upper)
-        return upper;
-
+    if (value < lower) { return lower; }
+    if (value > upper) { return upper; }
     return value;
+}
+
+//-----------------------------------------------------------------------------
+//! \brief Lerping angle. Same as \c lerp but makes sure the values interpolate
+//! correctly when they wrap around 360 degrees.
+//!
+//! \param[in] weight is clamped to the range [0, 1].
+//! \param[in] from starting angle [degree].
+//! \param[in] to ending angle [degree].
+//!
+//! \note Using Unity algorithm
+//! https://gist.github.com/shaunlebron/8832585?permalink_comment_id=3227412#gistcomment-3227412
+//-----------------------------------------------------------------------------
+inline Degree lerp_angle(Degree const from, Degree const to, double weight)
+{
+   // I dislike https://github.com/godotengine/godot/issues/30564
+   //   constexpr double TAU = Radian(360.0_deg).value();
+   //   const double difference = std::fmod((to - from).value(), TAU);
+   //   const double distance = std::fmod(2.0 * difference, TAU) - difference;
+   //   return Radian(from.value() + distance * weight);
+   // because:
+   //   lerp_angle(-90.0_deg, 90.0_deg, 0.0) return 90.0_deg
+   //   lerp_angle(-90.0_deg, 90.0_deg, 0.5) return -180.0_deg instead of 0.0_deg
+   //   lerp_angle(-90.0_deg, 90.0_deg, 1.0) return -270.0_deg instead of -90.0_deg
+
+   auto repeat = [](Degree const t, Degree const m) -> Degree
+   {
+      return constrain(t - units::math::floor(t / m) * m, 0.0_deg, m);
+   };
+   const Degree dt = repeat(to - from, 360.0_deg);
+   return lerp(from, from + (dt > 180.0_deg ? dt - 360.0_deg : dt), weight);
 }
 
 inline float DISTANCE(float const xa, float const ya, float const xb, float const yb)

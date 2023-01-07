@@ -78,7 +78,6 @@ Arc::Arc(Meter const x, Meter const y, Meter const radius, Degree const start,
 void Arc::init(Meter const x, Meter const y, Meter const radius, Degree const start,
                Degree const end, sf::Color const& color, std::size_t const points)
 {
-    std::cout << "Arc" << " B: " << start << " E: " << end << std::endl;
     m_shape = ArcShape(radius, start, end, points);
 
     m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
@@ -141,8 +140,7 @@ sf::Vector2f Arc::ArcShape::getPoint(std::size_t index) const
         return getOrigin();
 
     float const r = getRadius();
-    Degree angle = m_start + m_end * (float(index - 1u) / float(getPointCount() - 2u));
-    std::cout << index << " / " << (getPointCount() - 2u) << ": arc p: " << angle << std::endl;
+    Degree angle = lerp_angle(m_start, m_end, float(index - 1u) / float(getPointCount() - 2u));
     float x = units::math::cos(angle) * r;
     float y = units::math::sin(angle) * r;
 

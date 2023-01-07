@@ -20,6 +20,7 @@
 //=====================================================================
 
 #  include "Sensors/Radar.hpp"
+#  include "Math/Math.hpp"
 #  include "Math/Collide.hpp"
 
 //------------------------------------------------------------------------------
@@ -51,6 +52,5 @@ Arc const& Radar::coverageArea()
                          blueprint.orientation + shape.heading() - (blueprint.fov / 2.0),
                          blueprint.orientation + shape.heading() + (blueprint.fov / 2.0),
                          shape.color, points);
-
     return m_coverage_area;
 }

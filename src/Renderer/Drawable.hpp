@@ -110,8 +110,8 @@ public:
     //! \param[in] x center position (X-axis) [meter].
     //! \param[in] y center position (Y-axis) [meter].
     //! \param[in] radius radius of the circle [meter].
-    //! \param[in] start angle [degree]
-    //! \param[in] ending angle [degree]
+    //! \param[in] start initial angle [degree]
+    //! \param[in] end final angle [degree]
     //! \param[in] color desired color (ie sf::Color::Red)
     //! \param[in] points (number of points composing the circle)
     //--------------------------------------------------------------------------
@@ -128,8 +128,8 @@ public:
     //! \param[in] x center position (X-axis) [meter].
     //! \param[in] y center position (Y-axis) [meter].
     //! \param[in] radius radius of the circle [meter].
-    //! \param[in] start angle [degree]
-    //! \param[in] ending angle [degree]
+    //! \param[in] start initial angle [degree]
+    //! \param[in] end final angle [degree]
     //! \param[in] color desired color (ie sf::Color::Red)
     //! \param[in] points (number of points composing the circle)
     //--------------------------------------------------------------------------

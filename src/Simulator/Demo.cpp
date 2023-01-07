@@ -176,13 +176,13 @@ static Car& create_city(City& city)
     Parking& parking3 = city.addParking(parking_type.c_str(), parking2.position() + parking2.delta());
     city.addParking(parking_type.c_str(), parking3.position() + parking3.delta());
 
-    // Add parked cars (static)
+    // Add parked cars (static). See BluePrints.cpp for mark of vehicle
     city.addCar("Renault.Twingo", parking0);
-    city.addCar("Renault.Twingo", parking1);
-    city.addCar("Renault.Twingo", parking3);
+    city.addCar("Audi.A6", parking1);
+    city.addCar("Audi.A6", parking3);
 
     // Self-parking car (dynamic). Always be the last in the container
-    return customize(city, city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
+    return customize(city, city.addEgo("Mini.Cooper", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
 }
 
 //-----------------------------------------------------------------------------
