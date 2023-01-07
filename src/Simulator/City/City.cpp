@@ -69,16 +69,14 @@ Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position)
 Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
                   MeterPerSecond const speed)
 {
-    if (m_ego == nullptr)
+    if (m_ego != nullptr)
     {
-        std::string name = "ego" + std::to_string(m_ego_id++);
-        m_ego = createCar<Car>(model, name.c_str(), EGO_CAR_COLOR, 0.0_mps / 1.0_s, speed,
-                               position, heading, 0.0_rad);
+        LOGW("Ego car already created. Old will be replaced!");
     }
-    else
-    {
-        std::cerr << "Ego car alraedy created" << std::endl;
-    }
+
+    std::string name = "ego" + std::to_string(m_ego_id++);
+    m_ego = createCar<Car>(model, name.c_str(), EGO_CAR_COLOR, 0.0_mps / 1.0_s, speed,
+                           position, heading, 0.0_rad);
     return *m_ego;
 }
 
