@@ -32,7 +32,7 @@
 // *****************************************************************************
 //! \brief Show a grid used for debugging SpatialHashGrid.
 // *****************************************************************************
-class Grid: public sf::Drawable
+class Grid final: public sf::Drawable
 {
 public:
 
@@ -40,7 +40,10 @@ public:
 
 private:
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
     {
         target.draw(m_lines.data(), m_lines.size(), sf::Lines, states);
     }
@@ -53,18 +56,39 @@ private:
 // *****************************************************************************
 //! \brief Non-filled circle used to draw turning radius.
 // *****************************************************************************
-class Circle: public sf::Drawable
+class Circle final: public sf::Drawable
 {
 public:
 
-    Circle(float x, float y, float r, sf::Color color = sf::Color::Red);
-    Circle(Meter x, Meter y, float r, sf::Color color = sf::Color::Red)
-      : Circle(float(x.value()), float(y.value()), r, color)
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor
+    //! \param[in] x center position (X-axis) [meter].
+    //! \param[in] y center position (Y-axis) [meter].
+    //! \param[in] radius radius of the circle [meter].
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //! \param[in] points (number of points composing the circle)
+    //--------------------------------------------------------------------------
+    Circle(Meter const x, Meter const y, Meter const radius, sf::Color const& color,
+           std::size_t const points);
+
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor
+    //! \param[in] p center position (X-axis, Y-axis) [meter].
+    //! \param[in] radius radius of the circle [meter].
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //! \param[in] points (number of points composing the circle)
+    //--------------------------------------------------------------------------
+    Circle(sf::Vector2<Meter> const p, Meter const radius, sf::Color const& color,
+           std::size_t const points)
+        : Circle(p.x, p.y, radius, color, points)
     {}
 
 private:
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
     {
         target.draw(m_shape, states);
     }
@@ -77,43 +101,47 @@ private:
 // *****************************************************************************
 //! \brief Arc used for drawing vehicle turning radius.
 // *****************************************************************************
-class Arc: public sf::Drawable
+class Arc final: public sf::Drawable
 {
 public:
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     //! \brief Default constructor
-    //! \param[in] x center position (X-axis).
-    //! \param[in] y center position (Y-axis).
-    //! \param[in] radius radius of the circle.
+    //! \param[in] x center position (X-axis) [meter].
+    //! \param[in] y center position (Y-axis) [meter].
+    //! \param[in] radius radius of the circle [meter].
     //! \param[in] start angle [degree]
     //! \param[in] ending angle [degree]
-    //! \param[in] color
-    //----------------------------------------------------------------------
-    Arc(float x, float y, float radius, Degree start, Degree end, sf::Color color);
-    Arc(Meter x, Meter y, Meter radius, Degree start, Degree end, sf::Color color)
-      : Arc(float(x.value()), float(y.value()), float(radius.value()), start, end, color)
-    {}
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //! \param[in] points (number of points composing the circle)
+    //--------------------------------------------------------------------------
+    Arc(Meter const x, Meter const y, Meter const radius, Degree const start,
+        Degree const end, sf::Color const& color, std::size_t const points);
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     //! \brief Dummy constructor. Shall be completed with init().
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     Arc() = default;
 
-    //----------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     //! \brief Default constructor
-    //! \param[in] x center position (X-axis).
-    //! \param[in] y center position (Y-axis).
-    //! \param[in] radius radius of the circle.
+    //! \param[in] x center position (X-axis) [meter].
+    //! \param[in] y center position (Y-axis) [meter].
+    //! \param[in] radius radius of the circle [meter].
     //! \param[in] start angle [degree]
     //! \param[in] ending angle [degree]
-    //! \param[in] color
-    //----------------------------------------------------------------------
-    void init(float x, float y, float r, Degree start, Degree end, sf::Color color);
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //! \param[in] points (number of points composing the circle)
+    //--------------------------------------------------------------------------
+    void init(Meter const x, Meter const y, Meter const radius, Degree const start,
+              Degree const end, sf::Color const& color, std::size_t const points);
 
 private:
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
     {
         target.draw(m_shape, states);
     }
@@ -121,23 +149,25 @@ private:
 private:
 
     // *************************************************************************
-    //! \brief
+    //! \brief Specialized shape representing an arc
     // *************************************************************************
-    class ArcShape: public sf::CircleShape
+    class ArcShape final: public sf::CircleShape
     {
     public:
 
         //----------------------------------------------------------------------
-        //! \brief Default constructor
-        //! \param[in] radius: radius of the circle
+        //! \brief Default constructor.
+        //! \param[in] radius: radius of the circle [meter]
         //! \param[in] starting angle [degree]
         //! \param[in] ending angle [degree]
-        //! \param[in] Number of points composing the arc.
+        //! \param[in] points Number of points composing the arc.
         //----------------------------------------------------------------------
-        ArcShape(float radius, Degree start, Degree end, std::size_t pointCount);
-        ArcShape(Meter radius, Degree start, Degree end, std::size_t pointCount)
-          :  ArcShape(float(radius.value()), start, end, pointCount)
-        {}
+        ArcShape(Meter const radius, Degree const start, Degree const end,
+                 std::size_t const points);
+
+        //----------------------------------------------------------------------
+        //! Dummy constructor.
+        //----------------------------------------------------------------------
         ArcShape() = default;
 
         //----------------------------------------------------------------------
@@ -149,12 +179,14 @@ private:
         //! .. getPointCount() - 1]
         //! \return index-th point of the shape.
         //----------------------------------------------------------------------
-        virtual sf::Vector2f getPoint(std::size_t index) const override;
+        virtual sf::Vector2f getPoint(std::size_t index) const override final;
 
     private:
 
-        Degree m_start; // [deg]
-        Degree m_end; // [deg]
+        //! \brief Initial angle [rad].
+        Radian m_start;
+        //! \brief Final angle [rad].
+        Radian m_end;
     };
 
     ArcShape m_shape;
@@ -163,18 +195,53 @@ private:
 // *****************************************************************************
 //! \brief Draw an arrow used for debugging vehicle's turning radius.
 // *****************************************************************************
-class Arrow: public sf::Drawable
+class Arrow final: public sf::Drawable
 {
 public:
 
-    Arrow(const float xa, const float ya, const float xb, const float yb, sf::Color color = sf::Color::Red);
-    Arrow(const Meter xa, const Meter ya, const Meter xb, const Meter yb, sf::Color color = sf::Color::Red)
-      : Arrow(float(xa.value()), float(ya.value()), float(xb.value()) ,float(yb.value()), color)
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor.
+    //! \param[in] a starting point.
+    //! \param[in] b end point.
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //--------------------------------------------------------------------------
+    Arrow(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b,
+          sf::Color const& color)
+        : Arrow(float(a.x.value()), float(a.y.value()),
+                float(b.x.value()), float(b.y.value()), color)
     {}
-    
+
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor.
+    //! \param[in] xa starting position along the X-axis [meter].
+    //! \param[in] ya starting position along the Y-axis [meter].
+    //! \param[in] xb ending position along the X-axis [meter].
+    //! \param[in] yb ending position along the Y-axis [meter].
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //--------------------------------------------------------------------------
+    Arrow(Meter const xa, Meter const ya, Meter const xb, Meter const yb,
+          sf::Color const& color)
+        : Arrow(float(xa.value()), float(ya.value()),
+                float(xb.value()), float(yb.value()), color)
+    {}
+
 private:
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    //--------------------------------------------------------------------------
+    //! \brief Default constructor.
+    //! \param[in] xa starting position along the X-axis [meter].
+    //! \param[in] ya starting position along the Y-axis [meter].
+    //! \param[in] xb ending position along the X-axis [meter].
+    //! \param[in] yb ending position along the Y-axis [meter].
+    //! \param[in] color desired color (ie sf::Color::Red)
+    //--------------------------------------------------------------------------
+    Arrow(float const xa, float const ya, float const xb, float const yb,
+          sf::Color const& color);
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
     {
         target.draw(m_tail, states);
         target.draw(m_head, states);

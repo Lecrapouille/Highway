@@ -22,6 +22,7 @@
 #include "Renderer/Renderer.hpp"
 #include "City/City.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp" // FIXME to be removed https://github.com/Lecrapouille/Highway/issues/15
+#include "Sensors/Radar.hpp" // FIXME temporary
 
 //------------------------------------------------------------------------------
 //void Renderer::draw(SpatialHashGrid const& hashgrid, sf::RenderTarget& target, sf::RenderStates const& states)
@@ -35,8 +36,8 @@ void Renderer::draw(Lane const& lane, sf::RenderTarget& target, sf::RenderStates
 {
     sf::RectangleShape const& shape = lane.shape();
     target.draw(shape, states);
-    target.draw(Circle(shape.getPosition().x, shape.getPosition().y,
-                       ZOOM, sf::Color::Black), states);
+    // Draw the origin of the lane
+    target.draw(Circle(lane.position(), 0.01_m, sf::Color::Black, 8u), states);
 }
 
 //------------------------------------------------------------------------------
@@ -55,26 +56,27 @@ void Renderer::draw(Road const& road, sf::RenderTarget& target, sf::RenderStates
 //------------------------------------------------------------------------------
 void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
 {
+    // Draw the parking shape
     sf::RectangleShape const& shape = parking.obb();
     target.draw(shape, states);
-    target.draw(Circle(float(parking.position().x.value()), 
-                       float(parking.position().y.value()), 
-                       ZOOM, sf::Color::Black), states);
+    // Draw the origin of the parking
+    target.draw(Circle(parking.position(), 0.01_m, sf::Color::Black, 8u), states);
 }
 
 //------------------------------------------------------------------------------
 void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& states)
 {
-    // Car body.
+    // Draw the car body
     sf::RectangleShape body = car.obb();
     body.setFillColor(car.collided() ? COLISION_COLOR : car.color);
     body.setOutlineThickness(ZOOM);
     body.setOutlineColor(sf::Color::Blue);
     target.draw(body, states);
-    target.draw(Circle(float(car.position().x.value()),
-                       float(car.position().y.value()), ZOOM, sf::Color::Black));
 
-    // Car wheels
+    // Draw the position of the car
+    target.draw(Circle(car.position(), 0.01_m, sf::Color::Black, 8u));
+
+    // Draw the car wheels
     size_t i = car.wheels().size();
     while (i--)
     {
@@ -85,13 +87,19 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
         target.draw(wheel, states);
     }
 
-    // Car sensors
+    // Draw the car sensors
     for (auto const& it: car.sensors())
     {
         if (!it->renderable)
             continue ;
-        // Radar: target.draw(it->coverageArea(), states);
         target.draw(it->shape.obb(), states);
+
+        // FIXME Radar: ugly !!!!!!!
+        Radar* r = dynamic_cast<Radar*>(it.get());
+        if (r != nullptr)
+        {
+            target.draw(r->coverageArea(), states); // FIXME buggy the arc does not turn
+        }
     }
 
     // Turning indicator https://github.com/Lecrapouille/Highway/issues/17

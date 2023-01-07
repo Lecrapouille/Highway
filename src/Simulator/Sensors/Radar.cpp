@@ -47,11 +47,10 @@ bool Radar::detects(sf::RectangleShape const& other, sf::Vector2f& p)
 //------------------------------------------------------------------------------
 Arc const& Radar::coverageArea()
 {
-    m_coverage_area.init(float(shape.position().x.value()),
-                         float(shape.position().y.value()),
-                         float(blueprint.range.value()),
-                         blueprint.orientation + shape.heading() - blueprint.fov,
-                         blueprint.orientation + shape.heading() + blueprint.fov,
-                         shape.color);
+    m_coverage_area.init(shape.position().x, shape.position().y, blueprint.range,
+                         blueprint.orientation + shape.heading() - (blueprint.fov / 2.0),
+                         blueprint.orientation + shape.heading() + (blueprint.fov / 2.0),
+                         shape.color, points);
+
     return m_coverage_area;
 }

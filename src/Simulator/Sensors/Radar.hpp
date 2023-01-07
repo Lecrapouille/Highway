@@ -71,6 +71,10 @@ public:
 public:
 
     RadarBluePrint const& blueprint;
+    // FIXME https://fr.mathworks.com/help/driving/ref/lidarpointcloudgenerator-system-object.html
+    //bool has_noise = false;
+    //Meter range_accuracy = 0.002_m;
+    size_t points = 8u;
 
 private:
 

@@ -56,36 +56,41 @@ Grid::Grid(sf::Rect<float> const& bounds, sf::Vector2u const& dimensions, sf::Co
 }
 
 //------------------------------------------------------------------------------
-Circle::Circle(float x, float y, float r, sf::Color color)
-    : m_shape(r, 100)
+Circle::Circle(Meter const x, Meter const y, Meter const radius, sf::Color const& color,
+               std::size_t const points)
+    : m_shape(float(radius.value()), points)
 {
     m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
-    m_shape.setPosition(x, y);
+    m_shape.setPosition(float(x.value()), float(y.value()));
     m_shape.setFillColor(sf::Color(255, 255, 255, 0));
     m_shape.setOutlineThickness(ZOOM * 2.0f);
     m_shape.setOutlineColor(color);
 }
 
 //------------------------------------------------------------------------------
-Arc::Arc(float x, float y, float r, Degree start, Degree end, sf::Color color)
+Arc::Arc(Meter const x, Meter const y, Meter const radius, Degree const start,
+         Degree const end, sf::Color const& color, std::size_t const points)
 {
-    init(x, y, r, start, end, color);
+    init(x, y, radius, start, end, color, points);
 }
 
 //------------------------------------------------------------------------------
-void Arc::init(float x, float y, float r, Degree start, Degree end, sf::Color color)
+void Arc::init(Meter const x, Meter const y, Meter const radius, Degree const start,
+               Degree const end, sf::Color const& color, std::size_t const points)
 {
-    m_shape = ArcShape(r, start, end, 100);
+    std::cout << "Arc" << " B: " << start << " E: " << end << std::endl;
+    m_shape = ArcShape(radius, start, end, points);
 
     m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
-    m_shape.setPosition(x, y);
+    m_shape.setPosition(float(x.value()), float(y.value()));
     m_shape.setFillColor(sf::Color(255, 255, 255, 0));
     m_shape.setOutlineThickness(ZOOM * 2.0f);
     m_shape.setOutlineColor(color);
 }
 
 //------------------------------------------------------------------------------
-Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf::Color color)
+Arrow::Arrow(const float xa, const float ya, const float xb, const float yb,
+             sf::Color const& color)
 {
     // Arc magnitude
     const float arrowLength = sqrtf((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
@@ -123,9 +128,10 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb, sf:
 }
 
 //------------------------------------------------------------------------------
-Arc::ArcShape::ArcShape(float radius, Degree start, Degree end, std::size_t pointCount)
-    : CircleShape(radius, pointCount + 2),
-      m_start(start), m_end(end)
+Arc::ArcShape::ArcShape(Meter const radius, Degree const start, Degree const end,
+                        std::size_t const points)
+    : sf::CircleShape(float(radius.value()), points + 2u), m_start(start),
+      m_end(end)
 {}
 
 //------------------------------------------------------------------------------
@@ -135,7 +141,8 @@ sf::Vector2f Arc::ArcShape::getPoint(std::size_t index) const
         return getOrigin();
 
     float const r = getRadius();
-    Degree angle = m_start + m_end * (float(index - 1) / float(getPointCount() -1));
+    Degree angle = m_start + m_end * (float(index - 1u) / float(getPointCount() - 2u));
+    std::cout << index << " / " << (getPointCount() - 2u) << ": arc p: " << angle << std::endl;
     float x = units::math::cos(angle) * r;
     float y = units::math::sin(angle) * r;
 

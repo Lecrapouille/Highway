@@ -53,8 +53,8 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    SensorShape(SensorBluePrint const& blueprint_, sf::Color const& color_)
-        : blueprint(blueprint_), color(color_)
+    SensorShape(std::string const& name_, SensorBluePrint const& blueprint_, sf::Color const& color_)
+        : name(name_), blueprint(blueprint_), color(color_)
     {
         // Origin is the middle of the rear wheel axle of the vehicle
         m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
@@ -115,6 +115,7 @@ public:
 
 public:
 
+    std::string const& name;
     //! \brief
     SensorBluePrint const& blueprint;
     //! \brief Current car color. Public: to allow to change it for distinguish
@@ -135,7 +136,7 @@ class Sensor
 public:
 
     Sensor(SensorBluePrint const& blueprint_, const char* name_, sf::Color const& color_)
-        : name(name_), shape(blueprint_, color_)
+        : name(name_), shape(name, blueprint_, color_)
     {}
     virtual ~Sensor() = default;
 

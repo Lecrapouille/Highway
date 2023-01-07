@@ -49,13 +49,14 @@ static void attach_sensors(Car& car, AutoParkECU& ecu)
     // Blueprints for 4 antennas: 1 placed on each wheel.
     // Note shall be static since vehicle does not copy blueprints.
     constexpr Meter range = 4.0_m;
+    Degree orientation = 90.0_deg;
     Meter offx = car.blueprint.wheelbase;
     Meter offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1_m / 2.0f; // FIXME
     static const std::map<CarBluePrint::WheelName, AntennaBluePrint> antenna_blueprints = {
-        { CarBluePrint::WheelName::FL, { sf::Vector2<Meter>(offx,   offy),  90.0_deg, range } },
-        { CarBluePrint::WheelName::FR, { sf::Vector2<Meter>(offx,  -offy), -90.0_deg, range } },
-        { CarBluePrint::WheelName::RL, { sf::Vector2<Meter>(0.0_m,  offy),  90.0_deg, range } },
-        { CarBluePrint::WheelName::RR, { sf::Vector2<Meter>(0.0_m, -offy), -90.0_deg, range } },
+        { CarBluePrint::WheelName::FL, { sf::Vector2<Meter>(offx,   offy),  orientation, range } },
+        { CarBluePrint::WheelName::FR, { sf::Vector2<Meter>(offx,  -offy), -orientation, range } },
+        { CarBluePrint::WheelName::RL, { sf::Vector2<Meter>(0.0_m,  offy),  orientation, range } },
+        { CarBluePrint::WheelName::RR, { sf::Vector2<Meter>(0.0_m, -offy), -orientation, range } },
     };
 
     // Attach antennas to the car
@@ -72,8 +73,9 @@ static void attach_sensors(Car& car, AutoParkECU& ecu)
     offx = car.blueprint.wheelbase + car.blueprint.front_overhang;
     offy = 0.0_m;
     constexpr Degree fov = 45.0_deg;
+    orientation = 0.0_deg;
     static const std::map<size_t, RadarBluePrint> radar_blueprints = {
-        { 0u, { sf::Vector2<Meter>(offx, offy), 0.0_deg, fov, range } },
+        { 0u, { sf::Vector2<Meter>(offx, offy), orientation, fov, range } },
     };
 
     // Attach radars to the car

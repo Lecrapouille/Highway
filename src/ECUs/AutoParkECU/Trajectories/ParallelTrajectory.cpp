@@ -460,6 +460,9 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
 //------------------------------------------------------------------------------
 void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+    // Number of points composing the circle for the rendering
+    constexpr size_t points = 32u;
+
     if (m_maneuvers < TWO_LAST_TURNS)
         return ;
 
@@ -469,18 +472,20 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
         target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
 
         // Turn 1 for leaving the parking spot
-        target.draw(Arc(C[1].x, C[1].y, Rwmin, 90.0_deg, theta_E[0], sf::Color::Blue), states);
+        target.draw(Arc(C[1].x, C[1].y, Rwmin, 90.0_deg, theta_E[0], sf::Color::Blue, points), states);
         target.draw(Arrow(C[1].x, C[1].y, Xt, Yt, sf::Color::Blue), states);
 
         // Turn 2 to make the ego car parallel to the road
-        target.draw(Arc(C[0].x, C[0].y, Rwmin, 270.0_deg, theta_E[1], sf::Color::Red), states);
+        target.draw(Arc(C[0].x, C[0].y, Rwmin, 270.0_deg, theta_E[1], sf::Color::Red, points), states);
         target.draw(Arrow(C[0].x, C[0].y, C[0].x, Yf, sf::Color::Red), states);
 
-        // Path
-        target.draw(Circle(Xi, Yi, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Xs, Ys, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Xf, Yf, ZOOM, sf::Color::Green), states);
+        // Draw the path the car will follow.
+        // Middle of the rear axle of the ego car when iterating for leaving the
+        // parking spot.
+        target.draw(Circle(Xi, Yi, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Xs, Ys, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Xt, Yt, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Xf, Yf, 0.01_m, sf::Color::Green, 8u), states);
     }
     else
     {
@@ -491,36 +496,37 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
 
         // Two last final turns for leaving the parking spot and make the ego
         // car parallel to the road.
-        target.draw(Arc(C[i].x, C[i].y, Rwmin, 90.0_deg, theta_E[i], sf::Color::Blue), states);
+        target.draw(Arc(C[i].x, C[i].y, Rwmin, 90.0_deg, theta_E[i], sf::Color::Blue, points), states);
         target.draw(Arrow(C[i].x, C[i].y, Xt, Yt, sf::Color::Blue), states);
         i--;
 
         target.draw(Arc(C[i].x, C[i].y, Rwmin, 270.0_deg + theta_sum[i-1], theta_E[i],
-                        sf::Color::Red), states);
+                        sf::Color::Red, points), states);
         target.draw(Arrow(C[i].x, C[i].y, Em[i].x, Em[i].y, sf::Color::Red), states);
 
         while (i--)
         {
             // Drive backward while turning right
             target.draw(Arc(C[i].x, C[i].y, Rwmin, 90.0_deg + theta_sum[i-1],
-                            theta_E[i], sf::Color::Magenta), states);
+                            theta_E[i], sf::Color::Magenta, points), states);
             target.draw(Arrow(C[i].x, C[i].y, Em[i].x, Em[i].y, sf::Color::Magenta), states);
             i--;
 
             // Drive forward while turning left
-            target.draw(Arc(C[i].x, C[i].y, Rwmin, 270.0_deg, theta_E[i], sf::Color::Cyan), states);
+            target.draw(Arc(C[i].x, C[i].y, Rwmin, 270.0_deg, theta_E[i], sf::Color::Cyan, points), states);
             //target.draw(Arc(C[i].x, C[i].y, Rwmin, 270.0f, RAD2DEG(theta_t[i]), sf::Color::Cyan), states);
             target.draw(Arrow(C[i].x, C[i].y, Em[i].x, Em[i].y, sf::Color::Cyan), states);
         }
 
+        // Draw the path the car will follow.
         // Middle of the rear axle of the ego car when iterating for leaving the
-        // parking spot
-        target.draw(Circle(Xi, Yi, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Xs, Ys, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Xt, Yt, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Xf, Yf, ZOOM, sf::Color::Red), states);
-        target.draw(Circle(Em[0].x, Em[0].y, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Em[1].x, Em[1].y, ZOOM, sf::Color::Green), states);
-        target.draw(Circle(Em[2].x, Em[2].y, ZOOM, sf::Color::Green), states);
+        // parking spot.
+        target.draw(Circle(Xi, Yi, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Xs, Ys, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Xt, Yt, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Xf, Yf, 0.01_m, sf::Color::Red, 8u), states);
+        target.draw(Circle(Em[0].x, Em[0].y, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Em[1].x, Em[1].y, 0.01_m, sf::Color::Green, 8u), states);
+        target.draw(Circle(Em[2].x, Em[2].y, 0.01_m, sf::Color::Green, 8u), states);
     }
 }
