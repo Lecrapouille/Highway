@@ -56,8 +56,8 @@ public:
     SensorShape(std::string const& name_, SensorBluePrint const& blueprint_, sf::Color const& color_)
         : name(name_), blueprint(blueprint_), color(color_)
     {
-        // Origin is the middle of the rear wheel axle of the vehicle
-        m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
+        // FIXME size() is defined after in derived class.
+        // m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
         m_obb.setFillColor(color);
         m_obb.setOutlineColor(sf::Color(165, 42, 42));
         m_obb.setOutlineThickness(ZOOM);
@@ -85,6 +85,7 @@ public:
     inline void setSize(Meter const& x, Meter const& y)
     {
         m_obb.setSize(sf::Vector2f(float(x.value()), float(y.value())));
+        m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
     }
 
     //--------------------------------------------------------------------------

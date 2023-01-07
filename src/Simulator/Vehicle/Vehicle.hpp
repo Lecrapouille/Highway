@@ -126,20 +126,39 @@ public:
     //-------------------------------------------------------------------------
     virtual void update(Second const dt)
     {
-        for (auto& it: m_ecus)
+        // Update sensors. Feeding ECUs
+
+        // https://github.com/Lecrapouille/Highway/issues/7
+        // Currently ECU calls for each sensor the Sensor::detects but with
+        // multiple ECU this will do be optimized O(n*m).
+        // Better to let sensor detects in this function and ECU get the
+        // cache detection
+        //if (m_ecus.size() != 0u) { // TBD: pertinent or not ?
+        //  for (auto& it: m_sensors) // TBD: here loop of sensors::update() ?
+        //  {
+        //     TODO it->detects(...); for all collidable in World
+        //     TODO it->notify(ECUs);
+        //  }
+        //}
+
+        // Update Electronic Control Units. They will apply control to the car.
+        // TBD: it->update(m_control, dt); m_control is not necessary since ECU
+        // knows the car and therefore m_control
+        for (auto& ecu: m_ecus)
         {
-            assert(it != nullptr && "nullptr ECU");
-            it->update(dt);
+            assert(ecu != nullptr && "nullptr ECU");
+            ecu->update(dt);
         }
 
+        // Vehicle control and references
         m_control->update(dt);
+        // vehicle momentum
         m_physics->update(dt);
+        // Wheel momentum
         update_wheels(m_physics->speed(), m_control->get_steering());
+        // Update orientation of the vehicle shape
         m_shape->update(m_physics->position(), m_physics->heading());
-        //for (auto& it: m_sensors) // TBD: here loop of sensors::update() ?
-        //{
-            // TODO it->detects(...); for all collidable in World
-        //}
+        // Update the tracked trailer if attached
         if (m_trailer != nullptr)
         {
             m_trailer->update(dt);
@@ -160,7 +179,7 @@ public:
     void track(Vehicle& vehicle)
     {
         m_trailer = &vehicle;
-        // TODO: update init physic
+        // TODO: update m_trailer->physic().init(....)
     }
 
     //--------------------------------------------------------------------------
@@ -224,8 +243,8 @@ public:
     {
         sf::Vector2f p;
 
-        // TODO: traillers collisions
-        // TODO: trigger callback
+        // TODO: traillers collisions https://github.com/Lecrapouille/Highway/issues/16
+        // TODO: trigger collision callback https://github.com/Lecrapouille/Highway/issues/XXXXXXXXXXXXX
         bool res = m_shape->collides(other.obb(), p);
         m_collided |= res;
         other.m_collided |= res;
@@ -261,8 +280,7 @@ public:
     //-------------------------------------------------------------------------
     void refSpeed(MeterPerSecond const speed)
     {
-        m_control->set_ref_speed(speed);
-            // FIXME constrain(speed, -11.0_mps, 50.0_mps)); // -40 .. +180 km/h
+        m_control->set_ref_speed(constrain(speed, -11.0_mps, 50.0_mps)); // -40 .. +180 km/h
     }
 
     //-------------------------------------------------------------------------
