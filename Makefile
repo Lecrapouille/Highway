@@ -60,13 +60,13 @@ DEFINES += -Wno-switch-enum -Wno-undef -Wno-unused-parameter -Wno-pedantic
 DEFINES += -Wno-old-style-cast -Wno-sign-conversion -Wno-deprecated-copy-dtor
 
 ###################################################
-# MyLogger
+# Thirdpart: MyLogger
 #
-THIRDPART_LIBS += $(abspath $(THIRDPART)/MyLogger/build/libmylogger.a.0.1)
+THIRDPART_LIBS += $(abspath $(THIRDPART)/MyLogger/build/libmylogger.a)
 INCLUDES += -I$(THIRDPART)/MyLogger/include
 
 ###################################################
-# SI units
+# Thirdpart: SI units
 #
 INCLUDES += -I$(THIRDPART)/units/include
 
@@ -121,6 +121,7 @@ all: $(TARGET) $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET) $(PKG_FILE) scenarios
 
 ###################################################
 # Compile scenarios
+#
 .PHONY: scenarios
 scenarios: | $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET)
 	@$(call print-from,"Compiling scenarios",$(PROJECT),$(SCENARIOS))
@@ -131,6 +132,7 @@ scenarios: | $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET)
 
 ###################################################
 # Compile and launch unit tests and generate the code coverage html report.
+#
 .PHONY: unit-tests
 unit-tests:
 	@$(call print-simple,"Compiling unit tests")
@@ -138,12 +140,14 @@ unit-tests:
 
 ###################################################
 # Compile and launch unit tests and generate the code coverage html report.
+#
 .PHONY: check
 check: unit-tests
 
 ifeq ($(ARCHI),Linux)
 ###################################################
 # Install project. You need to be root.
+#
 .PHONY: install
 install: $(TARGET) $(STATIC_LIB_TARGET) $(SHARED_LIB_TARGET) $(PKG_FILE)
 	@$(call INSTALL_BINARY)
@@ -154,6 +158,7 @@ endif
 
 ###################################################
 # Clean the whole project.
+#
 .PHONY: veryclean
 veryclean: clean
 	@rm -fr cov-int $(PROJECT).tgz *.log foo 2> /dev/null

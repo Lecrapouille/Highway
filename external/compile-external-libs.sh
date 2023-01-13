@@ -51,7 +51,7 @@ print-compile MyLogger
 if [ -e MyLogger ];
 then
     (cd MyLogger
-     VERBOSE=1 make -j$NPROC
+     VERBOSE=1 make CXX=$CXX CC=$CC -j$NPROC
     )
 else
     echo "Failed compiling external/SOIL: directory does not exist"

@@ -17,6 +17,7 @@ TARGET="$2"
 ### Delete all previous directories to be sure to have and compile fresh code source.
 rm -fr MyLogger units 2> /dev/null
 
+### Git clone a GitHub repository $1
 function cloning
 {
     REPO="$1"
@@ -26,7 +27,7 @@ function cloning
     git clone https://github.com/$REPO.git --depth=1 --recurse $* > /dev/null
 }
 
-### Basic logger for my GitHub C++ projects 
+### Basic logger for my GitHub C++ projects
 ### License: GPL-3.0
 cloning Lecrapouille/MyLogger
 
