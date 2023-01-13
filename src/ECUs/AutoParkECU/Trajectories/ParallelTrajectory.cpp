@@ -532,5 +532,5 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
         target.draw(Circle(Em[2].x, Em[2].y, 0.01_m, sf::Color::Green, 8u), states);
     }
 
-    #undef AA
+    #undef ARC
 }
