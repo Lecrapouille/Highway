@@ -24,25 +24,43 @@
 
 #  include "Math/Units.hpp"
 #  include "Common/Components.hpp"
+#  include "Simulator/Sensors/Sensor.hpp"
 
 // ****************************************************************************
-//! \brief
+//! \brief Electronic Control Unit. An ECU is an embedded system in automotive
+//! electronics that controls one or more of the electrical systems or
+//! subsystems in a car or other motor vehicle.
 // ****************************************************************************
-class ECU: public Component
+class ECU: public Component, public SensorObserver
 {
 public:
 
+   //-------------------------------------------------------------------------
+   //! \brief Implement Entity-Component-System to allow adding compositions
+   //! dynamically.
+   //-------------------------------------------------------------------------
    COMPONENT_CLASSTYPE(ECU, Component);
+
+   //-------------------------------------------------------------------------
+   //! \brief Needed because of pure virtual methods.
+   //-------------------------------------------------------------------------
+   virtual ~ECU() = default;
 
 public:
 
+   //-------------------------------------------------------------------------
+   //! \brief Observer pattern. Bind the given \c sensor to get information
+   //! from it. A sensor can be used by several ECUs.
+   //-------------------------------------------------------------------------
+   void observe(Sensor& sensor)
+   {
+      sensor.attachObserver(*this);
+   }
+
+   //-------------------------------------------------------------------------
+   //! \brief Do computation.
+   //-------------------------------------------------------------------------
    virtual void update(Second const dt) = 0;
 };
-
-// ****************************************************************************
-// Forward declaration of ECUs
-// ****************************************************************************
-
-class AutoParkECU;
 
 #endif

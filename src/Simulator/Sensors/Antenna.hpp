@@ -24,6 +24,8 @@
 
 #  include "Sensors/Sensor.hpp"
 
+class City;
+
 // ****************************************************************************
 //! \brief A sensor shape is just a blue print used inside of the vehicle shape
 //! for orienting automatically the sensor when the vehicle shape is turned.
@@ -55,7 +57,29 @@ public:
     //! \fixme should be in constructor but since a vehicle has a sensors but its
     //! shape holds AntennaShape we had to split it. I dunno how to fix that.
     //--------------------------------------------------------------------------
-    Antenna(AntennaBluePrint const& blueprint_, const char* name_, sf::Color const& color_);
+    Antenna(AntennaBluePrint const& blueprint_, const char* name_, City const& city_,
+            sf::Color const& color_);
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void update(Second const dt) override;
+
+    //--------------------------------------------------------------------------
+    //! \brief Return if a detection occured during \c update().
+    //--------------------------------------------------------------------------
+    bool const& detection() const { return m_detection; }
+
+    //--------------------------------------------------------------------------
+    //! \brief Accept a class visiting this instance. The real alogirthm is made
+    //! by the concrete implementation of the \c Visitor thru \c operator().
+    //--------------------------------------------------------------------------
+    virtual void accept(Visitor& visitor) override
+    {
+        visitor(*this);
+    }
+
+protected:
 
     //--------------------------------------------------------------------------
     //! \brief Is the sensor collides to the given bounding box ?
@@ -63,11 +87,16 @@ public:
     //! \param[inout] p the point of collision.
     //! \return true if the sensor has detected a box.
     //--------------------------------------------------------------------------
-    virtual bool detects(sf::RectangleShape const& other, sf::Vector2f& p) override; // FIXME  const;
+    bool detects(sf::RectangleShape const& other, sf::Vector2f& p) const;
 
 public:
 
     AntennaBluePrint const& blueprint;
+    City const& m_city;
+
+private:
+
+    bool m_detection = false;
 };
 
 #endif

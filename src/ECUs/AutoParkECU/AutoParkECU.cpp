@@ -1,4 +1,4 @@
-//=====================================================================
+//==============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,7 +17,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//==============================================================================
 
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
 #include "Simulator/Vehicle/Car.hpp"
@@ -27,7 +27,7 @@
 // FIXME https://github.com/Lecrapouille/Highway/issues/14
 // How to access to MessageBar to remove std::cout << ?
 
-//-------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 AutoParkECU::Scanner::Status
 AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
 {
@@ -123,7 +123,7 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
     return AutoParkECU::Scanner::Status::FAILED;
 }
 
-//-------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 {
     States state = m_state;
@@ -131,7 +131,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 
     // Has the driver aborted the auto-parking system ?
     if ((m_state != AutoParkECU::StateMachine::States::IDLE) &&
-         (ecu.m_ego.turningIndicator() == TurningIndicator::Off))
+        (ecu.m_ego.turningIndicator() == TurningIndicator::Off))
     {
         std::cout << "The driver has aborted the auto-parking" << std::endl;
         m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
@@ -141,7 +141,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     {
     case AutoParkECU::StateMachine::States::IDLE:
         // Waiting the driver press a button to start the self-parking process.
-        if ((ecu.m_ego.turningIndicator() == TurningIndicator::Left) || 
+        if ((ecu.m_ego.turningIndicator() == TurningIndicator::Left) ||
             (ecu.m_ego.turningIndicator() == TurningIndicator::Right))
         {
             if (true) // TODO car.isParked() https://github.com/Lecrapouille/Highway/issues/28
@@ -243,69 +243,79 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     }
 }
 
-//-----------------------------------------------------------------------------
-AutoParkECU::AutoParkECU(Car& car, std::vector<std::unique_ptr<Car>> const& cars)
-  : ECU(), m_ego(car), m_cars(cars)
+//------------------------------------------------------------------------------
+AutoParkECU::AutoParkECU(Car& car, City const& city)
+    : ECU(), m_ego(car), m_city(city)
 {
     LOGI("AutoParkECU created");
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void AutoParkECU::update(Second const dt)
 {
-   // std::cout << "AutoParkECU update" << std::endl;
-   m_statemachine.update(dt, *this);
+    // std::cout << "AutoParkECU update" << std::endl;
+    m_statemachine.update(dt, *this);
 }
 
-//-----------------------------------------------------------------------------
-// https://github.com/Lecrapouille/Highway/issues/30
-// FIXME for the moment a single sensor is used
-// FIXME simulate defectuous sensor
-// FIXME this is not the good location for calling sensors::detect => move this
-// inside the vehicle update() and memorize detections.
-// FIXME retourner un champ de bit 1 bool par capteur
-bool AutoParkECU::detect()
+//------------------------------------------------------------------------------
+void AutoParkECU::onSensorUpdated(Sensor& sensor)
 {
-    sf::Vector2f p; // FIXME to be returned https://github.com/Lecrapouille/Highway/issues/31
+    // Make the visitor pattern dispatch
+    sensor.accept(*this);
+}
 
-    // FIXME single sensor used https://github.com/Lecrapouille/Highway/issues/30
-    auto const& radars = m_ego.sensors();
-    if (radars.size() == 0u)
-        return false;
-
+//------------------------------------------------------------------------------
+void AutoParkECU::operator()(Antenna& antenna)
+{
     switch (m_ego.turningIndicator())
     {
         case TurningIndicator::Right:
-            assert(radars.size() >= CarBluePrint::WheelName::RR);
-            for (auto const& car: m_cars)
-            {
-                if (radars[CarBluePrint::WheelName::RR]->detects(car->obb(), p))
-                    return true;
-            }
+            if (antenna.name != "antenna_RR")
+                return ;
             break;
         case TurningIndicator::Left:
-            assert(radars.size() >= CarBluePrint::WheelName::RL);
-            for (auto const& car: m_cars)
-            {
-                if (radars[CarBluePrint::WheelName::RL]->detects(car->obb(), p))
-                    return true;
-            }
+            if (antenna.name != "antenna_RL")
+                return ;
             break;
         default:
-            break;
+            return;
     }
 
-    return false;
+    if (antenna.detection())
+    {
+        m_detection = true;
+        antenna.shape.color = sf::Color::Red;
+    }
+    else
+    {
+        antenna.shape.color = sf::Color::Green;
+    }
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// https://github.com/Lecrapouille/Highway/issues/30
+// FIXME for the moment a single sensor is used
+// FIXME simulate defectuous sensor
+bool AutoParkECU::detect()
+{
+    m_detection = false;
+    for (auto const& sensor: m_ego.sensors())
+    {
+        // This will call AutoParkECU::operator()(XXX&)
+        sensor->accept(*this);
+    }
+
+    return m_detection;
+}
+
+//------------------------------------------------------------------------------
 bool AutoParkECU::park(Parking const& parking, bool const entering)
 {
-   m_trajectory = CarTrajectory::create(parking.type);
-   return m_trajectory->init(m_ego, parking, entering);
+    m_trajectory = CarTrajectory::create(parking.type);
+    return m_trajectory->init(m_ego, parking, entering);
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 bool AutoParkECU::updateTrajectory(Second const dt)
 {
     if (m_trajectory == nullptr)
@@ -314,8 +324,8 @@ bool AutoParkECU::updateTrajectory(Second const dt)
     if (m_trajectory->update(m_ego, dt))
         return true;
 
-    // End of the trajectory, delete it since we no longer need it (this will avoid
-    // rendering it i.e.)
+    // End of the trajectory, delete it since we no longer need it
+    // (this will avoid rendering it i.e.)
     m_trajectory = nullptr;
     return false;
 }

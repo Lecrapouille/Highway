@@ -20,29 +20,36 @@
 //=====================================================================
 
 #  include "Sensors/Radar.hpp"
-#  include "Math/Math.hpp"
 #  include "Math/Collide.hpp"
+#  include "Simulator/City/City.hpp"
 
 //------------------------------------------------------------------------------
-Radar::Radar(RadarBluePrint const& blueprint_, const char* name_, sf::Color const& color_)
-    : Sensor(blueprint_, name_, color_), blueprint(blueprint_)
+Radar::Radar(RadarBluePrint const& blueprint_, const char* name_,
+             City const& city_, sf::Color const& color_)
+    : Sensor(blueprint_, name_, color_), blueprint(blueprint_), m_city(city_)
 {
     shape.setSize(0.1_m, 0.1_m);
 }
 
 //------------------------------------------------------------------------------
-bool Radar::detects(sf::RectangleShape const& other, sf::Vector2f& p)
+void Radar::update(Second const dt)
 {
-    bool res = ::collide(shape.obb(), other, p);
-    if (res)
+    sf::Vector2f p;
+
+    m_detections.clear();
+    for (auto const& car: m_city.cars()) // TODO m_city.collidables()
     {
-        shape.color = sf::Color::Red;
+        if (detects(car->obb(), p))
+        {
+            m_detections.push_back(sf::Vector2<Meter>(Meter(p.x), Meter(p.y)));
+        }
     }
-    else
-    {
-        shape.color = sf::Color::Green;
-    }
-    return res;
+}
+
+//------------------------------------------------------------------------------
+bool Radar::detects(sf::RectangleShape const& other, sf::Vector2f& p) const
+{
+    return ::collide(shape.obb(), other, p);
 }
 
 //------------------------------------------------------------------------------

@@ -24,17 +24,19 @@
 
 #  include "Vehicle/ECU.hpp"
 #  include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
-#  include "Sensors/Sensor.hpp"
+#  include "Sensors/Sensors.hpp"
+#  include "Common/Visitor.hpp"
 #  include <atomic>
 #  include <deque>
 
 class Car;
 class Parking;
+class City;
 
 // ****************************************************************************
 //! \brief ECU controling the ego car for doing autonomous parking maneuvers
 // ****************************************************************************
-class AutoParkECU : public ECU
+class AutoParkECU : public ECU, public Visitor
 {
 private:
 
@@ -184,7 +186,7 @@ private:
 
 public:
 
-   AutoParkECU(Car& car, std::vector<std::unique_ptr<Car>> const& cars);
+   AutoParkECU(Car& car, City const& city);
    COMPONENT_CLASSTYPE(AutoParkECU, ECU);
 
 public:
@@ -210,6 +212,19 @@ public:
         return *m_trajectory;
     }
 
+private: // Inheritance
+
+    //-------------------------------------------------------------------------
+    //! \brief Visitor pattern. Do concreate action on the given sensor.
+    //-------------------------------------------------------------------------
+    virtual void operator()(Antenna& antenna) override;
+
+    //-------------------------------------------------------------------------
+    //! \brief Observer pattern. Do concreate action on the given sensor when
+    //! it has been updated.
+    //-------------------------------------------------------------------------
+    virtual void onSensorUpdated(Sensor& sensor) override;
+
 private:
 
     //-------------------------------------------------------------------------
@@ -233,17 +248,23 @@ private:
 
 private:
 
+    //! \brief The vehicle owning this ECU for entering in the parking slot.
     Car& m_ego;
-    //! \brief The list of parked needed for simulate radar
-    std::vector<std::unique_ptr<Car>> const& m_cars; // FIXME: to be removed use World https://github.com/Lecrapouille/Highway/issues/26
-    //! \brief
-    AutoParkECU::Scanner m_scanner;
-    //! \brief
+    //! \brief To access to list of objects collidable with this ego vehicle.
+    City const& m_city;
+    //! \brief Main state machine for searching and entering in the first parking
+    //! slot. See doc/ParkingStateMachine.jpg
     StateMachine m_statemachine;
-    //! \brief Trajectory
+    //! \brief State machine for the \c m_statemachine state 'Scan Parking Spots'.
+    //! See doc/ScanStateMachine.jpg
+    AutoParkECU::Scanner m_scanner;
+    //! \brief If and only if reachable, the trajectory to the parking slot.
     std::unique_ptr<CarTrajectory> m_trajectory = nullptr;
-    //! \brief Trigger for doing parking
+    //! \brief Trigger for starting searching the first parking slot and
+    //! computing the trajectory to enter in.
     std::atomic<bool> m_clignotant{false};
+    //! \brief Has sensor detect a parked vehicle ?
+    bool m_detection = false;
 };
 
 #endif

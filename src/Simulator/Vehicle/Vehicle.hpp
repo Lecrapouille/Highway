@@ -126,23 +126,17 @@ public:
     //-------------------------------------------------------------------------
     virtual void update(Second const dt)
     {
-        // Update sensors. Feeding ECUs
-
-        // https://github.com/Lecrapouille/Highway/issues/7
-        // Currently ECU calls for each sensor the Sensor::detects but with
-        // multiple ECU this will do be optimized O(n*m).
-        // Better to let sensor detects in this function and ECU get the
-        // cache detection
-        //if (m_ecus.size() != 0u) { // TBD: pertinent or not ?
-        //  for (auto& it: m_sensors) // TBD: here loop of sensors::update() ?
-        //  {
-        //     TODO it->detects(...); for all collidable in World
-        //     TODO it->notify(ECUs);
-        //  }
-        //}
+        // Update sensors. Observer pattern: feed ECUs with sensor data.
+        // Note that a sensor can be used by several ECUs.
+        for (auto& sensor: m_sensors)
+        {
+            assert(sensor != nullptr && "nullptr sensor");
+            sensor->update(dt);
+            sensor->notifyObservers();
+        }
 
         // Update Electronic Control Units. They will apply control to the car.
-        // TBD: it->update(m_control, dt); m_control is not necessary since ECU
+        // TBD: ecu->update(m_control, dt); m_control is not necessary since ECU
         // knows the car and therefore m_control
         for (auto& ecu: m_ecus)
         {

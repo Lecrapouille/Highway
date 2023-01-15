@@ -26,6 +26,9 @@
 #  include "Renderer/Drawable.hpp"
 #  include "Math/Math.hpp"
 #  include "Math/Units.hpp"
+#  include "Common/Visitor.hpp"
+
+class Sensor;
 
 // ****************************************************************************
 //! \brief
@@ -132,18 +135,60 @@ protected:
 // ****************************************************************************
 //! \brief
 // ****************************************************************************
-class Sensor
+class SensorObserver
 {
 public:
 
+    virtual ~SensorObserver() = default;
+
+    //-------------------------------------------------------------------------
+    //! \brief React to the given sensor when it has fresh data to give.
+    //-------------------------------------------------------------------------
+    virtual void onSensorUpdated(Sensor& sensor) = 0;
+};
+
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+class Sensor : public Visitable
+{
+public:
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     Sensor(SensorBluePrint const& blueprint_, const char* name_, sf::Color const& color_)
         : name(name_), shape(name, blueprint_, color_)
     {}
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     virtual ~Sensor() = default;
 
-    // FIXME shall memorize all detected points from any Collidable object.
-    virtual bool detects(sf::RectangleShape const& other, sf::Vector2f& p) = 0;// FIXME  const;
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void attachObserver(SensorObserver& o)
+    {
+        m_observers.push_back(&o);
+    }
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void update(Second const dt) = 0;
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void notifyObservers() //const
+    {
+        for (auto /*const*/& it: m_observers)
+        {
+            it->onSensorUpdated(*this);
+        }
+    }
 public:
 
     //! \brief Car's name
@@ -152,6 +197,10 @@ public:
     SensorShape shape;
     //! \brief Renderer or not the sensor
     bool renderable = true;
+
+protected:
+
+    std::vector<SensorObserver*> m_observers;
 };
 
 #endif
