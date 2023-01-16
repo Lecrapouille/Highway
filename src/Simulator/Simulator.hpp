@@ -131,14 +131,31 @@ public:
     void release();
 
     //-------------------------------------------------------------------------
-    //! \brief Convert Window's X-Y position [pixel] to world's X-Y position
-    //! [meter].
-    //! \param[in] p: position in the windows [pixel].
-    //! \return position in the world [meter].
+    //! \brief Convert the screen coordinate [pixel] to world coordinate [meter].
+    //! \note Beware of the current view: be sure to be in the simulation view
+    //! (meter) and not in the HUD view (pixel). The returned value would be
+    //! invalid. Therefore this function is avalaible in \c drawSimulation().
+    //! \param[in] p: position in the windows X-Y position [pixel].
+    //! \return position in the world X-Y position [meter].
     //-------------------------------------------------------------------------
-    inline sf::Vector2f pixel2world(sf::Vector2i const& p)
+    inline sf::Vector2<Meter> pixel2world(sf::Vector2i const& p)
     {
-        return m_renderer.mapPixelToCoords(p);
+        const sf::Vector2f w = m_renderer.mapPixelToCoords(p);
+        return { Meter(w.x), Meter(w.y) };
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Convert the screen coordinate [pixel] to world coordinate [meter].
+    //! \note Beware of the current view: be sure to be in the simulation view
+    //! (meter) and not in the HUD view (pixel). The returned value would be
+    //! invalid. Therefore this function is avalaible in \c drawSimulation().
+    //! \param[in] p: position in the windows X-Y position [pixel].
+    //! \return position in the world X-Y position [meter].
+    //-------------------------------------------------------------------------
+    inline sf::Vector2i world2pixel(sf::Vector2<Meter> const& p)
+    {
+        return m_renderer.mapCoordsToPixel(
+            sf::Vector2f(float(p.x.value()), float(p.y.value())));
     }
 
     //-------------------------------------------------------------------------

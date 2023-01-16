@@ -94,12 +94,13 @@ void GUISimulation::onRelease()
 void GUISimulation::onHandleInput()
 {
     // Measurement
-    float distance;
-    static sf::Vector2f P1, P2;
+    Meter distance;
+    static sf::Vector2<Meter> P1, P2;
 
     sf::Event event;
 
     // Get the X,Y mouse coordinates from the simulated word coordinates.
+    m_renderer.setView(m_simulation_view);
     m_mouse = simulator.pixel2world(sf::Mouse::getPosition(renderer()));
 
     while (m_renderer.pollEvent(event))
@@ -113,18 +114,18 @@ void GUISimulation::onHandleInput()
         case sf::Event::MouseButtonPressed:
             P1 = m_mouse;
             std::cout << "P1: (" << m_mouse.x << ", "
-                      << m_mouse.y << ") [m]" << std::endl;
+                      << m_mouse.y << ")" << std::endl;
             break;
         // Measure distances in meters.
         case sf::Event::MouseButtonReleased:
             P2 = m_mouse;
             distance = math::distance(P1, P2);
-            if (distance >= 0.001f)
+            if (distance >= 1.0_mm)
             {
                 std::cout << "P2: (" << m_mouse.x << ", "
-                          << m_mouse.y << ") [m]" << std::endl;
+                          << m_mouse.y << ")" << std::endl;
                 std::cout << "|P1P2| = " << math::distance(P1, P2)
-                          << " [m]" << std::endl;
+                          << std::endl;
             }
             break;
         case sf::Event::MouseWheelMoved:

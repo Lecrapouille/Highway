@@ -113,7 +113,7 @@ private:
     //! \brief Mouse X,Y position within the world coordinate [meter]. You
     //! directly can measure objects [meter] by clicking with mouse in the
     //! window.
-    sf::Vector2f m_mouse;
+    sf::Vector2<Meter> m_mouse;
     //! \brief SFML loaded font from a TTF file.
     sf::Font m_font;
     //! \brief Display info or error messages.
