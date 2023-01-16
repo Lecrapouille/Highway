@@ -75,7 +75,7 @@ public:
     void update(sf::Vector2<Meter> const& position, Radian const heading)
     {
         const Degree a = heading + blueprint.orientation;
-        const sf::Vector2<Meter> p = position + HEADING(blueprint.offset, heading);
+        const sf::Vector2<Meter> p = position + math::heading(blueprint.offset, heading);
 
         m_obb.setRotation(float(a.value()));
         m_obb.setPosition(float(p.x.value()), float(p.y.value()));

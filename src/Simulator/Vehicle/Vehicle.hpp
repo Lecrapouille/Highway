@@ -274,7 +274,7 @@ public:
     //-------------------------------------------------------------------------
     void refSpeed(MeterPerSecond const speed)
     {
-        m_control->set_ref_speed(constrain(speed, -11.0_mps, 50.0_mps)); // -40 .. +180 km/h
+        m_control->set_ref_speed(math::constrain(speed, -11.0_mps, 50.0_mps)); // -40 .. +180 km/h
     }
 
     //-------------------------------------------------------------------------
@@ -291,7 +291,7 @@ public:
     void refSteering(Radian const angle)
     {
         const Radian m = blueprint.max_steering_angle;
-        m_control->set_ref_steering(constrain(angle, -m, m));
+        m_control->set_ref_steering(math::constrain(angle, -m, m));
     }
 
     //-------------------------------------------------------------------------

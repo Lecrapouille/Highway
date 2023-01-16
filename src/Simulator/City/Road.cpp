@@ -35,9 +35,9 @@ LaneBluePrint::LaneBluePrint(Meter const l, Meter const w, Radian const a)
 //------------------------------------------------------------------------------
 Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
            Meter const width, TrafficSide s)
-    : blueprint(DISTANCE(start, stop), width, ORIENTATION(start, stop)), side(s),
-      m_shape(sf::Vector2f(float(blueprint.length.value()),
-                           float(blueprint.width.value())))
+    : blueprint(math::distance(start, stop), width, math::orientation(start, stop)),
+      side(s), m_shape(sf::Vector2f(float(blueprint.length.value()),
+                                    float(blueprint.width.value())))
 {
     m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0)));
     m_shape.setRotation(float(Degree(blueprint.angle)));

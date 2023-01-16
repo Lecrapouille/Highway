@@ -118,12 +118,12 @@ void GUISimulation::onHandleInput()
         // Measure distances in meters.
         case sf::Event::MouseButtonReleased:
             P2 = m_mouse;
-            distance = DISTANCE(P1, P2);
+            distance = math::distance(P1, P2);
             if (distance >= 0.001f)
             {
                 std::cout << "P2: (" << m_mouse.x << ", "
                           << m_mouse.y << ") [m]" << std::endl;
-                std::cout << "|P1P2| = " << DISTANCE(P1, P2)
+                std::cout << "|P1P2| = " << math::distance(P1, P2)
                           << " [m]" << std::endl;
             }
             break;

@@ -140,7 +140,7 @@ sf::Vector2f Arc::ArcShape::getPoint(std::size_t index) const
         return getOrigin();
 
     float const r = getRadius();
-    Degree angle = lerp_angle(m_start, m_end, float(index - 1u) / float(getPointCount() - 2u));
+    Degree angle = math::lerp_angle(m_start, m_end, float(index - 1u) / float(getPointCount() - 2u));
     float x = units::math::cos(angle) * r;
     float y = units::math::sin(angle) * r;
 

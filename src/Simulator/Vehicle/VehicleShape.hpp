@@ -49,10 +49,10 @@ public:
         : m_blueprint(blueprint)
     {
         // Origin on the middle of the rear wheel axle
-        const sf::Vector2f s(float(m_blueprint.length.value()), 
+        const sf::Vector2f s(float(m_blueprint.length.value()),
                              float(m_blueprint.width.value()));
         m_obb.setSize(s);
-        const sf::Vector2f o(float(m_blueprint.back_overhang.value()), 
+        const sf::Vector2f o(float(m_blueprint.back_overhang.value()),
                              m_obb.getSize().y / 2.0f);
         m_obb.setOrigin(o);
 
@@ -85,7 +85,7 @@ public:
         while (i--)
         {
             m_blueprint.wheels[i].position =
-                position + HEADING(m_blueprint.wheels[i].offset, heading);
+                position + math::heading(m_blueprint.wheels[i].offset, heading);
         }
 
         // Update sensor shape

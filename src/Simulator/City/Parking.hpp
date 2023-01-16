@@ -173,7 +173,7 @@ public:
     sf::Vector2<Meter> delta() const
     { // FIXME not working for diagnonal spot
         sf::Vector2<Meter> p =
-           HEADING(sf::Vector2<Meter>(blueprint.length, blueprint.width),
+           math::heading(sf::Vector2<Meter>(blueprint.length, blueprint.width),
                    -blueprint.angle);
         return sf::Vector2<Meter>(p.x, 0.0_m); // W
     }

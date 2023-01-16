@@ -408,7 +408,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
     while (i--)
     {
         // Time to drive along the arc of circle with VMAX as longitudinal speed
-        t = ARC_LENGTH(theta_E[i], Rwmin) / VMAX;
+        t = math::arc_length(theta_E[i], Rwmin) / VMAX;
 
         // Lastest turn to make the ego car parallel to the road
         if (i == m_maneuvers - 1u)

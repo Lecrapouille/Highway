@@ -1,4 +1,4 @@
-//=====================================================================
+//=============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,10 +17,20 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//=============================================================================
 
-#ifndef SI_UNITS_HPP
-#  define SI_UNITS_HPP
+#ifndef MATH_SI_UNITS_HPP
+#  define MATH_SI_UNITS_HPP
+
+//--------------------------------------------------------------------------
+//! \file Add System International Units to the project. Currently the library
+//! Units is used https://github.com/nholthaus/units (placed in external/) In
+//! this file we alias used SI units to allow using other SI lib.
+//!
+//! \fixme The whole code of this project is full of units::math::cos() instead
+//! of std::cos(). How to wrap this to use other SI lib ? See issue
+//! https://github.com/Lecrapouille/Highway/issues/13
+//--------------------------------------------------------------------------
 
 #  pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -37,7 +47,4 @@ using MeterPerSecondSquared = units::acceleration::meters_per_second_squared_t;
 using MeterPerSecond = units::velocity::meters_per_second_t;
 using Second = units::time::second_t;
 
-// TODO https://github.com/Lecrapouille/Highway/issues/13
-// using units::math::cos() vs std::cos()
-
-#endif
+#endif // MATH_SI_UNITS_HPP

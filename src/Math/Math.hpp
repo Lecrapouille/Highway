@@ -1,4 +1,4 @@
-//=====================================================================
+//==============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,50 +17,61 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//==============================================================================
 
-#ifndef FOO_HPP
-#  define FOO_HPP
-
-// FIXME https://github.com/Lecrapouille/Highway/issues/11
-// Clean this file
+#ifndef MATH_UTILS_HPP
+#  define MATH_UTILS_HPP
 
 #  include "Math/Units.hpp"
 #  include <SFML/System/Vector2.hpp>
 #  include <SFML/System/Vector3.hpp>
 #  include <cmath>
 
-//-----------------------------------------------------------------------------
-template<class T> inline T POW2(T const x) { return x * x; }
+namespace math {
 
-//-----------------------------------------------------------------------------
-//! \brief Linear interpolation.
-//! \param[in] weight is clamped to the range [0, 1].
-template<typename T, typename U>
+//------------------------------------------------------------------------------
+//! \brief Linear interpolation between \c from and \c to.
+//! \param[in] weight is clamped to the range [0.0, 1.0].
+//! \param[in] from initial value (when weight == 0.0).
+//! \param[in] to final value (when weight == 1.0).
+//! \tparam T type for \c from and \c to (i.e. float, double, Meter ...).
+//! \tparam U type for \c weight (i.e. float or double).
+//! \return the ponderation value.
+//! \note for angle use instead \c lerp_angle
+//------------------------------------------------------------------------------
+template<typename T, typename U=T>
 inline T lerp(T const from, T const to, U const weight)
 {
    return from + (to - from) * weight;
 }
 
-//-----------------------------------------------------------------------------
-//! \brief Map a value into a given range.
+//------------------------------------------------------------------------------
+//! \brief Map a value from an initial [start1 stop1] range to a final range
+//! [start2 stop2].
+//! \param[in] value the value inside the initial [start1 stop1] to map to the
+//! final range [start2 stop2].
+//! \return value mapped into [start2 stop2].
+//! \note the check if \c value is correctly bounded inside [start1 stop1] is
+//! not made.
+//------------------------------------------------------------------------------
 template<class T>
 inline T map(T const value, T const start1, T const stop1, T const start2, T const stop2)
 {
    return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 
-//-----------------------------------------------------------------------------
-//! \brief Constrain value: std::min(std::max(a[i], lower), upper)
+//------------------------------------------------------------------------------
+//! \brief Constrain \c value inside the range [lower upper].
+//------------------------------------------------------------------------------
 template<typename T>
 inline T constrain(T const value, T const lower, T const upper)
 {
-    if (value < lower) { return lower; }
-    if (value > upper) { return upper; }
+    if (value <= lower) { return lower; }
+    if (value >= upper) { return upper; }
     return value;
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //! \brief Lerping angle. Same as \c lerp but makes sure the values interpolate
 //! correctly when they wrap around 360 degrees.
 //!
@@ -70,7 +81,7 @@ inline T constrain(T const value, T const lower, T const upper)
 //!
 //! \note Using Unity algorithm
 //! https://gist.github.com/shaunlebron/8832585?permalink_comment_id=3227412#gistcomment-3227412
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 inline Degree lerp_angle(Degree const from, Degree const to, double weight)
 {
    // I dislike https://github.com/godotengine/godot/issues/30564
@@ -91,22 +102,26 @@ inline Degree lerp_angle(Degree const from, Degree const to, double weight)
    return lerp(from, from + (dt > 180.0_deg ? dt - 360.0_deg : dt), weight);
 }
 
-inline float DISTANCE(float const xa, float const ya, float const xb, float const yb)
-{
-   return sqrtf(POW2(xb - xa) + POW2(yb - ya));
-}
-
-inline float DISTANCE(sf::Vector2f const& a, sf::Vector2f const& b)
-{
-   return sqrtf(POW2(b.x - a.x) + POW2(b.y - a.y));
-}
-
-inline Meter DISTANCE(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
+//------------------------------------------------------------------------------
+//! \brief Return the length in Meter of two given positions.
+//------------------------------------------------------------------------------
+inline Meter distance(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
 {
    return units::math::sqrt(units::math::pow<2>(b.x - a.x) + units::math::pow<2>(b.y - a.y));
 }
 
-inline Radian ORIENTATION(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
+//------------------------------------------------------------------------------
+//! \brief Return the length in Meter of two given positions.
+//------------------------------------------------------------------------------
+inline float distance(sf::Vector2f const& a, sf::Vector2f const& b)
+{
+   return sqrtf((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+}
+
+//------------------------------------------------------------------------------
+//! \brief Return the shorter angle between two vectors.
+//------------------------------------------------------------------------------
+inline Radian orientation(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
 {
    const auto teta = (b.y - a.y) / (b.x - a.x);
    Radian angle(units::math::atan(teta));
@@ -117,22 +132,29 @@ inline Radian ORIENTATION(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const&
    return angle;
 }
 
-constexpr Meter ARC_LENGTH(Radian const angle, Meter const radius) // [rad] * [m]
+//------------------------------------------------------------------------------
+//! \brief Return the length of an arc.
+//! \param[in] angle [radian].
+//! \param[in] radius [meter].
+//! \return the length [meter].
+//------------------------------------------------------------------------------
+constexpr Meter arc_length(Radian const angle, Meter const radius)
 {
    return angle.value() * radius;
 }
 
-inline sf::Vector2<Meter> HEADING(sf::Vector2<Meter> const& p, Radian const a)
+//------------------------------------------------------------------------------
+//! \brief Compute the heading rotation of a given point.
+//! \param[in] p the position of the point to rotate [meter].
+//! \param[in] a the rotation angle [radian].
+//! \return the new position of \p [meter].
+//------------------------------------------------------------------------------
+inline sf::Vector2<Meter> heading(sf::Vector2<Meter> const& p, Radian const a)
 {
    return sf::Vector2<Meter>(units::math::cos(a) * p.x - units::math::sin(a) * p.y,
                              units::math::sin(a) * p.x + units::math::cos(a) * p.y);
 }
 
-inline sf::Vector3f HEADING3F(sf::Vector2f const& p, float const a)
-{
-   return sf::Vector3f(cosf(a) * p.x - sinf(a) * p.y,
-                       sinf(a) * p.x + cosf(a) * p.y,
-                       0.0f);
-}
+} // namespace math
 
-#endif
+#endif // MATH_UTILS_HPP
