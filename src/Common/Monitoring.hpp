@@ -1,4 +1,4 @@
-//=====================================================================
+//=============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,69 +17,157 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
-//=====================================================================
+//=============================================================================
 
 #ifndef MONITORING_HPP
 #  define MONITORING_HPP
 
+#  include "Common/FileSystem.hpp"
+#  include <SFML/System/Clock.hpp>
+#  include <SFML/System/Time.hpp>
 #  include <fstream>
-#  include <map>
-#  include <memory>
+#  include <vector>
+#  include <functional>
+#  include <string>
+#  include <chrono>
 
-// TODO https://github.com/Lecrapouille/Highway/issues/22
-class Monitoring
+// *****************************************************************************
+//! \brief Class logging states from several instances. This allows to generate
+//! CSV files of the simulation and i.e. to be used in sofware such as Scilab,
+//! Simulink, Julia, Gnuplot. For example you can monitor the position and the
+//! the speed of several vehicles. Observations will packed as rows.
+//! \fixme this class is not thread safe and does not check if tracked states
+//! are still available.
+// *****************************************************************************
+class Monitor
 {
+private:
+
+    //--------------------------------------------------------------------------
+    //! \brief Internal function for logging observations.
+    //--------------------------------------------------------------------------
+    using Observation = std::function<void(Monitor&)>;
+
 public:
 
     //--------------------------------------------------------------------------
-    ~Monitoring();
-
+    //! \brief Create or replace the monitoring file.
+    //! \param[in] path the path to the monitoring file we want to create.
+    //! \param[in] separator the CSV field separator. Default is ';'
+    //! \note Return true if the file has been created successfully, else, no
+    //! data will be recored if the file has not been opened correctly.
+    //! \note the close() function is automatically called.
     //--------------------------------------------------------------------------
-    template<typename T1, typename ... T2>
-    void log(std::string const& name, const T1& head, const T2&... tail)
+    bool open(fs::path const& path, const char separator = ';')
     {
-        std::ofstream* fd = stream(name);
-        if (fd != nullptr)
-        {
-            *fd << head << " ";
-            log(*fd, tail...);
-            *fd << ";" << std::endl;
-        }
+        m_separator = separator;
+        if (m_outfile.is_open())
+            this->close();
+        m_outfile.open(path);
+        return m_outfile.is_open();
     }
 
     //--------------------------------------------------------------------------
-    void close(std::string const& name)
+    //! \brief Close the monitoring file. No data will be recoreded.
+    //--------------------------------------------------------------------------
+    void close()
     {
-        std::ofstream* fd = stream(name);
-        if (fd != nullptr)
+        m_outfile.close();
+        m_observations.clear();
+        m_headers.clear();
+        m_init = true;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Check if the monitoring file has been created successfully.
+    //--------------------------------------------------------------------------
+    operator bool() const { return m_outfile.is_open(); }
+
+    //--------------------------------------------------------------------------
+    //! \brief Bind states of an external instance to this current monitor
+    //! instance. Shall be paired with \c header() method.
+    //! \return Return this instance.
+    //--------------------------------------------------------------------------
+    template<typename... Args>
+    Monitor& observe(Args&... args)
+    {
+        m_observations.push_back([&](Monitor& m) { m.write(args...); });
+        return *this;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Bind header states for filling the header of the monitoring file.
+    //! Shall be paired with \c header() method.
+    //! \return Return this instance.
+    //--------------------------------------------------------------------------
+    template<typename... Args>
+    Monitor& header(Args&... args)
+    {
+        m_headers.push_back([&](Monitor& m) { m.write(args...); });
+        return *this;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Record in the monitoring file all external states as a single
+    //! line.
+    //--------------------------------------------------------------------------
+    void record()
+    {
+        using namespace std::chrono;
+
+        if (!m_outfile.is_open())
+            return ;
+
+        if (m_init)
         {
-            *fd << "];" << std::endl;
+            m_init = false;
+            m_outfile << "time [s]";
+            for (auto const& fun: m_headers)
+            {
+                fun(*this);
+            }
+            m_time =  sf::Time::Zero;
+            m_clock.restart();
         }
-        m_files[name] = nullptr;
+        else
+        {
+            m_time += m_clock.restart();
+            m_outfile << m_time.asSeconds();
+            for (auto const& fun: m_observations)
+            {
+                fun(*this);
+            }
+        }
+        m_outfile << std::endl;
     }
 
 private:
 
     //--------------------------------------------------------------------------
-    template<typename T1, typename ... T2>
-    void log(std::ofstream& fd, const T1& head, const T2&... tail)
-    {
-        fd << head << " ";
-        log(fd, tail...);
-    }
-
+    //! \brief Write in the monitoring file like printf().
     //--------------------------------------------------------------------------
-    void log(std::ofstream& fd)
+    template<typename... Args>
+    void write(Args&... args)
     {
-        // Do nothing
+        ((m_outfile << m_separator << args), ...);
     }
-
-    //--------------------------------------------------------------------------
-    std::ofstream* stream(std::string const& name);
 
 private:
 
-    std::map<std::string, std::unique_ptr<std::ofstream>> m_files;
+    //! \brief Store functions that will fill the header of the monitoring file.
+    std::vector<Observation> m_headers;
+    //! \brief Store functions that will fill the content of the monitoring file.
+    std::vector<Observation> m_observations;
+    //! \brief The handle of the opened monitoring file.
+    std::ofstream m_outfile;
+    //! \brief Clock needed for time recording data.
+    sf::Clock m_clock;
+    //! \brief Current time.
+    sf::Time m_time;
+    //! \brief CSV field separator.
+    std::string m_separator;
+    //! \brief if true then record the header file else record observations.
+    bool m_init = true;
 };
 
 #endif

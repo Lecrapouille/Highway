@@ -60,13 +60,13 @@ bool halt_simulation_when(Simulator const& simulator);
 //! \brief Helper macro to be returned by \c halt_simulation_when to continue
 //! the simulation.
 //-----------------------------------------------------------------------------
-#define CONTINUE_SIMULATION false
+#define CONTINUE_SIMULATION return false
 
 //-----------------------------------------------------------------------------
 //! \brief Helper macro to be returned by \c halt_simulation_when to abort
 //! the simulation.
 //-----------------------------------------------------------------------------
-#define ABORT_SIMULATION true
+#define ABORT_SIMULATION return true
 
 //-----------------------------------------------------------------------------
 //! \brief Helper macro for \c halt_simulation_when to abort the simulation.

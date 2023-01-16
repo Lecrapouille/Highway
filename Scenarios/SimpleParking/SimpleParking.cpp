@@ -40,9 +40,7 @@ bool halt_simulation_when(Simulator const& simulator)
                          "Ego car is outside the parking");
     HALT_SIMULATION_WHEN(simulator.ego().collided(),
                          "Ego car collided");
-    // TODO outside the city
-
-    return CONTINUE_SIMULATION;
+    CONTINUE_SIMULATION;
 }
 
 //-----------------------------------------------------------------------------

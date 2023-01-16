@@ -264,7 +264,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return longitudinal acceleration [meter/second^2].
     //--------------------------------------------------------------------------
-    inline MeterPerSecondSquared acceleration() const
+    inline MeterPerSecondSquared const& acceleration() const
     {
         return m_physics->acceleration();
     }
@@ -305,7 +305,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the longitudinal speed [meter/second].
     //--------------------------------------------------------------------------
-    inline MeterPerSecond speed() const
+    inline MeterPerSecond const& speed() const
     {
         return m_physics->speed();
     }
@@ -314,7 +314,7 @@ public:
     //! \brief Const getter: return the position of the middle of the rear axle
     //! inside the world coordinates.
     //--------------------------------------------------------------------------
-    inline sf::Vector2<Meter> position() const
+    inline sf::Vector2<Meter> const& position() const
     {
         return m_physics->position();
     }
@@ -322,7 +322,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Const getter: return the heading (yaw angle) [rad].
     //--------------------------------------------------------------------------
-    inline Radian heading() const
+    inline Radian const& heading() const
     {
         return m_physics->heading();
     }

@@ -24,32 +24,45 @@
 #include "Sensors/Sensors.hpp"
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: return the simulation name.
+//! \file "Hello simulation" demo. Show a basic simulation. An autonomous car
+//! is entering in the first parking slot.
+//-----------------------------------------------------------------------------
+
+static Monitor monitor; // FIXME
+
+//-----------------------------------------------------------------------------
+//! \brief Needed simulation function: return the simulation name that will be
+//! display in the windows title bar.
 //-----------------------------------------------------------------------------
 static const char* simulation_name()
 {
-    return "Simple simulation demo";
+    return "Hello simulation demo";
 }
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: make the simulator reacts to the given key
-//! pressed.
+//! \brief "Hello simulation" demo: make the \c simulator reacts to the given
+//! \c key pressed. Here the ego reacts to callbacks set with Vehicle::callback()
+//! defined in the function \c customize_ego().
 //-----------------------------------------------------------------------------
 static void simulation_react_to(Simulator& simulator, size_t key)
 {
-    // Allow the ego car to react to callbacks set with Vehicle::callback()
     simulator.ego().reactTo(key);
 }
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: customize the ego vehicle.
+//! \brief Attach sensor to the ego vehicle and bind sensor to the ECU.
+//! \note the origin position of the car is the middle of the rear axle. Sensors
+//! are placed relatively to the vehicle origin. X-axis is along the vehicle length
+//! directed to the front. the Y-axis is along the vehicle left.
 //-----------------------------------------------------------------------------
 static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
 {
-    // Blueprints for 4 antennas: 1 placed on each wheel.
-    // Note shall be static since vehicle does not copy blueprints.
-    constexpr Meter range = 4.0_m;
-    Degree orientation = 90.0_deg;
+    // Blueprints for 4 antennas placed perpendicularly on each wheel.
+    // Antenna is kind of tactile sensor like done in cockroach robots.
+    // Note the blueprint is static since vehicle does not copy blueprints
+    // but refer it.
+    constexpr Meter range = 4.0_m; // Single detection up to this distance
+    Degree orientation = 90.0_deg; // Perpendicular
     Meter offx = car.blueprint.wheelbase;
     Meter offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1_m / 2.0f; // FIXME
     static const std::map<const char*, AntennaBluePrint> antenna_blueprints = {
@@ -59,16 +72,15 @@ static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
         { "antenna_RR", { sf::Vector2<Meter>(0.0_m, -offy), -orientation, range } },
     };
 
-    // Attach antennas to the car
+    // Attach antennas to the car.
     for (auto const& bp: antenna_blueprints)
     {
         Antenna& antenna = car.addSensor<Antenna, AntennaBluePrint>(bp.second, bp.first, city, sf::Color::Blue);
-        antenna.renderable = true;
-        ecu.observe(antenna);
+        antenna.renderable = true; // Default param. Set false to hide it
+        ecu.observe(antenna); // Antenna will notify the ECU
     }
 
-    // Blueprint for 1 radar.
-    // Note shall be static since vehicle does not copy blueprints.
+    // Blueprint for 1 radar. The radar is not yet used.
     offx = car.blueprint.wheelbase + car.blueprint.front_overhang;
     offy = 0.0_m;
     constexpr Degree fov = 45.0_deg;
@@ -77,7 +89,7 @@ static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
         { 0u, { sf::Vector2<Meter>(offx, offy), orientation, fov, range } },
     };
 
-    // Attach radars to the car
+    // Attach radars to the car.
     for (auto const& bp: radar_blueprints)
     {
         Radar& radar = car.addSensor<Radar, RadarBluePrint>(bp.second, "radar", city, sf::Color::Red);
@@ -87,17 +99,25 @@ static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
 }
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: customize the ego vehicle.
+//! \brief Customize the ego vehicle. Add sensors, an ECU for doing autonomous
+//! parallel maneuvers. The car reacts to the user keyboard events (drive, do
+//! the parallel maneuver). We also monitor the ego car states in a CSV file
+//! for post-analysis in an application such as Scilab.
 //-----------------------------------------------------------------------------
-static Car& customize(City const& city, Car& car)
+static Car& customize_ego(City const& city, Car& car)
 {
-    // Add ECUs
+    // Monitor the Ego car. You can monitor other states if needed.
+    monitor.open("/tmp/monitor.csv", ';');
+    monitor.observe(car.position().x, car.position().y, car.speed())
+           .header("Ego X-coord [m]", "Ego Y-coord [m]", "Ego longitudinal speed [mps]");
+
+    // Add ECU for doing autonomous parking.
     // FIXME how to avoid adding car (shall be implicit)
-    // FIXME avoid passing and cars needed for sensors (pass instead City or World.collidable()) ?
+    // FIXME avoid passing City but City.collidables() instead.
     // https://github.com/Lecrapouille/Highway/issues/26
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city);
 
-    // Add sensors.
+    // Add sensors to the ego car and bind them to the ECU.
     attach_sensors(car, ecu, city);
 
     // Make the car reacts from the keyboard: enable the turning indicator.
@@ -142,23 +162,32 @@ static Car& customize(City const& city, Car& car)
 }
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: no condition to stop the simulation.
+//! \brief Define conditions to stop the simulation.
 //-----------------------------------------------------------------------------
 static bool halt_simulation_when(Simulator const& simulator)
 {
-    return CONTINUE_SIMULATION; // Always run the simulation
+    monitor.record(); // FIXME move this away
+
+    HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
+                         "Time simulation slipped");
+    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
+                         "Ego car is outside the parking");
+    HALT_SIMULATION_WHEN(simulator.ego().collided(),
+                         "Ego car collided");
+    CONTINUE_SIMULATION;
 }
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: create a basic city world. Here made of
-//! parking slots and car parked. The ego car is on the road.
+//! \brief Create a basic city world made of roads, parking slots and parked
+//! cars. The ego car is on the road.
 //-----------------------------------------------------------------------------
 static Car& create_city(City& city)
 {
+    // Initial states
     std::string parking_type = "epi." + std::to_string(0u); // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
     const Meter road_width = 2.5_m;
-    const sf::Vector2<Meter> p(97.5_m, 100.0_m); // Initial position of the road
+    const sf::Vector2<Meter> p(97.5_m, 100.0_m); // Initial road position
     const std::array<size_t, TrafficSide::Max> lanes{1u, 1u}; // Number of lanes constituing the road
     constexpr size_t number_parkings = 4u; // Number of parking slots along the road
 
@@ -166,7 +195,7 @@ static Car& create_city(City& city)
     Road& road1 = city.addRoad(p, sf::Vector2<Meter>(p.x + + float(number_parkings) * parking_length, p.y),
                                road_width, lanes);
 
-    // Create parallel or perpendicular or diagnoal parking slots
+    // Create parallel parking slots
     const sf::Vector2<Meter> p1(p.x + double(lanes[TrafficSide::RightHand]) * road_width, p.y); // Initial position of the parking slots
     Parking& parking0 = city.addParking(parking_type.c_str(), p1); // FIXME .attachTo(road1, offset); => { Road::offset() }
     Parking& parking1 = city.addParking(parking_type.c_str(), parking0.position() + parking0.delta()); // FIXME .attachTo(parking0 ...
@@ -174,18 +203,18 @@ static Car& create_city(City& city)
     Parking& parking3 = city.addParking(parking_type.c_str(), parking2.position() + parking2.delta());
     city.addParking(parking_type.c_str(), parking3.position() + parking3.delta());
 
-    // Add parked cars (static). See BluePrints.cpp for mark of vehicle
+    // Add parked cars (static). See BluePrints.cpp for the mark of vehicle
     city.addCar("Renault.Twingo", parking0);
     city.addCar("Audi.A6", parking1);
     city.addCar("Audi.A6", parking3);
 
-    // Self-parking car (dynamic). Always be the last in the container
-    return customize(city, city.addEgo("Mini.Cooper", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
+    // Self-parking ego car (dynamic).
+    return customize_ego(city, city.addEgo("Mini.Cooper", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
 }
 
 //-----------------------------------------------------------------------------
-//! \brief "Hello simulation" demo: set the scenario functions mandatory to
-//! create the simulation.
+//! \brief Simulation entry point. Return functions needed by the simulator to
+//! run a simulation.
 //-----------------------------------------------------------------------------
 Scenario simple_simulation_demo()
 {

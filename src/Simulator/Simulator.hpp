@@ -26,6 +26,7 @@
 #  include "Simulator/Scenario.hpp"
 #  include "Renderer/MessageBar.hpp"
 #  include "Common/DynamicLoader.hpp"
+#  include "Common/Monitoring.hpp"
 
 class Renderer;
 
@@ -239,6 +240,10 @@ private:
     //! \brief
     //--------------------------------------------------------------------------
     void collisions(Car& ego);
+
+public:
+
+    //Monitoring monitoring;
 
 private:
 

@@ -24,7 +24,28 @@
 
 #  include "Simulator/Simulator.hpp"
 
-#  define CONTINUE_SIMULATION false
+//-----------------------------------------------------------------------------
+//! \brief Helper macro to be returned by \c halt_simulation_when to continue
+//! the simulation.
+//-----------------------------------------------------------------------------
+#define CONTINUE_SIMULATION return false
+
+//-----------------------------------------------------------------------------
+//! \brief Helper macro to be returned by \c halt_simulation_when to abort
+//! the simulation.
+//-----------------------------------------------------------------------------
+#define ABORT_SIMULATION return true
+
+//-----------------------------------------------------------------------------
+//! \brief Helper macro for \c halt_simulation_when to abort the simulation.
+//! \param[in] condition: the condition to halt the simulation when true.
+//! \param[in] txt: text explaining why the simulation has halted.
+//-----------------------------------------------------------------------------
+#define HALT_SIMULATION_WHEN(condition, txt) \
+   if (condition) { \
+      simulator.messagebox(txt, sf::Color::Yellow); \
+      return true; \
+   }
 
 //-----------------------------------------------------------------------------
 //! \brief "Hello simulation" demo: set the scenario functions mandatory to
