@@ -16,7 +16,7 @@
 // General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+// along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
 #ifndef CAR_SENSORS_ANTENNA_HPP

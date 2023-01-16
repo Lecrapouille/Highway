@@ -1,7 +1,7 @@
 //=====================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
-// Copyright 2021 -- 2022 Quentin Quadrat <lecrapouille@gmail.com>
+// Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
 //
 // This file is part of Highway.
 //
@@ -16,7 +16,7 @@
 // General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+// along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
 #ifndef SPATIAL_HASH_GRID_HPP
