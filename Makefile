@@ -73,7 +73,7 @@ INCLUDES += -I$(THIRDPART)/units/include
 ###################################################
 # Make the list of compiled files for the library
 #
-LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Components.o Prolog.o
+LIB_OBJS += Path.o Collide.o SpatialHashGrid.o Monitoring.o Prolog.o
 LIB_OBJS += FontManager.o Drawable.o Renderer.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o Antenna.o
