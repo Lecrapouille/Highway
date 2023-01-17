@@ -55,8 +55,8 @@ public:
     //-------------------------------------------------------------------------
     void reset();
 
-    Road& addRoad(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
-         Meter const width, std::array<size_t, TrafficSide::Max> lanes);
+    Road& addRoad(std::vector<sf::Vector2<Meter>> const& centers,
+                  Meter const width, std::array<size_t, TrafficSide::Max> lanes);
 
     //-------------------------------------------------------------------------
     //! \brief Add a parking slot in the world at the given position. The

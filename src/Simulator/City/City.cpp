@@ -51,10 +51,10 @@ Car* City::get(const char* name)
 }
 
 //------------------------------------------------------------------------------
-Road& City::addRoad(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
+Road& City::addRoad(std::vector<sf::Vector2<Meter>> const& centers,
                     Meter const width, std::array<size_t, TrafficSide::Max> lanes)
 {
-    m_roads.push_back(std::make_unique<Road>(start, stop, width, lanes));
+    m_roads.push_back(std::make_unique<Road>(centers, width, lanes));
     return *m_roads.back();
 }
 

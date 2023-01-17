@@ -119,16 +119,33 @@ private:
 class Road: public StaticActor // TODO https://www.youtube.com/watch?v=tHXIwijaERg
 {
 public:
- 
+
     //--------------------------------------------------------------------------
     //! \brief Empty road segment with given ways.
     //! \param[in] blueprint: parking slot dimension.
     //! \param[in] position: position in the world coordinates of the middle of
     //! the left side lane.
-    //! \param[in] lanes nuber of lanes for right- and left-hand drive. 
+    //! \param[in] lanes nuber of lanes for right- and left-hand drive.
     //--------------------------------------------------------------------------
-    Road(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
+    Road(std::vector<sf::Vector2<Meter>> const& centers,
          Meter const width, std::array<size_t, TrafficSide::Max> const& lanes);
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    sf::Vector2<Meter> offset(TrafficSide const side, size_t const lane,
+                              double const x, double const y);
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> start() const { return m_start; }
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> stop() const { return m_stop; }
+
 #if 0
     //--------------------------------------------------------------------------
     //! \brief Make the slot occupied by the car.
@@ -136,17 +153,7 @@ public:
     //! modified by this method to follow the parking slot. Use this method only
     //! when constructing the simulation world.
     //--------------------------------------------------------------------------
-    bool bind(Car& car, size_t const way, std::Vector2<Meter> const& offset);
-
-    //--------------------------------------------------------------------------
-    //! \brief Const position in the world coordinates of the middle of the left
-    //! lane. Once placed in the world the parking slot cannot be displaced.
-    //--------------------------------------------------------------------------
-    sf::Vector2<Meter> position() const
-    {
-        sf::Vector2f p(m_shape.getPosition());
-        return { Meter(p.x), Meter(p.y) };
-    }
+    //bool bind(Car& car, size_t const way, std::Vector2<Meter> const& offset);
 
     //-------------------------------------------------------------------------
     //! \brief Const getter: return the oriented bounding box of the parking.
@@ -161,13 +168,20 @@ public:
     //--------------------------------------------------------------------------
     std::list<Car*> cars(size_t const d, size_t const way);
 
-    sf::Vector2<Meter> offset(float const y, TrafficSide const side);
-
 #endif
+
+private:
+
+    //! \brief Initial center position of the road
+    sf::Vector2<Meter> m_start;
+    //! \brief Final center position of the road
+    sf::Vector2<Meter> m_stop;
+    //! \brief Width for each lanes
+    Meter m_width;
 
 public:
 
-    //! \brief
+    //! \brief Right side lanes and left side lanes
     std::vector<std::unique_ptr<Lane>> m_lanes[TrafficSide::Max];
 };
 

@@ -57,7 +57,11 @@ void Renderer::draw(Road const& road, sf::RenderTarget& target, sf::RenderStates
 void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::RenderStates const& states)
 {
     // Draw the parking shape
-    sf::RectangleShape const& shape = parking.obb();
+    sf::RectangleShape shape = parking.obb();
+    shape.setFillColor(sf::Color(178, 174, 174));
+    shape.setOutlineThickness(0.1f);
+    shape.setOutlineColor(sf::Color(255, 161, 7));
+
     target.draw(shape, states);
     // Draw the origin of the parking
     target.draw(Circle(parking.position(), 0.01_m, sf::Color::Black, 8u), states);

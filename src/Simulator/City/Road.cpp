@@ -22,6 +22,7 @@
 #include "Simulator/City/Road.hpp"
 #include "Vehicle/Car.hpp"
 #include <random>
+#include <algorithm>
 
 static std::mt19937 rng;
 
@@ -29,7 +30,7 @@ static std::mt19937 rng;
 LaneBluePrint::LaneBluePrint(Meter const l, Meter const w, Radian const a)
     : length(l), width(w), angle(a)
 {
-    std::cout << "Lane l: " << l << " w: " << w <<  " a: " << a << std::endl;
+    // std::cout << "Lane l: " << l << " w: " << w <<  " a: " << a << std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -42,36 +43,63 @@ Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
     m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0)));
     m_shape.setRotation(float(Degree(blueprint.angle)));
     m_shape.setPosition(float(start.x), float(start.y));
-    std::cout << "P " << start.x << ", " << start.y << std::endl;
-    m_shape.setFillColor(sf::Color::Blue);
-    m_shape.setOutlineThickness(ZOOM);
-    m_shape.setOutlineColor(sf::Color::Black);
+    std::cout << "Lane " << (s == TrafficSide::RightHand ? "right " : "left ") << start.x << ", " << start.y << std::endl;
+    if (s == TrafficSide::RightHand)
+        m_shape.setFillColor(sf::Color(159, 155, 155));
+    else
+        m_shape.setFillColor(sf::Color(178, 174, 174));
+    m_shape.setOutlineThickness(0.1f);
+    m_shape.setOutlineColor(sf::Color(255, 161, 7));
 }
 
 //------------------------------------------------------------------------------
-Road::Road(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
+Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
            Meter const width, std::array<size_t, TrafficSide::Max> const& lanes)
+    : m_start(centers[0]), m_stop(centers[1]), m_width(width)
 {
+    std::cout << "Road P " << m_start.x << ", " << m_start.y << " W " << width << std::endl;
     size_t side = TrafficSide::Max;
     while (side--)
     {
-        m_lanes[side].resize(lanes[side]);
+        std::cout << "  Side " << side << ": " << lanes[side] << " lane" << std::endl;
+        m_lanes[side].resize(lanes[side]); // FIXME manage 0 size
     }
 
     for (size_t i = 0u; i < lanes[TrafficSide::RightHand]; i++)
     {
         m_lanes[TrafficSide::RightHand][i] =
-            std::make_unique<Lane>(sf::Vector2<Meter>(start.x + double(i) * width, start.y),
-                                   sf::Vector2<Meter>(stop.x + double(i) * width, stop.y),
+            std::make_unique<Lane>(sf::Vector2<Meter>(m_start.x, m_start.y - double(i) * width - 0.5 * width),
+                                   sf::Vector2<Meter>(m_stop.x, m_stop.y - double(i) * width - 0.5 * width),
                                    width, TrafficSide::RightHand);
     }
 
     for (size_t i = 0u; i < lanes[TrafficSide::LeftHand]; i++)
     {
         m_lanes[TrafficSide::LeftHand][i] =
-            std::make_unique<Lane>(sf::Vector2<Meter>(start.x - double(i) * width, start.y),
-                                   sf::Vector2<Meter>(stop.x - double(i) * width, stop.y),
+            std::make_unique<Lane>(sf::Vector2<Meter>(m_start.x, m_start.y + double(i) * width + 0.5 * width),
+                                   sf::Vector2<Meter>(m_stop.x, m_stop.y + double(i) * width + 0.5 * width),
                                    width, TrafficSide::LeftHand);
+    }
+}
+
+//------------------------------------------------------------------------------
+sf::Vector2<Meter> Road::offset(TrafficSide const side, size_t const desired_lane,
+                                double const x, double const y)
+{
+    assert((x >= 0.0) && (x <= 1.0) && "x shall be a percent");
+    assert((y >= 0.0) && (y <= 1.0) && "y shall be a percent");
+
+    Meter const offset_x = math::lerp(m_start.x, m_stop.x, x);
+    Meter const offset_y = math::lerp(0.0_m, m_width, y);
+    size_t const lane = math::constrain(desired_lane, size_t(0), m_lanes[side].size());
+
+    if (side == TrafficSide::RightHand)
+    {
+        return { offset_x, m_start.y - offset_y - double(lane) * m_width };
+    }
+    else
+    {
+        return { offset_x, m_start.y + offset_y + double(lane) * m_width };
     }
 }
 

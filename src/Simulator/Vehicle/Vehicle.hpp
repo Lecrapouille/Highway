@@ -33,7 +33,7 @@
 #  include <functional>
 
 #  define COLISION_COLOR sf::Color(255, 0, 0)
-#  define CAR_COLOR sf::Color(178, 174, 174)
+#  define CAR_COLOR sf::Color(25, 130, 118)
 #  define EGO_CAR_COLOR sf::Color(124, 99, 197)
 
 // TODO faire callback collides

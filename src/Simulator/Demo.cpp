@@ -186,17 +186,22 @@ static Car& create_city(City& city)
     // Initial states
     std::string parking_type = "epi." + std::to_string(0u); // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
-    const Meter road_width = 2.5_m;
-    const sf::Vector2<Meter> p(97.5_m, 100.0_m); // Initial road position
-    const std::array<size_t, TrafficSide::Max> lanes{1u, 1u}; // Number of lanes constituing the road
-    constexpr size_t number_parkings = 4u; // Number of parking slots along the road
+    const Meter parking_width = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).width;
+    const sf::Vector2<Meter> p(97.5_m, 105.0_m); // Initial road position
+    constexpr size_t number_parkings = 5u; // Number of parking slots along the road
 
     // Create roads
-    Road& road1 = city.addRoad(p, sf::Vector2<Meter>(p.x + + float(number_parkings) * parking_length, p.y),
-                               road_width, lanes);
+    const Meter road_width = 2.0_m;
+    const std::array<size_t, TrafficSide::Max> lanes{1u, 2u}; // Number of lanes constituing the road
+    const std::vector<sf::Vector2<Meter>> road_centers = {
+        p,
+        p + sf::Vector2<Meter>(double(number_parkings) * parking_length, 0.0_m)
+    };
+    Road& road1 = city.addRoad(road_centers, road_width, lanes);
 
     // Create parallel parking slots
-    const sf::Vector2<Meter> p1(p.x + double(lanes[TrafficSide::RightHand]) * road_width, p.y); // Initial position of the parking slots
+    const sf::Vector2<Meter> p1(p.x, p.y - double(lanes[TrafficSide::RightHand]) * road_width - parking_width * 0.5); // Initial position of the parking slots
+    std::cout << "Parking " << p.x << ", " << p.y - double(lanes[TrafficSide::RightHand]) * road_width << std::endl;
     Parking& parking0 = city.addParking(parking_type.c_str(), p1); // FIXME .attachTo(road1, offset); => { Road::offset() }
     Parking& parking1 = city.addParking(parking_type.c_str(), parking0.position() + parking0.delta()); // FIXME .attachTo(parking0 ...
     Parking& parking2 = city.addParking(parking_type.c_str(), parking1.position() + parking1.delta());
@@ -209,7 +214,9 @@ static Car& create_city(City& city)
     city.addCar("Audi.A6", parking3);
 
     // Self-parking ego car (dynamic).
-    return customize_ego(city, city.addEgo("Mini.Cooper", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
+    // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
+    // The ego is centered on its lane (Y-axis).
+    return customize_ego(simulator, city, city.addEgo("Mini.Cooper", road1.offset(TrafficSide::RightHand, 0u, 0.1, 1.0)));
 }
 
 //-----------------------------------------------------------------------------
