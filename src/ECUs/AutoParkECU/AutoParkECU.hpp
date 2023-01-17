@@ -64,6 +64,15 @@ private:
         enum Status { IN_PROGRESS, SUCCEEDED, FAILED };
 
         //----------------------------------------------------------------------
+        //! \brief
+        //! \param[in] lmin Minimal turning radius for the external point of the
+        //! car.
+        //----------------------------------------------------------------------
+        Scanner(Meter const lmin)
+            : Lmin(lmin)
+        {}
+
+        //----------------------------------------------------------------------
         //! \brief Reset the state machine to the initial state.
         //----------------------------------------------------------------------
         inline void start() { m_state = IDLE; }
@@ -115,6 +124,10 @@ private:
 
     private:
 
+        //! \brief Minimal turning radius for the external point of the car.
+        //! FIXME this is computed when doing the parallel trajectory but we also
+        //! need here. Can this be factorized ?
+        Meter Lmin;
         //! \brief Current state of the state machine.
         AutoParkECU::Scanner::States m_state = AutoParkECU::Scanner::States::IDLE;
         //! \brief Memorize the car position when the first car has been
@@ -124,7 +137,7 @@ private:
         Meter m_distance = 0.0_m;
         //! \brief Memorize the parking spot once detected.
         std::unique_ptr<Parking> m_parking = nullptr;
-    }; // class Scan
+    }; // class Scanner
 
     // *************************************************************************
     //! \brief Main state machine for self-parking: drive along the parking,
@@ -144,6 +157,15 @@ private:
         };
 
     public:
+
+        //----------------------------------------------------------------------
+        //! \brief
+        //! \param[in] lmin Minimal turning radius for the external point of the
+        //! car.
+        //----------------------------------------------------------------------
+        StateMachine(Meter const lmin)
+            : m_scanner(lmin)
+        {}
 
         //----------------------------------------------------------------------
         //! \brief Update the state machine.
@@ -255,9 +277,6 @@ private:
     //! \brief Main state machine for searching and entering in the first parking
     //! slot. See doc/ParkingStateMachine.jpg
     StateMachine m_statemachine;
-    //! \brief State machine for the \c m_statemachine state 'Scan Parking Spots'.
-    //! See doc/ScanStateMachine.jpg
-    AutoParkECU::Scanner m_scanner;
     //! \brief If and only if reachable, the trajectory to the parking slot.
     std::unique_ptr<CarTrajectory> m_trajectory = nullptr;
     //! \brief Trigger for starting searching the first parking slot and

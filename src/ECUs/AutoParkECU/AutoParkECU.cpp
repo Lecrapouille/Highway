@@ -20,8 +20,11 @@
 //==============================================================================
 
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
+#include "ECUs/AutoParkECU/Trajectories/ParallelTrajectory.hpp"
+#include "Simulator/Vehicle/TurningRadius.hpp"
 #include "Simulator/Vehicle/Car.hpp"
 #include "Simulator/City/Parking.hpp"
+#include "Simulator/BluePrints.hpp"
 #include <iostream>
 
 // FIXME https://github.com/Lecrapouille/Highway/issues/14
@@ -35,7 +38,7 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
 
     // This condition is purely for the simulation: is the ego car outside the
     // simulation game (parking area) ?
-    if (car.position().x >= 140.0_m) // out of parking
+    if (car.position().x >= 140.0_m) // out of parking FIXME a remplacer par la distance parcourue
     {
         std::cout << "  Outside parking" << std::endl;
         m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_NOT_FOUND;
@@ -60,7 +63,7 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
     case AutoParkECU::Scanner::States::DETECT_FIRST_CAR:
         // The car has detected the first parked car. Now search a gap (either
         // space between car either real parking spot).
-        if (!detected) // FIXME bitfield
+        if (!detected)
         {
             m_position = car.position();
             m_state = AutoParkECU::Scanner::States::DETECT_EMPTY_SPOT;
@@ -74,7 +77,7 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
         {
             m_state = AutoParkECU::Scanner::States::DETECT_SECOND_CAR;
         }
-        else if (m_distance >= 6.4_m) // meters FIXME should be Lmin
+        else if (m_distance >= Lmin)
         {
             // two consecutive empty spots: avoid to drive to the next parked
             // car do the maneuver directly
@@ -92,13 +95,14 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, bool detected)
                       << " because distance is too short (" << m_distance << " m)" << std::endl;
             m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         }
-        else if (detected || m_distance >= 6.4_m) // FIXME should be Lmin https://github.com/Lecrapouille/Highway/issues/32
+        else if (detected || m_distance >= Lmin)
         {
             car.refSpeed(0.0_mps);
 
-            // TODO Missing detection of the type of parking type. FIXME 2.0 m: parking width
+            // TODO Missing detection of the type of parking type.
             // https://github.com/Lecrapouille/Highway/issues/32
-            ParkingBluePrint dim(m_distance, 2.0_m, 0u);
+            Meter pw = BluePrints::get<ParkingBluePrint>("epi.0").width;
+            ParkingBluePrint dim(m_distance, pw, 0u);
             m_parking = std::make_unique<Parking>(dim, sf::Vector2<Meter>(m_position.x, m_position.y - 5.0_m)); // FIXME calculer la profondeur
             std::cout << "Scan: Parking spot detected: " << *m_parking << std::endl;
             m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND;
@@ -244,8 +248,16 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 }
 
 //------------------------------------------------------------------------------
+static Meter computeLmin(Car const& car)
+{
+    TurningRadius radius(car.blueprint, car.blueprint.max_steering_angle);
+    return car.blueprint.back_overhang + units::math::sqrt(
+        radius.external * radius.external - radius.internal * radius.internal);
+}
+
+//------------------------------------------------------------------------------
 AutoParkECU::AutoParkECU(Car& car, City const& city)
-    : ECU(), m_ego(car), m_city(city)
+    : m_ego(car), m_city(city), m_statemachine(computeLmin(car))
 {
     LOGI("AutoParkECU created");
 }
@@ -253,7 +265,6 @@ AutoParkECU::AutoParkECU(Car& car, City const& city)
 //------------------------------------------------------------------------------
 void AutoParkECU::update(Second const dt)
 {
-    // std::cout << "AutoParkECU update" << std::endl;
     m_statemachine.update(dt, *this);
 }
 
