@@ -110,8 +110,9 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Record in the monitoring file all external states as a single
     //! line.
+    //! \param[in] elapsed_time Simulation elapsed time.
     //--------------------------------------------------------------------------
-    void record()
+    void record(Second const elapsed_time)
     {
         using namespace std::chrono;
 
@@ -126,13 +127,10 @@ public:
             {
                 fun(*this);
             }
-            m_time =  sf::Time::Zero;
-            m_clock.restart();
         }
         else
         {
-            m_time += m_clock.restart();
-            m_outfile << m_time.asSeconds();
+            m_outfile << elapsed_time.value();
             for (auto const& fun: m_observations)
             {
                 fun(*this);
@@ -160,10 +158,6 @@ private:
     std::vector<Observation> m_observations;
     //! \brief The handle of the opened monitoring file.
     std::ofstream m_outfile;
-    //! \brief Clock needed for time recording data.
-    sf::Clock m_clock;
-    //! \brief Current time.
-    sf::Time m_time;
     //! \brief CSV field separator.
     std::string m_separator;
     //! \brief if true then record the header file else record observations.

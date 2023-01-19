@@ -56,7 +56,7 @@ bool Simulator::load(std::string const& libpath)
     if (m_loader.load(libpath))
     {
         m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
-        m_scenario.create = m_loader.prototype<Car& (City&)>("create_city");
+        m_scenario.create = m_loader.prototype<Car& (Simulator&, City&)>("create_city");
         m_scenario.halt = m_loader.prototype<bool (Simulator const&)>("halt_simulation_when");
         m_scenario.react = m_loader.prototype<void(Simulator&, size_t)>("react_to");
     }
@@ -80,7 +80,7 @@ bool Simulator::autoreload()
     {
         std::cerr << m_loader.prototype<const char* (void)>("simulation_name")() << std::endl;
         m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
-        m_scenario.create = m_loader.prototype<Car& (City&)>("create_city");
+        m_scenario.create = m_loader.prototype<Car& (Simulator&, City&)>("create_city");
         m_scenario.halt = m_loader.prototype<bool (Simulator const&)>("halt_simulation_when");
         m_scenario.react = m_loader.prototype<void(Simulator&, size_t)>("react_to");
 
@@ -117,7 +117,7 @@ bool Simulator::init()
 
     // Create a new city from "scratch".
     m_city.reset();
-    m_ego = &m_scenario.create(m_city);
+    m_ego = &m_scenario.create(*this, m_city);
 
     // Make by default, the camera follows the ego car.
     follow(*m_ego);
@@ -127,6 +127,10 @@ bool Simulator::init()
     m_elpased_time = sf::Time::Zero;
     m_clock.restart();
 
+    // Start recoring simulation states.
+    // FIXME do not hardcode the file path.
+    // FIXME do not smash old simulation. Add id++ or time
+    monitor.open("/tmp/monitor.csv", ';');
     return true;
 }
 
@@ -167,6 +171,7 @@ void Simulator::release()
     m_city.reset();
     m_loader.close();
     m_scenario.clear();
+    monitor.close();
     m_elpased_time = sf::Time::Zero;
 }
 
@@ -239,6 +244,9 @@ void Simulator::update(const Second dt)
         const sf::Vector2<Meter> p = m_follow->position();
         m_camera = sf::Vector2f(float(p.x.value()), float(p.y.value()));
     }
+
+    // Record simulation states
+    monitor.record(elapsedTime());
 }
 
 //------------------------------------------------------------------------------

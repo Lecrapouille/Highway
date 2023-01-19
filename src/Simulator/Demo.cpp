@@ -28,8 +28,6 @@
 //! is entering in the first parking slot.
 //-----------------------------------------------------------------------------
 
-static Monitor monitor; // FIXME
-
 //-----------------------------------------------------------------------------
 //! \brief Needed simulation function: return the simulation name that will be
 //! display in the windows title bar.
@@ -104,12 +102,11 @@ static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
 //! the parallel maneuver). We also monitor the ego car states in a CSV file
 //! for post-analysis in an application such as Scilab.
 //-----------------------------------------------------------------------------
-static Car& customize_ego(City const& city, Car& car)
+static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
 {
     // Monitor the Ego car. You can monitor other states if needed.
-    monitor.open("/tmp/monitor.csv", ';');
-    monitor.observe(car.position().x, car.position().y, car.speed())
-           .header("Ego X-coord [m]", "Ego Y-coord [m]", "Ego longitudinal speed [mps]");
+    simulator.monitor.observe(car.position().x, car.position().y, car.speed())
+                     .header("Ego X-coord [m]", "Ego Y-coord [m]", "Ego longitudinal speed [mps]");
 
     // Add ECU for doing autonomous parking.
     // FIXME how to avoid adding car (shall be implicit)
@@ -166,8 +163,6 @@ static Car& customize_ego(City const& city, Car& car)
 //-----------------------------------------------------------------------------
 static bool halt_simulation_when(Simulator const& simulator)
 {
-    monitor.record(); // FIXME move this away
-
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
                          "Time simulation slipped");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
@@ -181,7 +176,7 @@ static bool halt_simulation_when(Simulator const& simulator)
 //! \brief Create a basic city world made of roads, parking slots and parked
 //! cars. The ego car is on the road.
 //-----------------------------------------------------------------------------
-static Car& create_city(City& city)
+static Car& create_city(Simulator& simulator, City& city)
 {
     // Initial states
     std::string parking_type = "epi." + std::to_string(0u); // parallel slots

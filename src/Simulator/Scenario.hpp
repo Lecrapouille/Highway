@@ -68,14 +68,14 @@ public:
     //! \brief C fonction taking a City as input and allows to create the
     //! desired city (roads, parking, vehicles ...). This function returns the
     //! ego car.
-    std::function<Car&(City&)> create = nullptr;
+    std::function<Car&(Simulator&, City&)> create = nullptr;
     //! \brief C function taking the Simulator as input and returns true when
     //! the simulation shall halt (simulation duration, collision, reach a given
     //! position ...).
     std::function<bool(Simulator const&)> halt = nullptr;
     //! \brief C function Reacting to external events (refered by their ID for
     //! example keyboard keys).
-    std::function<void(Simulator& simulator, size_t const key)> react = nullptr;
+    std::function<void(Simulator&, size_t const)> react = nullptr;
 };
 
 #endif

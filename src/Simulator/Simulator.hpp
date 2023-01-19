@@ -40,7 +40,7 @@ class Renderer;
 //! Idea:
 //! https://www.mathworks.com/help/driving/ug/motion-planning-using-dynamic-map.html
 // ****************************************************************************
-class Simulator
+class Simulator //! FIXME make Demo/Simulation does not reach to all public Simulator methods
 {
 public:
 
@@ -243,7 +243,9 @@ private:
 
 public:
 
-    //Monitoring monitoring;
+    //! \brief Record simulation states.
+    //! FIXME allow to have several monitoring systems
+    Monitor monitor;
 
 private:
 
