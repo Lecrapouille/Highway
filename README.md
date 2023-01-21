@@ -26,8 +26,9 @@ Here a list of things a simulator can help:
 ### Compilation
 
 This code depends on:
-- C++-14 compiler (g++, clang++)
+- C++-17 compiler (g++, clang++)
 - lib SFML for 2D graphism: https://www.sfml-dev.org/index-fr.php
+- SWI Prolog: `sudo apt-get install swi-prolog`
 - Optionally for stack tracing on segfaults: https://github.com/bombela/backward-cpp (can be disabled if undesired by
 commenting some lines inside the Makefile).
 - Google tests for unit tests.
