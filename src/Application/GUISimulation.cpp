@@ -39,11 +39,11 @@ GUISimulation::GUISimulation(Application& application, std::string const& name,
     m_simulation_view = m_renderer.getDefaultView();
     m_simulation_view.setSize(float(application.width()),
                               -float(application.height()));
-    zoom(ZOOM);
+    applyZoom(0.01f); // FIXME
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::zoom(float const value)
+void GUISimulation::applyZoom(float const value)
 {
     m_zoom = value;
     m_simulation_view.zoom(m_zoom);

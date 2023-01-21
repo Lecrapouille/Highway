@@ -73,7 +73,7 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     // Draw the car body
     sf::RectangleShape body = car.obb();
     body.setFillColor(car.collided() ? COLISION_COLOR : car.color);
-    body.setOutlineThickness(ZOOM);
+    body.setOutlineThickness(OUTLINE_THICKNESS);
     body.setOutlineColor(sf::Color::Blue);
     target.draw(body, states);
 
@@ -86,7 +86,7 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
     {
         sf::RectangleShape wheel = car.obb_wheel(i);
         wheel.setFillColor(sf::Color::Black);
-        wheel.setOutlineThickness(ZOOM);
+        wheel.setOutlineThickness(OUTLINE_THICKNESS);
         wheel.setOutlineColor(sf::Color::Yellow);
         target.draw(wheel, states);
     }

@@ -63,7 +63,7 @@ public:
         // m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
         m_obb.setFillColor(color);
         m_obb.setOutlineColor(sf::Color(165, 42, 42));
-        m_obb.setOutlineThickness(ZOOM);
+        m_obb.setOutlineThickness(OUTLINE_THICKNESS);
 
         // Undefined states
         update(sf::Vector2<Meter>(Meter(NAN), Meter(NAN)), Radian(NAN));

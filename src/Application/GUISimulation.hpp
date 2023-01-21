@@ -52,7 +52,7 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Apply the zoom value.
     //-------------------------------------------------------------------------
-    inline void zoom(float const value);
+    inline void applyZoom(float const value);
 
 private:
 

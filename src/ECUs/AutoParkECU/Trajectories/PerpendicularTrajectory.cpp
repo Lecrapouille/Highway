@@ -131,5 +131,5 @@ void PerpTrajectory::generateReferenceTrajectory(Car const& car, bool const ente
 void PerpTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     //target.draw(Arc(Xdm, Ydm - Rin2, Rin2, 90.0f, RAD2DEG(theta2), sf::Color::Red));
-    //target.draw(Circle(Xdm, Ydm, 2*ZOOM, sf::Color::Yellow), states);
+    //target.draw(Circle(Xdm, Ydm, 2.0f * OUTLINE_THICKNESS, sf::Color::Yellow), states);
 }

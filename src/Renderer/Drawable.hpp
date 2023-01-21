@@ -29,6 +29,10 @@
 #  include "Math/Units.hpp"
 #  include <SFML/Graphics.hpp>
 
+#  ifndef OUTLINE_THICKNESS
+#    define OUTLINE_THICKNESS 0.01f
+#  endif
+
 // *****************************************************************************
 //! \brief Show a grid used for debugging SpatialHashGrid.
 // *****************************************************************************

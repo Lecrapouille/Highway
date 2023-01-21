@@ -21,7 +21,7 @@
 
 #include "City/City.hpp"
 
-// g++ -Wall -Wextra -DZOOM=0.01f -I../../src/Simulator -I../../src _test.cpp -o prog -ldl /home/qq/MyGitHub/Drive/Drive/build/libcarsimulator.so `pkg-config --cflags --libs sfml-graphics`
+// g++ -Wall -Wextra -I../../src/Simulator -I../../src _test.cpp -o prog -ldl /home/qq/MyGitHub/Drive/Drive/build/libcarsimulator.so `pkg-config --cflags --libs sfml-graphics`
 // LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/qq/MyGitHub/Drive/Drive/build ./prog
 int main()
 {

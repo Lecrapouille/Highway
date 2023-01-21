@@ -63,7 +63,7 @@ Circle::Circle(Meter const x, Meter const y, Meter const radius, sf::Color const
     m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
     m_shape.setPosition(float(x.value()), float(y.value()));
     m_shape.setFillColor(sf::Color(255, 255, 255, 0));
-    m_shape.setOutlineThickness(ZOOM * 2.0f);
+    m_shape.setOutlineThickness(2.0f * OUTLINE_THICKNESS);
     m_shape.setOutlineColor(color);
 }
 
@@ -83,7 +83,7 @@ void Arc::init(Meter const x, Meter const y, Meter const radius, Degree const st
     m_shape.setOrigin(m_shape.getRadius(), m_shape.getRadius());
     m_shape.setPosition(float(x.value()), float(y.value()));
     m_shape.setFillColor(sf::Color(255, 255, 255, 0));
-    m_shape.setOutlineThickness(ZOOM * 2.0f);
+    m_shape.setOutlineThickness(2.0f * OUTLINE_THICKNESS);
     m_shape.setOutlineColor(color);
 }
 
@@ -103,7 +103,7 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb,
         arrowAngle += 360.f;
 
     // Head of the arrow
-    const sf::Vector2f arrowHeadSize{ ZOOM * 9.0f, ZOOM * 9.0f };
+    const sf::Vector2f arrowHeadSize{ 9.0f * OUTLINE_THICKNESS, 9.0f * OUTLINE_THICKNESS };
     m_head = sf::ConvexShape{ 3 };
     m_head.setPoint(0, { 0.f, 0.f });
     m_head.setPoint(1, { arrowHeadSize.x, arrowHeadSize.y / 2.f });
@@ -111,17 +111,17 @@ Arrow::Arrow(const float xa, const float ya, const float xb, const float yb,
     m_head.setOrigin(arrowHeadSize.x, arrowHeadSize.y / 2.f);
     m_head.setPosition(sf::Vector2f(xb, yb));
     m_head.setRotation(arrowAngle);
-    m_head.setOutlineThickness(ZOOM);
+    m_head.setOutlineThickness(OUTLINE_THICKNESS);
     m_head.setOutlineColor(color);
     m_head.setFillColor(color);
 
     // Tail of the arrow.
-    const sf::Vector2f tailSize{ arrowLength - arrowHeadSize.x, ZOOM * 1.0f };
+    const sf::Vector2f tailSize{ arrowLength - arrowHeadSize.x, 1.0f * OUTLINE_THICKNESS };
     m_tail = sf::RectangleShape{ tailSize };
     m_tail.setOrigin(0.0f, tailSize.y / 2.f);
     m_tail.setPosition(sf::Vector2f(xa, ya));
     m_tail.setRotation(arrowAngle);
-    m_tail.setOutlineThickness(ZOOM);
+    m_tail.setOutlineThickness(OUTLINE_THICKNESS);
     m_tail.setOutlineColor(color);
     m_tail.setFillColor(color);
 }

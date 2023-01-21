@@ -51,7 +51,7 @@ VPATH += $(P)/src $(P)/src/Application $(P)/src/Math $(P)/src/Simulator/Sensors	
 ###################################################
 # Project defines
 #
-DEFINES = -DDATADIR=\"$(DATADIR)\" -DZOOM=0.01f
+DEFINES = -DDATADIR=\"$(DATADIR)\"
 
 ###################################################
 # Reduce warnings

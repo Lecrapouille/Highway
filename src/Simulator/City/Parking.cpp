@@ -58,7 +58,7 @@ Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position)
     m_shape.setRotation(float(Degree(bp.angle)));
     m_shape.setPosition(float(position.x), float(position.y));
     m_shape.setFillColor(sf::Color::White);
-    m_shape.setOutlineThickness(ZOOM);
+    m_shape.setOutlineThickness(OUTLINE_THICKNESS);
     m_shape.setOutlineColor(sf::Color::Black);
 }
 

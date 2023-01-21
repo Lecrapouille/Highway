@@ -181,10 +181,10 @@ void DiagonalTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
     target.draw(Arc(Xdm, Ydm - Rin2, Rin2, 90.0f, RAD2DEG(theta2), sf::Color::Red));
 
     // Roue avant gauche Destination
-    target.draw(Circle(Xc, Yc, 2*ZOOM, sf::Color::Yellow), states);
+    target.draw(Circle(Xc, Yc, 2.0f * OUTLINE_THICKNESS, sf::Color::Yellow), states);
 
     // C2
-    target.draw(Circle(Xdm, Ydm, 2*ZOOM, sf::Color::Yellow), states);
+    target.draw(Circle(Xdm, Ydm, 2.0f * OUTLINE_THICKNESS, sf::Color::Yellow), states);
 
     /*
       target.draw(Circle(Xc1, Yc1, Rwmin, sf::Color::Red), states);
@@ -193,7 +193,7 @@ void DiagonalTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
       target.draw(Arrow(Xc2, Yc2, Xs, Ys, sf::Color::Blue), states);
       target.draw(Arrow(Xi, Yi, Xs, Ys, sf::Color::Black), states);
 
-      target.draw(Circle(Xt, Yt, 2*ZOOM, sf::Color::Yellow), states);
-      target.draw(Circle(Xc1, Yf, 2*ZOOM, sf::Color::Yellow), states);
+      target.draw(Circle(Xt, Yt, 2.0f * OUTLINE_THICKNESS, sf::Color::Yellow), states);
+      target.draw(Circle(Xc1, Yf, 2.0f * OUTLINE_THICKNESS, sf::Color::Yellow), states);
     */
 }
