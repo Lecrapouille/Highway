@@ -148,7 +148,7 @@ public:
     inline sf::Vector2<Meter> position() const
     {
         const auto p = m_obb.getPosition();
-        return sf::Vector2<Meter>(p.x, p.y);
+        return sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
     }
 
     //--------------------------------------------------------------------------
