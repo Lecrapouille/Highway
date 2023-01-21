@@ -81,11 +81,11 @@ private:
         //! \brief Update the state machine.
         //! \param[in] dt: delta time in seconds.
         //! \param[inout] car: the reference of the ego car.
-        //! \param[in] detected: bitfield of detection returned by sensors.
+        //! \param[in] detection: bitfield of detection returned by sensors.
         //! \return if the parking has found, or not found or still searching an
         //! empty spot.
         //----------------------------------------------------------------------
-        Scanner::Status update(Second const dt, Car& car, bool detected);
+        Scanner::Status update(Second const dt, Car& car, Antenna::Detection const& detection);
 
         //----------------------------------------------------------------------
         //! \brief Return detected parking iff Status == SUCCEEDED.
@@ -253,7 +253,7 @@ private:
     //! \brief Check if the car detects other car.
     //! \return true if a car has been detected by one of sensors.
     //-------------------------------------------------------------------------
-    bool detect();
+    Antenna::Detection const& detect();
 
     //-------------------------------------------------------------------------
     //! \brief Create the trajectory to the given parking spot.
@@ -282,8 +282,8 @@ private:
     //! \brief Trigger for starting searching the first parking slot and
     //! computing the trajectory to enter in.
     std::atomic<bool> m_clignotant{false};
-    //! \brief Has sensor detect a parked vehicle ?
-    bool m_detection = false;
+    //! \brief Has sensor detect a parked vehicle ? Default value is set to invalid
+    Antenna::Detection m_detection;
 };
 
 #endif

@@ -34,21 +34,24 @@ Antenna::Antenna(AntennaBluePrint const& blueprint_, const char* name_,
 //------------------------------------------------------------------------------
 void Antenna::update(Second const dt)
 {
-    sf::Vector2f p;
-
-    m_detection = false;
+    m_detection.valid = false;
     for (auto const& car: m_city.cars()) // TODO m_city.collidables()
     {
-        if (detects(car->obb(), p))
+        if (detects(car->obb(), m_detection.position))
         {
-            m_detection = true;
+            m_detection.valid = true;
+            m_detection.distance = math::distance(m_detection.position, shape.position());
+            std::cout << "******* DETECTION " << m_detection.distance << " P: " << m_detection.position.x << ", " << m_detection.position.x << std::endl;
             return ;
         }
     }
 }
 
 //------------------------------------------------------------------------------
-bool Antenna::detects(sf::RectangleShape const& other, sf::Vector2f& p) const
+bool Antenna::detects(sf::RectangleShape const& other, sf::Vector2<Meter>& position) const
 {
-    return ::collide(shape.obb(), other, p);
+    sf::Vector2f p;
+    const bool res = ::collide(shape.obb(), other, p);
+    position = sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
+    return res;
 }

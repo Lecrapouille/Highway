@@ -51,6 +51,21 @@ class Antenna : public Sensor
 {
 public:
 
+    struct Detection
+    {
+        Detection()
+            : valid(false)
+        {}
+
+        Detection(sf::Vector2<Meter> const& p, Meter const d)
+            : valid(true), position(p), distance(d)
+        {}
+
+        bool valid;
+        sf::Vector2<Meter> position;
+        Meter distance;
+    };
+
     //--------------------------------------------------------------------------
     //! \brief Default constructor: bind a bluiprint and set the sensor rangle.
     //! \param[in] range [m].
@@ -68,7 +83,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Return if a detection occured during \c update().
     //--------------------------------------------------------------------------
-    bool const& detection() const { return m_detection; }
+    Detection const& detection() const { return m_detection; }
 
     //--------------------------------------------------------------------------
     //! \brief Accept a class visiting this instance. The real alogirthm is made
@@ -87,7 +102,7 @@ protected:
     //! \param[inout] p the point of collision.
     //! \return true if the sensor has detected a box.
     //--------------------------------------------------------------------------
-    bool detects(sf::RectangleShape const& other, sf::Vector2f& p) const;
+    bool detects(sf::RectangleShape const& other, sf::Vector2<Meter>& position) const;
 
 public:
 
@@ -96,7 +111,7 @@ public:
 
 private:
 
-    bool m_detection = false;
+    Detection m_detection;
 };
 
 #endif
