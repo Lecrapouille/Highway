@@ -96,6 +96,12 @@ OBJS += $(LIB_OBJS) main.o
 PKG_LIBS += sfml-graphics swipl
 LINKER_FLAGS += -lpthread -ldl
 
+# C++17 filesystem: on older compiler you need
+# the experimental lib
+ifneq "$(GCC_GREATER_V9)" "1"
+LINKER_FLAGS += -lstdc++fs
+endif
+
 ###################################################
 # MacOS X
 #
