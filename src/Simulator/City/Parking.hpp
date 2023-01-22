@@ -63,7 +63,7 @@ struct ParkingBluePrint
 //! methods for creating the simulation more easily (ie creating a parking
 //! world, place parked cars, get spot coordinates ...)
 // ****************************************************************************
-class Parking: public StaticActor
+class Parking: public StaticActor // FIXME add ParkingShape like done with Sensor
 {
 public:
 
@@ -195,6 +195,10 @@ public:
     ParkingBluePrint const blueprint;
     //! \brief Type of slot.
     Parking::Type const type;
+    //! \brief
+    sf::Color initial_color = sf::Color(71, 71, 71);
+    //! \brief
+    sf::Color color = sf::Color(71, 71, 71);
 
 protected:
 

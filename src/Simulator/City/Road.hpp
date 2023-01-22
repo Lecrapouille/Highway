@@ -29,6 +29,12 @@
 #  include <vector>
 #  include <memory>
 
+// https://fr.mathworks.com/help/driving/ref/drivingscenario.road.html
+
+#define COLOR_DRIVING_LANE sf::Color(204, 204, 204)
+#define COLOR_RESTRICTED_LANE sf::Color(150, 143, 158)
+#define COLOR_PARKING_LANE sf::Color(71, 71, 71)
+
 class Car;
 
 enum TrafficSide { LeftHand, RightHand, Max };

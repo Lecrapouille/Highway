@@ -57,7 +57,7 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     SensorShape(std::string const& name_, SensorBluePrint const& blueprint_, sf::Color const& color_)
-        : name(name_), blueprint(blueprint_), color(color_)
+        : name(name_), blueprint(blueprint_), color(color_), initial_color(color_)
     {
         // FIXME size() is defined after in derived class.
         // m_obb.setOrigin(0.0f, m_obb.getSize().y / 2.0f);
@@ -125,6 +125,8 @@ public:
     //! \brief Current car color. Public: to allow to change it for distinguish
     //! car between them or for showing collisions ...
     sf::Color color;
+    //! \brief Memorize the initial color
+    sf::Color const initial_color;
 
 protected:
 
@@ -153,8 +155,6 @@ public:
 class Sensor : public Visitable
 {
 public:
-
-// FIXME enable() / disable() sensor
 
     //--------------------------------------------------------------------------
     //! \brief
@@ -191,6 +191,7 @@ public:
             it->onSensorUpdated(*this);
         }
     }
+
 public:
 
     //! \brief Car's name
@@ -202,7 +203,10 @@ public:
 
 protected:
 
+    //! \brief
     std::vector<SensorObserver*> m_observers;
+    //! \brief
+    sf::Color m_initial_color;
 };
 
 #endif

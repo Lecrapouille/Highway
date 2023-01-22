@@ -58,7 +58,7 @@ void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::Render
 {
     // Draw the parking shape
     sf::RectangleShape shape = parking.obb();
-    shape.setFillColor(sf::Color(178, 174, 174));
+    shape.setFillColor(parking.color);
     shape.setOutlineThickness(0.1f);
     shape.setOutlineColor(sf::Color(255, 161, 7));
 

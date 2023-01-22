@@ -45,9 +45,9 @@ Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
     m_shape.setPosition(float(start.x), float(start.y));
     std::cout << "Lane " << (s == TrafficSide::RightHand ? "right " : "left ") << start.x << ", " << start.y << std::endl;
     if (s == TrafficSide::RightHand)
-        m_shape.setFillColor(sf::Color(159, 155, 155));
+        m_shape.setFillColor(COLOR_DRIVING_LANE);
     else
-        m_shape.setFillColor(sf::Color(178, 174, 174));
+        m_shape.setFillColor(COLOR_RESTRICTED_LANE);
     m_shape.setOutlineThickness(0.1f);
     m_shape.setOutlineColor(sf::Color(255, 161, 7));
 }
