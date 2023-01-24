@@ -75,7 +75,7 @@ Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position, Degree 
     }
 
     std::string name = "ego" + std::to_string(m_ego_id++);
-    m_ego = createCar<Car>(model, name.c_str(), EGO_CAR_COLOR, 0.0_mps / 1.0_s, speed,
+    m_ego = createCar<Car>(model, name.c_str(), EGO_CAR_COLOR, 0.0_mps_sq, speed,
                            position, heading, 0.0_rad);
     return *m_ego;
 }
@@ -93,7 +93,7 @@ Car& City::addCar(const char* model, sf::Vector2<Meter> const& position, Degree 
                   MeterPerSecond const speed, Degree const steering)
 {
     std::string name = "car" + std::to_string(m_car_id++);
-    m_cars.push_back(createCar<Car>(model, name.c_str(), CAR_COLOR, 0.0_mps / 1.0_s,
+    m_cars.push_back(createCar<Car>(model, name.c_str(), CAR_COLOR, 0.0_mps_sq,
                                     speed, position, heading, steering));
     return *m_cars.back();
 }
@@ -120,6 +120,6 @@ Car& City::addGhost(const char* model, sf::Vector2<Meter> const& position, Degre
 {
     std::string name = "ghost" + std::to_string(m_ghost_id++);
     m_ghosts.push_back(createCar<Car>(model, name.c_str(), sf::Color::White,
-                                      0.0_mps / 1.0_s, 0.0_mps, position, heading, steering));
+                                      0.0_mps_sq, 0.0_mps, position, heading, steering));
     return *m_ghosts.back();
 }

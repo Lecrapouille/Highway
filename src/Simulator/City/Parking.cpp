@@ -79,7 +79,7 @@ void Parking::bind(Car& car)
 
     Meter x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
     sf::Vector2<Meter> const offset(x, 0.0_m);
-    car.init(0.0_mps / 1.0_s, 0.0_mps, position() + math::heading(offset, blueprint.angle), heading(), 0.0_rad);
+    car.init(0.0_mps_sq, 0.0_mps, position() + math::heading(offset, blueprint.angle), heading(), 0.0_rad);
 
     //car.bind();
     m_car = &car;

@@ -66,7 +66,7 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
 
     // References
     const MeterPerSecond VMAX = 1.0_mps; // Max speed [m/s]
-    const MeterPerSecondSquared ADES = 1.0_mps / 1.0_s; // Desired acceleration [m/s/s]
+    const MeterPerSecondSquared ADES = 1.0_mps_sq; // Desired acceleration [m/s/s]
 
     // Minimum length of the parallel parking length. See figure 4 "Easy
     // Path Planning and Robust Control for Automatic Parallel Parking" by
@@ -376,7 +376,7 @@ void ParallelTrajectory::generateReferences(Car const& car, Parking const& parki
 
     // Be sure to use basolute values
     assert(VMAX > 0.0_mps);
-    assert(ADES > 0.0_mps / 1.0_s);
+    assert(ADES > 0.0_mps_sq);
 
     // Initial reference to be sure the car starts without speed.
     m_speeds.add(0.0_mps, DURATION_TO_TURN_WHEELS);
