@@ -39,15 +39,28 @@ GUISimulation::GUISimulation(Application& application, std::string const& name,
     m_simulation_view = m_renderer.getDefaultView();
     m_simulation_view.setSize(float(application.width()),
                               -float(application.height()));
-    applyZoom(0.01f); // FIXME
+    m_simulation_view.zoom(0.01f);
+    m_renderer.setView(m_simulation_view);
 }
 
 //------------------------------------------------------------------------------
-void GUISimulation::applyZoom(float const value)
+void GUISimulation::applyZoom(float const delta)
 {
-    m_zoom = value;
-    m_simulation_view.zoom(m_zoom);
-    //m_renderer.setView(m_simulation_view);
+    constexpr float factor = 1.1f;
+    constexpr float inv_factor = 1.0f / factor;
+
+    if (delta < 0.0f)
+    {
+        // Factor > 1 makes the view bigger (objects appear smaller)
+        m_simulation_view.zoom(factor);
+        m_zoom_level *= factor;
+    }
+    else
+    {
+        // Factor < 1 makes the view smaller (objects appear bigger)
+        m_simulation_view.zoom(inv_factor);
+        m_zoom_level *= inv_factor;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -128,8 +141,8 @@ void GUISimulation::onHandleInput()
                           << std::endl;
             }
             break;
-        case sf::Event::MouseWheelMoved:
-            //zoom(m_zoom + float(event.mouseWheel.delta) / 0.1f);
+        case sf::Event::MouseWheelScrolled:
+            applyZoom(event.mouseWheelScroll.delta);
             break;
         case sf::Event::KeyPressed:
             // Leaving the current GUI

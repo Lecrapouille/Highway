@@ -50,11 +50,16 @@ public:
                   std::string const& scenario_path = {});
 
     //-------------------------------------------------------------------------
+    //! \brief Return the zoom level.
+    //-------------------------------------------------------------------------
+    inline float zoom_level() const { return m_zoom_level; }
+
+private:
+
+    //-------------------------------------------------------------------------
     //! \brief Apply the zoom value.
     //-------------------------------------------------------------------------
     inline void applyZoom(float const value);
-
-private:
 
     //-------------------------------------------------------------------------
     //! \brief Pass a text to the simulator to display it inside the messagebox
@@ -109,7 +114,7 @@ private:
     //! \brief For displaying the interface.
     sf::View m_interface_view;
     //! \brief Camera zoom
-    float m_zoom;
+    float m_zoom_level = 1.0f;
     //! \brief Mouse X,Y position within the world coordinate [meter]. You
     //! directly can measure objects [meter] by clicking with mouse in the
     //! window.
