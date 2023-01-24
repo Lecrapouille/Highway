@@ -162,13 +162,13 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
 //! \brief Define conditions to stop the simulation.
 //-----------------------------------------------------------------------------
 static bool halt_simulation_when(Simulator const& simulator)
-{
+{/*
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
                          "Time simulation slipped");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
                          "Ego car is outside the parking");
     HALT_SIMULATION_WHEN(simulator.ego().collided(),
-                         "Ego car collided");
+                         "Ego car collided");*/
     CONTINUE_SIMULATION;
 }
 
@@ -182,7 +182,7 @@ static Car& create_city(Simulator& simulator, City& city)
     std::string parking_type = "epi." + std::to_string(0u); // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
     const Meter parking_width = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).width;
-    const sf::Vector2<Meter> p(97.5_m, 105.0_m); // Initial road position
+    const sf::Vector2<Meter> p(97.0_m, 105.0_m); // Initial road position
     constexpr size_t number_parkings = 5u; // Number of parking slots along the road
 
     // Create roads
@@ -190,7 +190,7 @@ static Car& create_city(Simulator& simulator, City& city)
     const std::array<size_t, TrafficSide::Max> lanes{1u, 2u}; // Number of lanes constituing the road
     const std::vector<sf::Vector2<Meter>> road_centers = {
         p,
-        p + sf::Vector2<Meter>(double(number_parkings) * parking_length, 0.0_m)
+        p + sf::Vector2<Meter>(double(number_parkings) * parking_length, double(number_parkings) * parking_length)
     };
     Road& road1 = city.addRoad(road_centers, road_width, lanes);
 
@@ -211,7 +211,11 @@ static Car& create_city(Simulator& simulator, City& city)
     // Self-parking ego car (dynamic).
     // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
     // The ego is centered on its lane (Y-axis).
-    return customize_ego(simulator, city, city.addEgo("Mini.Cooper", road1.offset(TrafficSide::RightHand, 0u, 0.1, 1.0)));
+    std::cout << "Parking along: " << parking0.position().x << ", " << parking0.position().y << std::endl;
+
+    return customize_ego(simulator, city, city.addEgo("Mini.Cooper",
+    road1.offset(TrafficSide::RightHand, 0u, 0.0, 0.5),
+    road1.heading(TrafficSide::RightHand)));
 }
 
 //-----------------------------------------------------------------------------

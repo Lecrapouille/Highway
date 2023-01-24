@@ -23,6 +23,7 @@
 #  define ROAD_HPP
 
 #  include "Simulator/Actor.hpp"
+#  include "Math/Math.hpp"
 #  include "Math/Units.hpp"
 #  include <SFML/Graphics/RectangleShape.hpp>
 #  include <list>
@@ -47,17 +48,27 @@ struct LaneBluePrint
     //----------------------------------------------------------------------
     //! \brief Set road segment dimensions.
     //! \param[in] l road length [meter].
-    //! \param[in] w road width [meter].
     //! \param[in] a road lane angle [deg].
+    //! \param[in] w road width [meter].
     //----------------------------------------------------------------------
-    LaneBluePrint(Meter const l, Meter const w, Radian const a);
+    LaneBluePrint(Meter const l, Radian const a, Meter const w);
+
+    //----------------------------------------------------------------------
+    //! \brief Set road segment dimensions form initial to final positions.
+    //----------------------------------------------------------------------
+    LaneBluePrint(sf::Vector2<Meter> const& start,
+                  sf::Vector2<Meter> const& stop, Meter const w)
+        : LaneBluePrint(math::distance(start, stop),
+                        math::orientation(start, stop),
+                        w)
+    {}
 
     //! \brief Vehicle length [meter]
     Meter length;
-    //! \brief Vehicle width [meter]
-    Meter width;
     //! \brief Orientation [rad]
     Radian angle;
+    //! \brief Vehicle width [meter]
+    Meter width;
 };
 
 // ****************************************************************************
@@ -91,26 +102,53 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Return the heading [radian] given its traffic side.
+    //! \return the heading of the road if side is TrafficSide::LeftHand else
+    //! return the heading of the road + 180 deg.
     //--------------------------------------------------------------------------
-    sf::RectangleShape const& shape() const
+    inline Radian heading() const
     {
-        return m_shape;
+        if (side == TrafficSide::RightHand)
+            return blueprint.angle;
+        return blueprint.angle + 180.0_deg;
     }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    sf::Vector2<Meter> position() const
-    {
-        sf::Vector2f p(m_shape.getPosition());
-        return { Meter(p.x), Meter(p.y) };
-    }
+    inline sf::RectangleShape const& shape() const { return m_shape; }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the origin position [meter] of the road in the world
+    //! coordinate system.
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> origin() const { return m_start; }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the destination position [meter] of the road in the world
+    //! coordinate system.
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> destination() const { return m_stop; }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the normal of the lane.
+    //! TBD return +/- m_normal depending iff side is TrafficSide::LeftHand ?
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> const& normal() const { return m_normal; }
 
 public:
 
+    //! \brief
     LaneBluePrint const blueprint;
+    //! \brief
     TrafficSide side;
+    //! \brief Initial center position of the road.
+    sf::Vector2<Meter> m_start;
+    //! \brief Final center position of the road.
+    sf::Vector2<Meter> m_stop;
+    //! \brief The unit normal vector to the lane.
+    sf::Vector2<Meter> m_normal;
+    //! \brief
     std::vector<Car*> m_cars;
 
 private:
@@ -142,15 +180,35 @@ public:
     sf::Vector2<Meter> offset(TrafficSide const side, size_t const lane,
                               double const x, double const y);
 
+    //-------------------------------------------------------------------------
+    //! \brief Return the heading [radian] given the traffic side.
+    //-------------------------------------------------------------------------
+    inline Radian const& heading() const { return m_heading; }
+
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Return the heading [radian] given the traffic side.
+    //! \return the heading of the road if side is TrafficSide::LeftHand else
+    //! return the heading of the road + 180 deg.
     //--------------------------------------------------------------------------
-    inline sf::Vector2<Meter> start() const { return m_start; }
+    inline Radian heading(TrafficSide const side) const
+    {
+        return m_lanes[side][0]->heading();
+    }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    inline sf::Vector2<Meter> stop() const { return m_stop; }
+    inline sf::Vector2<Meter> origin() const { return m_start; }
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> destination() const { return m_stop; }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the normal of the road.
+    //--------------------------------------------------------------------------
+    inline sf::Vector2<Meter> normal() const { return math::normal(m_stop - m_start); }
 
 #if 0
     //--------------------------------------------------------------------------
@@ -160,14 +218,6 @@ public:
     //! when constructing the simulation world.
     //--------------------------------------------------------------------------
     //bool bind(Car& car, size_t const way, std::Vector2<Meter> const& offset);
-
-    //-------------------------------------------------------------------------
-    //! \brief Const getter: return the oriented bounding box of the parking.
-    //-------------------------------------------------------------------------
-    inline Radian heading() const
-    {
-        return blueprint.angle;
-    }
 
     //--------------------------------------------------------------------------
     //! \brief Get Cars on the road.
@@ -184,6 +234,8 @@ private:
     sf::Vector2<Meter> m_stop;
     //! \brief Width for each lanes
     Meter m_width;
+    //! \brief
+    Radian m_heading;
 
 public:
 

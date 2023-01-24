@@ -27,8 +27,8 @@
 static std::mt19937 rng;
 
 //------------------------------------------------------------------------------
-LaneBluePrint::LaneBluePrint(Meter const l, Meter const w, Radian const a)
-    : length(l), width(w), angle(a)
+LaneBluePrint::LaneBluePrint(Meter const l, Radian const a, Meter const w)
+    : length(l), angle(a), width(w)
 {
     // std::cout << "Lane l: " << l << " w: " << w <<  " a: " << a << std::endl;
 }
@@ -36,14 +36,15 @@ LaneBluePrint::LaneBluePrint(Meter const l, Meter const w, Radian const a)
 //------------------------------------------------------------------------------
 Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
            Meter const width, TrafficSide s)
-    : blueprint(math::distance(start, stop), width, math::orientation(start, stop)),
-      side(s), m_shape(sf::Vector2f(float(blueprint.length.value()),
-                                    float(blueprint.width.value())))
+    : blueprint(start, stop, width), side(s), m_start(start), m_stop(stop),
+      m_normal(math::normal(stop - start)),
+      m_shape(sf::Vector2f(float(blueprint.length.value()),
+                           float(blueprint.width.value())))
 {
     m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0)));
     m_shape.setRotation(float(Degree(blueprint.angle)));
     m_shape.setPosition(float(start.x), float(start.y));
-    std::cout << "Lane " << (s == TrafficSide::RightHand ? "right " : "left ") << start.x << ", " << start.y << std::endl;
+    std::cout << "  Lane " << (s == TrafficSide::RightHand ? "right " : "left ") << start.x << ", " << start.y << std::endl;
     if (s == TrafficSide::RightHand)
         m_shape.setFillColor(COLOR_DRIVING_LANE);
     else
@@ -55,30 +56,50 @@ Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
 //------------------------------------------------------------------------------
 Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
            Meter const width, std::array<size_t, TrafficSide::Max> const& lanes)
-    : m_start(centers[0]), m_stop(centers[1]), m_width(width)
+    : m_start(centers[0]), m_stop(centers[1]), m_width(width),
+      m_heading(math::orientation(centers[0], centers[1]))
 {
-    std::cout << "Road P " << m_start.x << ", " << m_start.y << " W " << width << std::endl;
+    std::cout << "Road (start; " << m_start.x << ", " << m_start.y
+              << "), (stop " << m_stop.x << ", " << m_stop.y << "),"
+              << " (width: " << width << "):"
+              << std::endl;
+
+    // Allocate memory. FIXME manage lanes[] with 0 size
     size_t side = TrafficSide::Max;
     while (side--)
     {
-        std::cout << "  Side " << side << ": " << lanes[side] << " lane" << std::endl;
-        m_lanes[side].resize(lanes[side]); // FIXME manage 0 size
+        m_lanes[side].resize(lanes[side]);
     }
 
-    for (size_t i = 0u; i < lanes[TrafficSide::RightHand]; i++)
+    // Road normal needed for translating its lanes.
+    sf::Vector2<Meter> n = normal();
+
+    // The center of the lane is offseted relatively from the center of the road by 0.5 * lane width
+    sf::Vector2<Meter> center_offset = sf::Vector2<Meter>(n.x * 0.5 * width.value(), n.y * 0.5 * width.value());
+
+    // Translate lanes by their width along the normal
+    sf::Vector2<Meter> lane_offset = sf::Vector2<Meter>(n.x * width.value(), n.y * width.value());
+
+    // Create the right-hand lanes
+    sf::Vector2<Meter> start = m_start - center_offset;
+    sf::Vector2<Meter> stop = m_stop - center_offset;
+    size_t i = lanes[TrafficSide::RightHand];
+    while (i--)
     {
-        m_lanes[TrafficSide::RightHand][i] =
-            std::make_unique<Lane>(sf::Vector2<Meter>(m_start.x, m_start.y - double(i) * width - 0.5 * width),
-                                   sf::Vector2<Meter>(m_stop.x, m_stop.y - double(i) * width - 0.5 * width),
-                                   width, TrafficSide::RightHand);
+        m_lanes[TrafficSide::RightHand][i] = std::make_unique<Lane>(start, stop, width, TrafficSide::RightHand);
+        start = start - lane_offset;
+        stop = stop - lane_offset;
     }
 
-    for (size_t i = 0u; i < lanes[TrafficSide::LeftHand]; i++)
+    // Create the left-hand lanes
+    start = m_start + center_offset;
+    stop = m_stop + center_offset;
+    i = lanes[TrafficSide::LeftHand];
+    while (i--)
     {
-        m_lanes[TrafficSide::LeftHand][i] =
-            std::make_unique<Lane>(sf::Vector2<Meter>(m_start.x, m_start.y + double(i) * width + 0.5 * width),
-                                   sf::Vector2<Meter>(m_stop.x, m_stop.y + double(i) * width + 0.5 * width),
-                                   width, TrafficSide::LeftHand);
+        m_lanes[TrafficSide::LeftHand][i] = std::make_unique<Lane>(start, stop, width, TrafficSide::LeftHand);
+        start = start + lane_offset;
+        stop = stop + lane_offset;
     }
 }
 
@@ -86,21 +107,23 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
 sf::Vector2<Meter> Road::offset(TrafficSide const side, size_t const desired_lane,
                                 double const x, double const y)
 {
-    assert((x >= 0.0) && (x <= 1.0) && "x shall be a percent");
-    assert((y >= 0.0) && (y <= 1.0) && "y shall be a percent");
+    assert((x >= 0.0) && (x <= 1.0) && "x shall be a percent [0.0 .. 1.0]");
+    assert((y >= 0.0) && (y <= 1.0) && "y shall be a percent [0.0 .. 1.0]");
 
-    Meter const offset_x = math::lerp(m_start.x, m_stop.x, x);
-    Meter const offset_y = math::lerp(0.0_m, m_width, y);
-    size_t const lane = math::constrain(desired_lane, size_t(0), m_lanes[side].size());
+    // Get the desired lane with array index verification
+    size_t const i = math::constrain(desired_lane, size_t(0), m_lanes[side].size());
+    Lane const& lane = *m_lanes[side][i];
 
-    if (side == TrafficSide::RightHand)
-    {
-        return { offset_x, m_start.y - offset_y - double(lane) * m_width };
-    }
-    else
-    {
-        return { offset_x, m_start.y + offset_y + double(lane) * m_width };
-    }
+    // Compute offset along the lane
+    Meter const w = (side == TrafficSide::RightHand) ? -0.5 * lane.blueprint.width
+                                                     : 0.5 * lane.blueprint.width;
+    sf::Vector2<Meter> const offset(
+        math::lerp(0.0_m, lane.blueprint.length, x),
+        math::lerp(-w, w, y)
+    );
+
+    sf::Vector2<Meter> const lane_offset = math::heading(offset, lane.blueprint.angle);
+    return lane.origin() + lane_offset;
 }
 
 #if 0

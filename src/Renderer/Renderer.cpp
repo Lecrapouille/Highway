@@ -37,7 +37,7 @@ void Renderer::draw(Lane const& lane, sf::RenderTarget& target, sf::RenderStates
     sf::RectangleShape const& shape = lane.shape();
     target.draw(shape, states);
     // Draw the origin of the lane
-    target.draw(Circle(lane.position(), 0.01_m, sf::Color::Black, 8u), states);
+    target.draw(Circle(lane.origin(), 0.01_m, sf::Color::Black, 8u), states);
 }
 
 //------------------------------------------------------------------------------
@@ -51,6 +51,8 @@ void Renderer::draw(Road const& road, sf::RenderTarget& target, sf::RenderStates
             draw(*it, target, states);
         }
     }
+    // Draw the origin of the road
+    target.draw(Circle(road.origin(), 0.01_m, sf::Color::Red, 8u), states);
 }
 
 //------------------------------------------------------------------------------

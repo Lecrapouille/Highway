@@ -47,7 +47,7 @@ class City
 {
 public:
 
-    City();
+    City(/*TrafficSide const side*/);
 
     //-------------------------------------------------------------------------
     //! \brief Reset the simulation states, remove entities: parking, cars, ego
