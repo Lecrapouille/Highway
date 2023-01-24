@@ -134,6 +134,8 @@ private:
         //! detected.
         sf::Vector2<Meter> m_position = sf::Vector2<Meter>(0.0_m, 0.0_m);
         //! \brief Estimation of the empty spot length.
+        Meter m_slot_length = 0.0_m;
+        //! \brief Total vehicle distance since searching for a parking slot
         Meter m_distance = 0.0_m;
         //! \brief Memorize the parking spot once detected.
         std::unique_ptr<Parking> m_parking = nullptr;

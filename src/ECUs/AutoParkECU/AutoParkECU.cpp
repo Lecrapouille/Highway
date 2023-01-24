@@ -38,9 +38,10 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
 
     // This condition is purely for the simulation: is the ego car outside the
     // simulation game (parking area) ?
-    if (car.position().x >= 140.0_m) // out of parking FIXME a remplacer par la distance parcourue
+    m_distance += car.speed() * dt;
+    if (m_distance >= 30.0_m)
     {
-        std::cout << "  Outside parking" << std::endl;
+        std::cout << "  Max distance reached: coukd not found parking slot" << std::endl;
         m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_NOT_FOUND;
     }
 
@@ -48,14 +49,12 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
     {
     case AutoParkECU::Scanner::States::EMPTY_SPOT_NOT_FOUND:
         // The car did not found the parking spot: reset states.
-        car.refSpeed(0.0_mps);
         return AutoParkECU::Scanner::Status::FAILED;
 
     case AutoParkECU::Scanner::States::IDLE:
         // The car was stopped and now it has to drive along parking spots and
         // scan parked cars to find the first empty parking spot.
-        car.refSpeed(2.0_mps);
-        car.refSteering(0.0_deg);
+        m_slot_length = 0.0_m;
         m_distance = 0.0_m;
         m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         return AutoParkECU::Scanner::Status::IN_PROGRESS;
@@ -77,32 +76,30 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
         {
             m_state = AutoParkECU::Scanner::States::DETECT_SECOND_CAR;
         }
-        else if (m_distance >= Lmin)
+        else if (m_slot_length >= Lmin)
         {
             // two consecutive empty spots: avoid to drive to the next parked
             // car do the maneuver directly
             m_state = AutoParkECU::Scanner::States::DETECT_SECOND_CAR;
         }
 
-        m_distance += car.speed() * dt;
+        m_slot_length += car.speed() * dt;
         return AutoParkECU::Scanner::Status::IN_PROGRESS;
 
     case AutoParkECU::Scanner::States::DETECT_SECOND_CAR:
-        if (detection.valid && (m_distance <= car.blueprint.length))
+        if (detection.valid && (m_slot_length <= car.blueprint.length))
         {
             // Too small length: continue scanning parked cars
             std::cout << "Scan: No way to park at X: " << m_position.x
-                      << " because distance is too short (" << m_distance << " m)" << std::endl;
+                      << " because distance is too short (" << m_slot_length << " m)" << std::endl;
             m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         }
-        else if (detection.valid || m_distance >= Lmin)
+        else if (detection.valid || m_slot_length >= Lmin)
         {
-            car.refSpeed(0.0_mps);
-
             // TODO Missing detection of the type of parking type.
             // https://github.com/Lecrapouille/Highway/issues/32
             Meter pw = BluePrints::get<ParkingBluePrint>("epi.0").width;
-            ParkingBluePrint dim(m_distance, pw, 0u);
+            ParkingBluePrint dim(m_slot_length, pw, 0u);
             m_parking = std::make_unique<Parking>(dim, sf::Vector2<Meter>(m_position.x, m_position.y - detection.distance));
             std::cout << "Scan: Parking spot detected: " << *m_parking << std::endl;
             m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND;
@@ -113,7 +110,6 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
 
     case AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND:
         // The parking was found, stay in this state and return the parking
-        car.refSpeed(0.0_mps);
         return AutoParkECU::Scanner::Status::SUCCEEDED;
     }
 
@@ -131,7 +127,6 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
 void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 {
     States state = m_state;
-    Antenna::Detection const& detection = ecu.detect();
 
     // Has the driver aborted the auto-parking system ?
     if ((m_state != AutoParkECU::StateMachine::States::IDLE) &&
@@ -153,6 +148,8 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
                 // The car is not parked: start scanning parked cars
                 m_state = AutoParkECU::StateMachine::States::SCAN_PARKING_SPOTS;
                 m_scanner.start();
+                ecu.m_ego.refSteering(0.0_deg);
+                ecu.m_ego.refSpeed(2.0_mps);
             }
             else
             {
@@ -165,16 +162,19 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     case AutoParkECU::StateMachine::States::SCAN_PARKING_SPOTS:
         {
             // The car is scanning parked cars to find an empty parking spot
+            Antenna::Detection const& detection = ecu.detect();
             AutoParkECU::Scanner::Status scanning = m_scanner.update(dt, ecu.m_ego, detection);
 
             // Empty parking spot detected
             if (scanning == AutoParkECU::Scanner::Status::SUCCEEDED)
             {
+                ecu.m_ego.refSpeed(0.0_mps);
                 m_state = AutoParkECU::StateMachine::States::COMPUTE_ENTERING_TRAJECTORY;
             }
             // Failed to find an empty parking spot
             else if (scanning == AutoParkECU::Scanner::Status::FAILED)
             {
+                ecu.m_ego.refSpeed(0.0_mps);
                 m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
             }
             else // scanning == Scan::Status::IN_PROGRESS
@@ -289,12 +289,16 @@ void AutoParkECU::operator()(Antenna& antenna)
                 return ;
             break;
         default:
+            antenna.shape.color = antenna.shape.initial_color;
             return;
     }
 
     if (antenna.detection().valid)
     {
         m_detection = antenna.detection();
+        m_detection.distance = 5.0_m;
+        //std::cout << "******* DETECTION " << m_detection.distance << " P: " << m_detection.position.x << ", " << m_detection.position.x << std::endl;
+
         antenna.shape.color = sf::Color::Red;
     }
     else

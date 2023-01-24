@@ -133,6 +133,14 @@ inline Radian orientation(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const&
 }
 
 //------------------------------------------------------------------------------
+//! \brief Return the right hand perpendicular vector
+inline sf::Vector2<Meter> normal(sf::Vector2<Meter> const& v)
+{
+   double const d = units::math::sqrt(v.x * v.x + v.y * v.y).value();
+   return sf::Vector2<Meter>(-v.y / d, v.x / d);
+}
+
+//------------------------------------------------------------------------------
 //! \brief Return the length of an arc.
 //! \param[in] angle [radian].
 //! \param[in] radius [meter].

@@ -18,9 +18,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
-// SAT collision check and resolution
-// MIT license
+// Collision check and resolution using the Separating Axis Theorem
 // https://gist.github.com/eliasdaler/502b54fcf1b515bcc50360ce874e81bc
+// MIT license
 
 #include <array>
 #include <cassert>
