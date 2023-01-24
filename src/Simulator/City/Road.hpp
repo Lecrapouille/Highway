@@ -103,15 +103,9 @@ public:
 
     //--------------------------------------------------------------------------
     //! \brief Return the heading [radian] given its traffic side.
-    //! \return the heading of the road if side is TrafficSide::LeftHand else
-    //! return the heading of the road + 180 deg.
+    //! \return the heading of the road.
     //--------------------------------------------------------------------------
-    inline Radian heading() const
-    {
-        if (side == TrafficSide::RightHand)
-            return blueprint.angle;
-        return blueprint.angle + 180.0_deg;
-    }
+    inline Radian heading() const { return blueprint.angle; }
 
     //--------------------------------------------------------------------------
     //! \brief
@@ -178,7 +172,7 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     sf::Vector2<Meter> offset(TrafficSide const side, size_t const lane,
-                              double const x, double const y);
+                              double const x, double const y) const;
 
     //-------------------------------------------------------------------------
     //! \brief Return the heading [radian] given the traffic side.

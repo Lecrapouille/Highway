@@ -44,7 +44,8 @@ Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
     m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0)));
     m_shape.setRotation(float(Degree(blueprint.angle)));
     m_shape.setPosition(float(start.x), float(start.y));
-    std::cout << "  Lane " << (s == TrafficSide::RightHand ? "right " : "left ") << start.x << ", " << start.y << std::endl;
+    std::cout << "  Lane " << (s == TrafficSide::RightHand ? "right " : "left ")
+              << start.x << ", " << start.y << std::endl;
     if (s == TrafficSide::RightHand)
         m_shape.setFillColor(COLOR_DRIVING_LANE);
     else
@@ -97,7 +98,7 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
     i = lanes[TrafficSide::LeftHand];
     while (i--)
     {
-        m_lanes[TrafficSide::LeftHand][i] = std::make_unique<Lane>(start, stop, width, TrafficSide::LeftHand);
+        m_lanes[TrafficSide::LeftHand][i] = std::make_unique<Lane>(stop, start, width, TrafficSide::LeftHand);
         start = start + lane_offset;
         stop = stop + lane_offset;
     }
@@ -105,7 +106,7 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
 
 //------------------------------------------------------------------------------
 sf::Vector2<Meter> Road::offset(TrafficSide const side, size_t const desired_lane,
-                                double const x, double const y)
+                                double const x, double const y) const
 {
     assert((x >= 0.0) && (x <= 1.0) && "x shall be a percent [0.0 .. 1.0]");
     assert((y >= 0.0) && (y <= 1.0) && "y shall be a percent [0.0 .. 1.0]");
@@ -115,8 +116,7 @@ sf::Vector2<Meter> Road::offset(TrafficSide const side, size_t const desired_lan
     Lane const& lane = *m_lanes[side][i];
 
     // Compute offset along the lane
-    Meter const w = (side == TrafficSide::RightHand) ? -0.5 * lane.blueprint.width
-                                                     : 0.5 * lane.blueprint.width;
+    Meter const w = 0.5 * lane.blueprint.width;
     sf::Vector2<Meter> const offset(
         math::lerp(0.0_m, lane.blueprint.length, x),
         math::lerp(-w, w, y)
