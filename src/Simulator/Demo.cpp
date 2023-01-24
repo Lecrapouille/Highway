@@ -106,7 +106,7 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
 {
     // Monitor the Ego car. You can monitor other states if needed.
     simulator.monitor.observe(car.position().x, car.position().y, car.speed())
-                     .header("Ego X-coord [m]", "Ego Y-coord [m]", "Ego longitudinal speed [mps]");
+            .header("Ego X-coord [m]", "Ego Y-coord [m]", "Ego longitudinal speed [mps]");
 
     // Add ECU for doing autonomous parking.
     // FIXME how to avoid adding car (shall be implicit)
@@ -162,13 +162,13 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
 //! \brief Define conditions to stop the simulation.
 //-----------------------------------------------------------------------------
 static bool halt_simulation_when(Simulator const& simulator)
-{/*
+{
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
                          "Time simulation slipped");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
                          "Ego car is outside the parking");
     HALT_SIMULATION_WHEN(simulator.ego().collided(),
-                         "Ego car collided");*/
+                         "Ego car collided");
     CONTINUE_SIMULATION;
 }
 
@@ -208,14 +208,13 @@ static Car& create_city(Simulator& simulator, City& city)
     city.addCar("Audi.A6", parking1);
     city.addCar("Audi.A6", parking3);
 
+    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.5, 0.5);
+
     // Self-parking ego car (dynamic).
     // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
     // The ego is centered on its lane (Y-axis).
-    std::cout << "Parking along: " << parking0.position().x << ", " << parking0.position().y << std::endl;
-
-    return customize_ego(simulator, city, city.addEgo("Mini.Cooper",
-    road1.offset(TrafficSide::RightHand, 0u, 0.0, 0.5),
-    road1.heading(TrafficSide::RightHand)));
+    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.5, 0.0);
+    return customize_ego(simulator, city, ego);
 }
 
 //-----------------------------------------------------------------------------

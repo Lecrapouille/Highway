@@ -85,8 +85,32 @@ public:
                 Degree const heading = 0.0_deg, MeterPerSecond const speed = 0.0_mps);
 
     //-------------------------------------------------------------------------
-    //! \brief Create or replace the ego vehicle (the autonomous vehicle). The
-    //! instance is hold by the simulation instance.
+    //! \brief Create or replace the ego vehicle (the autonomous vehicle) on a
+    //! road. The instance is hold by the simulation instance.
+    //! \fixme check against collision.
+    //! \note: Only one ego vehicle is managed for the moment.
+    //! \param[in] model: non NULL string of the mark of the vehicle for its
+    //! dimension.
+    //! \param[in] road: the road to place the vehicle on.
+    //! \param[in] side: the traffic side to place the vehicle on.
+    //! \param[in] lane: the lane to place the vehicle on.
+    //! \param[in] offset_long: the percentage of placement of the vehicle along
+    //! the logitudinal axis of the lane. 0.0: place the vehicle at the initial
+    //! position of the lane. 0.5: place in the middle of the road. 1.0: place
+    //! at the end of the lane.
+    //! \param[in] offset_lat: the percentage of placement of the vehicle along
+    //! the lateral axis of the lane. 0.0: place the vehicle at the right of the
+    //! lane. 0.5: place in the middle of the road. 1.0: place at the left of the
+    //! lane.
+    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
+    //! \return the reference of the created vehicle.
+    //-------------------------------------------------------------------------
+    Car& addEgo(const char* model, Road const& road, TrafficSide const side,
+                size_t const lane, double const offset_long, double const offset_lat,
+                MeterPerSecond const speed = 0.0_mps);
+
+    //-------------------------------------------------------------------------
+    //! \brief Create a new car. The instance is hold by the simulation instance.
     //! \note: Only one ego vehicle is managed for the moment.
     //! \param[in] model: non NULL string of the mark of the vehicle for its
     //! dimension.
@@ -100,6 +124,31 @@ public:
     //-------------------------------------------------------------------------
     Car& addCar(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
                 MeterPerSecond const speed, Degree const steering = 0.0_deg);
+
+    //-------------------------------------------------------------------------
+    //! \brief Add a new car and place it on a road. The instance is hold by
+    //! the simulation instance.
+    //! \fixme check against collision.
+    //! \note: Only one ego vehicle is managed for the moment.
+    //! \param[in] model: non NULL string of the mark of the vehicle for its
+    //! dimension.
+    //! \param[in] road: the road to place the vehicle on.
+    //! \param[in] side: the traffic side to place the vehicle on.
+    //! \param[in] lane: the lane to place the vehicle on.
+    //! \param[in] offset_long: the percentage of placement of the vehicle along
+    //! the logitudinal axis of the lane. 0.0: place the vehicle at the initial
+    //! position of the lane. 0.5: place in the middle of the road. 1.0: place
+    //! at the end of the lane.
+    //! \param[in] offset_lat: the percentage of placement of the vehicle along
+    //! the lateral axis of the lane. 0.0: place the vehicle at the right of the
+    //! lane. 0.5: place in the middle of the road. 1.0: place at the left of the
+    //! lane.
+    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
+    //! \return the reference of the created vehicle.
+    //-------------------------------------------------------------------------
+    Car& addCar(const char* model, Road const& road, TrafficSide const side,
+                size_t const lane, double const offset_long, double const offset_lat,
+                MeterPerSecond const speed = 0.0_mps);
 
     //-------------------------------------------------------------------------
     //! \brief Create a parked car. The car instance is hold by the simulation

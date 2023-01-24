@@ -81,6 +81,14 @@ Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position, Degree 
 }
 
 //------------------------------------------------------------------------------
+Car& City::addEgo(const char* model, Road const& road, TrafficSide const side,
+                  size_t const lane, double const offset_long, double const offset_lat,
+                  MeterPerSecond const speed)
+{
+    return addEgo(model, road.offset(side, lane, offset_long, offset_lat), road.heading(side), speed);
+}
+
+//------------------------------------------------------------------------------
 Car& City::addCar(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
                   MeterPerSecond const speed, Degree const steering)
 {
@@ -88,6 +96,14 @@ Car& City::addCar(const char* model, sf::Vector2<Meter> const& position, Degree 
     m_cars.push_back(createCar<Car>(model, name.c_str(), CAR_COLOR, 0.0_mps / 1.0_s,
                                     speed, position, heading, steering));
     return *m_cars.back();
+}
+
+//------------------------------------------------------------------------------
+Car& City::addCar(const char* model, Road const& road, TrafficSide const side,
+                  size_t const lane, double const offset_long, double const offset_lat,
+                  MeterPerSecond const speed)
+{
+    return addCar(model, road.offset(side, lane, offset_long, offset_lat), road.heading(side), speed);
 }
 
 //------------------------------------------------------------------------------
