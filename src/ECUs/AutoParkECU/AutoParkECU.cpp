@@ -146,6 +146,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
             if (true) // TODO car.isParked() https://github.com/Lecrapouille/Highway/issues/28
             {
                 // The car is not parked: start scanning parked cars
+                ecu.m_ego.showSensors(true);
                 m_state = AutoParkECU::StateMachine::States::SCAN_PARKING_SPOTS;
                 m_scanner.start();
                 ecu.m_ego.refSteering(0.0_deg);
@@ -235,6 +236,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
         m_state = AutoParkECU::StateMachine::States::IDLE;
         ecu.m_ego.turningIndicator(false, false);
         ecu.m_ego.refSpeed(0.0_mps);
+        ecu.m_ego.showSensors(false);
         break;
     }
 

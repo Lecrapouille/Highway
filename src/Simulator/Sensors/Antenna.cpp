@@ -41,7 +41,7 @@ void Antenna::update(Second const dt)
         {
             m_detection.valid = true;
             m_detection.distance = math::distance(m_detection.position, shape.position());
-            std::cout << "******* DETECTION " << m_detection.distance << " P: " << m_detection.position.x << ", " << m_detection.position.x << std::endl;
+            //std::cout << "******* DETECTION " << m_detection.distance << " P: " << m_detection.position.x << ", " << m_detection.position.x << std::endl;
             return ;
         }
     }

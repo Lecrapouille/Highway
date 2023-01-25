@@ -74,7 +74,7 @@ static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
     for (auto const& bp: antenna_blueprints)
     {
         Antenna& antenna = car.addSensor<Antenna, AntennaBluePrint>(bp.second, bp.first, city, sf::Color::Blue);
-        antenna.renderable = true; // Default param. Set false to hide it
+        //antenna.renderable = true; // Default param. Set false to hide it
         ecu.observe(antenna); // Antenna will notify the ECU
     }
 
@@ -91,9 +91,11 @@ static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
     for (auto const& bp: radar_blueprints)
     {
         Radar& radar = car.addSensor<Radar, RadarBluePrint>(bp.second, "radar", city, sf::Color::Red);
-        radar.renderable = true;
+        //radar.renderable = true;
         // ecu.observe(radar);
     }
+
+    car.showSensors(false);
 }
 
 //-----------------------------------------------------------------------------

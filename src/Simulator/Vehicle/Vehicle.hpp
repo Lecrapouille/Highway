@@ -102,6 +102,19 @@ public:
     }
 
     //-------------------------------------------------------------------------
+    //! \brief Shall vehicle sensor be rendered ? Call this method for i.e.,
+    //! for debugging or for showing the ECU is powered on.
+    //! \param[in] enable if set true then sensor are rendered else not.
+    //-------------------------------------------------------------------------
+    void showSensors(bool const enable = true)
+    {
+        for (auto& it: m_sensors)
+        {
+            it->renderable = enable;
+        }
+    }
+
+    //-------------------------------------------------------------------------
     //! \brief Add a new ECU to the vehicle. Pass arguments to its constructor.
     //! \pre do not call during the update() method since iterator for m_ecu
     //! will be errneous.
