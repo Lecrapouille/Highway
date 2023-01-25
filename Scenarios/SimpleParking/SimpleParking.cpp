@@ -121,11 +121,11 @@ Car& create_city(City& city)
     // Create parallel or perpendicular or diagnoal parking slots
     const int angle = 0u;
     std::string dim = "epi." + std::to_string(angle);
-    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m)); // .attachTo(road1, offset);
-    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta());
-    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta());
-    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta());
-    /*Parking& parking4 =*/ city.addParking(dim.c_str(), parking3.position() + parking3.delta());
+    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m), 0.0_deg); // .attachTo(road1, offset);
+    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta(), 0.0_deg);
+    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta(), 0.0_deg);
+    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta(), 0.0_deg);
+    /*Parking& parking4 =*/ city.addParking(dim.c_str(), parking3.position() + parking3.delta(), 0.0_deg);
 
     // Add parked cars (static)
     city.addCar("Renault.Twingo", parking0);

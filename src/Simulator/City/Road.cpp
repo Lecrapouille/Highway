@@ -108,9 +108,6 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
 sf::Vector2<Meter> Road::offset(TrafficSide const side, size_t const desired_lane,
                                 double const x, double const y) const
 {
-    assert((x >= 0.0) && (x <= 1.0) && "x shall be a percent [0.0 .. 1.0]");
-    assert((y >= 0.0) && (y <= 1.0) && "y shall be a percent [0.0 .. 1.0]");
-
     // Get the desired lane with array index verification
     size_t const i = math::constrain(desired_lane, size_t(0), m_lanes[side].size());
     Lane const& lane = *m_lanes[side][i];

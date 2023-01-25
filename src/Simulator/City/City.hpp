@@ -67,7 +67,37 @@ public:
     //! the world coordinates.
     //! \return the reference of the created parking.
     //-------------------------------------------------------------------------
-    Parking& addParking(const char* type, sf::Vector2<Meter> const& position);
+    Parking& addParking(const char* type, sf::Vector2<Meter> const& position,
+                        Radian const heading);
+
+    //-------------------------------------------------------------------------
+    //! \brief Add a new parking slot next to the given one. The
+    //! parking instance is hold by the simulation instance.
+    //! \param[in] parking: previous parking slot.
+    //! \return the reference of the created parking.
+    //-------------------------------------------------------------------------
+    Parking& addParking(Parking const& parking);
+
+    //-------------------------------------------------------------------------
+    //! \brief Add a parking slot along a road. The parking instance is hold by
+    //! the simulation instance.
+    //! \param[in] type: non NULL string of the mark of the vehicle for its
+    //! dimension.
+    //! \param[in] road: the road to place the vehicle on.
+    //! \param[in] side: the traffic side to place the vehicle on.
+    //! \param[in] offset_long: the percentage of placement of the vehicle along
+    //! the logitudinal axis of the lane. 0.0: place the vehicle at the initial
+    //! position of the lane. 0.5: place in the middle of the road. 1.0: place
+    //! at the end of the lane.
+    //! \param[in] offset_lat: the percentage of placement of the vehicle along
+    //! the lateral axis of the lane. 0.0: place the vehicle at the right of the
+    //! lane. 0.5: place in the middle of the road. 1.0: place at the left of the
+    //! lane.
+    //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
+    //! \return the reference of the created vehicle.
+    //-------------------------------------------------------------------------
+    Parking& addParking(const char* type, Road const& road, TrafficSide const side,
+                        double const offset_long, double const offset_lat = 0.0f);
 
     //-------------------------------------------------------------------------
     //! \brief Create or replace the ego vehicle (the autonomous vehicle). The

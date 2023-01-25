@@ -24,14 +24,16 @@
 #include "Vehicle/Car.hpp"
 
 //------------------------------------------------------------------------------
-ParkingBluePrint::ParkingBluePrint(Meter const l, Meter const w, size_t const a)
-    : length(l), width(w), angle(Degree(float(a))), deg(a)
+ParkingBluePrint::ParkingBluePrint(Meter const l, Meter const w, Degree const a)
+    : length(l), width(w), angle(a)
 {}
 
 //------------------------------------------------------------------------------
-static Parking::Type convert(size_t angle) // [deg]
+static Parking::Type convert(Degree const angle)
 {
-    switch (angle)
+    size_t a = size_t(angle.value());
+
+    switch (a)
     {
     case 0u:
         return Parking::Type::Parallel;
@@ -50,12 +52,13 @@ static Parking::Type convert(size_t angle) // [deg]
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position)
-    : blueprint(bp), type(convert(bp.deg)),
-      m_shape(sf::Vector2f(float(bp.length.value()), float(bp.width.value())))
+Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position, Radian const heading)
+    : blueprint(bp), type(convert(bp.angle)),
+      m_shape(sf::Vector2f(float(bp.length.value()), float(bp.width.value()))),
+      m_heading(heading)
 {
     m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value() / 2.0)));
-    m_shape.setRotation(float(Degree(bp.angle)));
+    m_shape.setRotation(-float(Degree(bp.angle + heading)));
     m_shape.setPosition(float(position.x), float(position.y));
     m_shape.setFillColor(sf::Color::White);
     m_shape.setOutlineThickness(OUTLINE_THICKNESS);
@@ -63,8 +66,8 @@ Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position)
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingBluePrint const& d, sf::Vector2<Meter> const& p, Car& car)
-    : Parking(d, p)
+Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position, Radian const heading, Car& car)
+    : Parking(bp, position, heading)
 {
     m_car = &car;
 }
@@ -77,9 +80,11 @@ void Parking::bind(Car& car)
     //if (m_car != nullptr)
     //    throw "Car already bound on parking spot";
 
+    // Center the car in the parking slot
     Meter x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
     sf::Vector2<Meter> const offset(x, 0.0_m);
-    car.init(0.0_mps_sq, 0.0_mps, position() + math::heading(offset, blueprint.angle), heading(), 0.0_rad);
+
+    car.init(0.0_mps_sq, 0.0_mps, position() + math::heading(offset, blueprint.angle + heading()), heading(), 0.0_rad);
 
     //car.bind();
     m_car = &car;

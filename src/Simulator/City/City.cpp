@@ -59,10 +59,28 @@ Road& City::addRoad(std::vector<sf::Vector2<Meter>> const& centers,
 }
 
 //------------------------------------------------------------------------------
-Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position)
+Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position,
+                          Radian const heading)
 {
-    m_parkings.push_back(std::make_unique<Parking>(BluePrints::get<ParkingBluePrint>(type), position));
+    m_parkings.push_back(std::make_unique<Parking>(BluePrints::get<ParkingBluePrint>(type), position, heading));
     return *m_parkings.back();
+}
+
+//------------------------------------------------------------------------------
+Parking& City::addParking(const char* type, Road const& road, TrafficSide const side,
+                          double const offset_long, double const offset_lat)
+{
+    // FIXME: ugly! Width ratio between road and parking because their origin are center
+    auto const r = 0.5 * (road.width() / BluePrints::get<ParkingBluePrint>(type).width);
+
+    return addParking(type, road.offset(side, 0u, offset_long, offset_lat - r), road.heading(side));
+}
+
+//------------------------------------------------------------------------------
+Parking& City::addParking(Parking const& parking) //, double const offset_long, double const offset_lat)
+{
+    std::string type = "epi." + std::to_string(size_t(parking.blueprint.angle.value()));
+    return addParking(type.c_str(), parking.position() + parking.delta(), parking.heading());
 }
 
 //------------------------------------------------------------------------------

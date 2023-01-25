@@ -45,16 +45,14 @@ struct ParkingBluePrint
     //! \param[in] a parking lane angle [deg] (0°: parallel, 90°:
     //! perpendicular).
     //----------------------------------------------------------------------
-    ParkingBluePrint(Meter const l, Meter const w, size_t const a);
+    ParkingBluePrint(Meter const l, Meter const w, Degree const a);
 
     //! \brief Vehicle length [meter]
     Meter length;
     //! \brief Vehicle width [meter]
     Meter width;
-    //! \brief Orientation [rad]
-    Radian angle;
     //! \brief Orientation [deg]
-    size_t deg;
+    Degree angle;
 };
 
 // ****************************************************************************
@@ -86,7 +84,8 @@ public:
     //! \note the parking lane orientation is providen by ParkingBluePrint.
     //! \note we do not manage the orientation in the world coordinate.
     //--------------------------------------------------------------------------
-    Parking(ParkingBluePrint const& blueprint, sf::Vector2<Meter> const& position, Car& car);
+    Parking(ParkingBluePrint const& blueprint, sf::Vector2<Meter> const& position,
+            Radian const heading, Car& car);
 
     //--------------------------------------------------------------------------
     //! \brief Empty parking slot.
@@ -96,7 +95,8 @@ public:
     //! \note the parking local orientation is providen by ParkingBluePrint.
     //! \note we do not manage the orientation in the world coordinate.
     //--------------------------------------------------------------------------
-    Parking(ParkingBluePrint const& d, sf::Vector2<Meter> const& position);
+    Parking(ParkingBluePrint const& d, sf::Vector2<Meter> const& position,
+            Radian const heading);
 
     //--------------------------------------------------------------------------
     //! \brief Copy operator. Ugly code needed because of const member vriables.
@@ -106,7 +106,7 @@ public:
         // destroy
         this->~Parking();
         // copy construct in place
-        new (this) Parking(other.blueprint, other.position()/*, other.m_car*/);
+        new (this) Parking(other.blueprint, other.position(), other.heading() /*, other.m_car*/);
         return *this;
     }
 
@@ -114,7 +114,7 @@ public:
     //! \brief Needed because implicit copy constructor is deprecated.
     //--------------------------------------------------------------------------
     Parking(Parking const& other)
-        : Parking(other.blueprint, other.position())
+        : Parking(other.blueprint, other.position(), other.heading())
     {}
 
     //--------------------------------------------------------------------------
@@ -154,28 +154,33 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Const getter: return the oriented bounding box of the parking.
     //-------------------------------------------------------------------------
-    inline Radian heading() const
-    {
-        return blueprint.angle; // FIXME
-    }
+    inline Radian const& heading() const { return m_heading; }
 
     //-------------------------------------------------------------------------
     //! \brief Const getter: return the oriented bounding box of the parking.
     //-------------------------------------------------------------------------
-    inline sf::RectangleShape const& obb() const
-    {
-        return m_shape;
-    }
+    inline sf::RectangleShape const& obb() const { return m_shape; }
 
     //--------------------------------------------------------------------------
     //! \brief Helper method to place the next parking along the X-axis.
     //--------------------------------------------------------------------------
     sf::Vector2<Meter> delta() const
-    { // FIXME not working for diagnonal spot
-        sf::Vector2<Meter> p =
-           math::heading(sf::Vector2<Meter>(blueprint.length, blueprint.width),
-                   -blueprint.angle);
-        return sf::Vector2<Meter>(p.x, 0.0_m); // W
+    {
+        // sf::Vector2<Meter> a = sf::Vector2<Meter>(blueprint.length, 0.0_m);
+        sf::Vector2<Meter> a = math::heading(sf::Vector2<Meter>(blueprint.length, 0.0_m), m_heading);
+
+std::cout << "DELTA " << a.x << ", " << a.y << std::endl;
+
+        return a;
+
+/*
+sf::Vector2<Meter> h = math::heading(sf::Vector2<Meter>(0.0_m, blueprint.width), m_heading);
+std::cout << "HEADING: " << h.x << ", " << h.y << std::endl;
+
+        sf::Vector2<Meter> a(-h.y, h.x);
+std::cout << "DELTA: " << a.x << ", " << a.y << std::endl;
+        return a;
+        */
     }
 
     //--------------------------------------------------------------------------
@@ -185,7 +190,7 @@ public:
     {
         os << "Parking P = (" << parking.position().x << ", " << parking.position().y << "), "
            << "length = " << parking.blueprint.length << ", width = " << parking.blueprint.width
-           << ", angle = " << parking.blueprint.deg;
+           << ", angle = " << parking.blueprint.angle;
         return os;
     }
 
@@ -204,6 +209,8 @@ protected:
 
     //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_shape;
+    //! \brief Heading [rad]
+    Radian m_heading;
 
 private:
 

@@ -99,8 +99,8 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
             // TODO Missing detection of the type of parking type.
             // https://github.com/Lecrapouille/Highway/issues/32
             Meter pw = BluePrints::get<ParkingBluePrint>("epi.0").width;
-            ParkingBluePrint dim(m_slot_length, pw, 0u);
-            m_parking = std::make_unique<Parking>(dim, sf::Vector2<Meter>(m_position.x, m_position.y - detection.distance));
+            ParkingBluePrint dim(m_slot_length, pw, 0.0_deg);
+            m_parking = std::make_unique<Parking>(dim, sf::Vector2<Meter>(m_position.x, m_position.y - detection.distance), 0.0_deg);
             std::cout << "Scan: Parking spot detected: " << *m_parking << std::endl;
             m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND;
             return AutoParkECU::Scanner::Status::SUCCEEDED;

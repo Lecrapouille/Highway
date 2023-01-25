@@ -181,41 +181,42 @@ static bool halt_simulation_when(Simulator const& simulator)
 static Car& create_city(Simulator& simulator, City& city)
 {
     // Initial states
-    std::string parking_type = "epi." + std::to_string(0u); // parallel slots
-    const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).length;
-    const Meter parking_width = BluePrints::get<ParkingBluePrint>(parking_type.c_str()).width;
+    const char *parking_type = "epi.90"; // parallel slots
+    const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type).length;
+    const Meter parking_width = BluePrints::get<ParkingBluePrint>(parking_type).width;
     const sf::Vector2<Meter> p(97.0_m, 105.0_m); // Initial road position
     constexpr size_t number_parkings = 5u; // Number of parking slots along the road
 
-    // Create roads
+    // Create a road
     const Meter road_width = 2.0_m;
+    const Meter road_distance = double(number_parkings) * parking_length;
     const std::array<size_t, TrafficSide::Max> lanes{1u, 2u}; // Number of lanes constituing the road
     const std::vector<sf::Vector2<Meter>> road_centers = {
-        p,
-        p + sf::Vector2<Meter>(double(number_parkings) * parking_length, double(number_parkings) * parking_length)
+        p, p + sf::Vector2<Meter>(road_distance, 0.0_m)
     };
     Road& road1 = city.addRoad(road_centers, road_width, lanes);
 
-    // Create parallel parking slots
-    const sf::Vector2<Meter> p1(p.x, p.y - double(lanes[TrafficSide::RightHand]) * road_width - parking_width * 0.5); // Initial position of the parking slots
-    std::cout << "Parking " << p.x << ", " << p.y - double(lanes[TrafficSide::RightHand]) * road_width << std::endl;
-    Parking& parking0 = city.addParking(parking_type.c_str(), p1); // FIXME .attachTo(road1, offset); => { Road::offset() }
-    Parking& parking1 = city.addParking(parking_type.c_str(), parking0.position() + parking0.delta()); // FIXME .attachTo(parking0 ...
-    Parking& parking2 = city.addParking(parking_type.c_str(), parking1.position() + parking1.delta());
-    Parking& parking3 = city.addParking(parking_type.c_str(), parking2.position() + parking2.delta());
-    city.addParking(parking_type.c_str(), parking3.position() + parking3.delta());
+    // Add cars along the road.
+    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.5, 0.5);
 
-    // Add parked cars (static). See BluePrints.cpp for the mark of vehicle
+    // Create parallel parking slots along the road right side
+    city.addParking(parking_type, road1, TrafficSide::LeftHand, 0.0);
+    Parking& parking0 = city.addParking(parking_type, road1, TrafficSide::RightHand, 0.0);
+    Parking& parking1 = city.addParking(parking0);
+    Parking& parking2 = city.addParking(parking1);
+    Parking& parking3 = city.addParking(parking2);
+    Parking& parking4 = city.addParking(parking3);
+
+    // Add parked cars (static). See BluePrints.cpp for the mark of vehicle.
+    // Parking slot2 and 4 are empty.
     city.addCar("Renault.Twingo", parking0);
     city.addCar("Audi.A6", parking1);
     city.addCar("Audi.A6", parking3);
 
-    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.5, 0.5);
-
     // Self-parking ego car (dynamic).
     // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
     // The ego is centered on its lane (Y-axis).
-    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.5, 0.0);
+    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.1, 0.5);
     return customize_ego(simulator, city, ego);
 }
 
