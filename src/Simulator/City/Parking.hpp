@@ -122,8 +122,9 @@ public:
     //! \param[inout] car to be parked. Its position and orientation will be
     //! modified by this method to follow the parking slot. Use this method only
     //! when constructing the simulation world.
+    //! \return true if the parking slot was empty.
     //--------------------------------------------------------------------------
-    void bind(Car& car);
+    bool bind(Car& car);
 
     //--------------------------------------------------------------------------
     //! \brief Set the parking slot empty. If a car was already parked it stays
@@ -142,8 +143,21 @@ public:
     Car& car();
 
     //--------------------------------------------------------------------------
-    //! \brief Const position in the world coordinates of the middle of the left
-    //! lane. Once placed in the world the parking slot cannot be displaced.
+    //! \brief Return the origin position of the parking (middle of the left
+    //! side) inside the world coordinate [Meter].
+    //! \note Once placed in the world the parking slot cannot be displaced.
+    //--------------------------------------------------------------------------
+    sf::Vector2<Meter> origin() const
+    {
+        return position() + math::heading(
+            sf::Vector2<Meter>(0.0_m, -blueprint.width / 2.0),
+            blueprint.angle - m_heading);
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the top-left position of the parking inside the world
+    //! coordinate [Meter].
+    //! \note Once placed in the world the parking slot cannot be displaced.
     //--------------------------------------------------------------------------
     sf::Vector2<Meter> position() const
     {
@@ -166,21 +180,9 @@ public:
     //--------------------------------------------------------------------------
     sf::Vector2<Meter> delta() const
     {
-        // sf::Vector2<Meter> a = sf::Vector2<Meter>(blueprint.length, 0.0_m);
-        sf::Vector2<Meter> a = math::heading(sf::Vector2<Meter>(blueprint.length, 0.0_m), m_heading);
-
-std::cout << "DELTA " << a.x << ", " << a.y << std::endl;
-
-        return a;
-
-/*
-sf::Vector2<Meter> h = math::heading(sf::Vector2<Meter>(0.0_m, blueprint.width), m_heading);
-std::cout << "HEADING: " << h.x << ", " << h.y << std::endl;
-
-        sf::Vector2<Meter> a(-h.y, h.x);
-std::cout << "DELTA: " << a.x << ", " << a.y << std::endl;
-        return a;
-        */
+        return position() + math::heading(
+            sf::Vector2<Meter>(blueprint.length, 0.0_m),
+            blueprint.angle - m_heading);
     }
 
     //--------------------------------------------------------------------------
@@ -193,6 +195,14 @@ std::cout << "DELTA: " << a.x << ", " << a.y << std::endl;
            << ", angle = " << parking.blueprint.angle;
         return os;
     }
+
+private:
+
+    //--------------------------------------------------------------------------
+    //! \brief Set the slot occupied by the given car.
+    //! \param[inout] car to be parked.
+    //--------------------------------------------------------------------------
+    bool setOccupied(Car& car);
 
 public:
 

@@ -52,12 +52,21 @@ static Parking::Type convert(Degree const angle)
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position, Radian const heading)
+Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position,
+                 Radian const heading)
     : blueprint(bp), type(convert(bp.angle)),
       m_shape(sf::Vector2f(float(bp.length.value()), float(bp.width.value()))),
       m_heading(heading)
 {
-    m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value() / 2.0)));
+    // The origin of the parking is placed on its Top-Left corner.
+    // Note that initially the origin of the parking was placed on its
+    // Center-Left. Initially, this seemed nice for computing auto-park
+    // trajectories because once the car is parked its position (middle of the
+    // rear axle) is placed at the origin of the parking slot; but this origin
+    // is not nice for placing parkings along roads because we to add the offset
+    // "Top-Left" => "Center-Left" in the formula.
+    m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value()))); // Top-Left
+    // m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value() / 2.0))); // Center-Left
     m_shape.setRotation(-float(Degree(bp.angle + heading)));
     m_shape.setPosition(float(position.x), float(position.y));
     m_shape.setFillColor(sf::Color::White);
@@ -66,28 +75,70 @@ Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position,
 }
 
 //------------------------------------------------------------------------------
-Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position, Radian const heading, Car& car)
+Parking::Parking(ParkingBluePrint const& bp, sf::Vector2<Meter> const& position,
+                 Radian const heading, Car& car)
     : Parking(bp, position, heading)
 {
     m_car = &car;
 }
 
+#if 0 // TBD Idea
 //------------------------------------------------------------------------------
-void Parking::bind(Car& car)
+void Parking::setOrigin(Origin const where)
 {
-    //if (car.bound())
-    //    throw "Car already bound on parking spot";
-    //if (m_car != nullptr)
-    //    throw "Car already bound on parking spot";
+    switch (where)
+    {
+    case Origin::TopLeft:
+        m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value())));
+        break;
+    case Origin::CenterLeft:
+        m_shape.setOrigin(sf::Vector2f(0.0f, float(bp.width.value() / 2.0)));
+        break;
+    default:
+        assert(false && "Unknow Origin placement");
+        break;
+    }
+}
+#endif
 
-    // Center the car in the parking slot
-    Meter x = car.blueprint.back_overhang + (blueprint.length - car.blueprint.length) / 2.0f;
-    sf::Vector2<Meter> const offset(x, 0.0_m);
+//------------------------------------------------------------------------------
+bool Parking::bind(Car& car)
+{
+    if (!setOccupied(car))
+        return false;
 
-    car.init(0.0_mps_sq, 0.0_mps, position() + math::heading(offset, blueprint.angle + heading()), heading(), 0.0_rad);
+    // Parking coordinates: center the car along the parking slot length.
+    Meter x = car.blueprint.back_overhang +
+              (blueprint.length - car.blueprint.length) / 2.0f;
+    sf::Vector2<Meter> const offset(x, -blueprint.width / 2.0);
 
-    //car.bind();
+    // Convert the offset in the world coordinates.
+    sf::Vector2<Meter> const p = position() + math::heading(offset, blueprint.angle - m_heading);
+
+    // Init vehicle states.
+    car.init(0.0_mps_sq, 0.0_mps, p, blueprint.angle - m_heading, 0.0_rad);
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool Parking::setOccupied(Car& car)
+{
+    if (m_car != nullptr)
+    {
+        if (m_car == &car)
+        {
+            LOGE("You have already bound");
+        }
+        else
+        {
+            LOGE("Car already bound on parking spot");
+        }
+        return false;
+    }
+
     m_car = &car;
+    return true;
 }
 
 //------------------------------------------------------------------------------

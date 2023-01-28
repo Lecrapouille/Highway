@@ -62,7 +62,9 @@ Road& City::addRoad(std::vector<sf::Vector2<Meter>> const& centers,
 Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position,
                           Radian const heading)
 {
-    m_parkings.push_back(std::make_unique<Parking>(BluePrints::get<ParkingBluePrint>(type), position, heading));
+    m_parkings.push_back(std::make_unique<Parking>(
+                             BluePrints::get<ParkingBluePrint>(type),
+                             position, heading));
     return *m_parkings.back();
 }
 
@@ -70,74 +72,81 @@ Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position,
 Parking& City::addParking(const char* type, Road const& road, TrafficSide const side,
                           double const offset_long, double const offset_lat)
 {
-    // FIXME: ugly! Width ratio between road and parking because their origin are center
-    auto const r = 0.5 * (road.width() / BluePrints::get<ParkingBluePrint>(type).width);
-
-    return addParking(type, road.offset(side, 0u, offset_long, offset_lat - r), road.heading(side));
+    return addParking(type, road.offset(side, 0u, offset_long, offset_lat),
+                      -road.heading(side));
 }
 
 //------------------------------------------------------------------------------
-Parking& City::addParking(Parking const& parking) //, double const offset_long, double const offset_lat)
+Parking& City::addParking(Parking const& parking)
+        //, double const offset_long, double const offset_lat)
 {
-    std::string type = "epi." + std::to_string(size_t(parking.blueprint.angle.value()));
-    return addParking(type.c_str(), parking.position() + parking.delta(), parking.heading());
+    char type[8];
+    snprintf(type, 8, "epi.%zu", size_t(parking.blueprint.angle.value()));
+    return addParking(type, parking.delta(), parking.heading());
 }
 
 //------------------------------------------------------------------------------
-Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
-                  MeterPerSecond const speed)
+Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position,
+                  Degree const heading, MeterPerSecond const speed)
 {
     if (m_ego != nullptr)
     {
         LOGW("Ego car already created. Old will be replaced!");
     }
 
-    std::string name = "ego" + std::to_string(m_ego_id++);
-    m_ego = createCar<Car>(model, name.c_str(), EGO_CAR_COLOR, 0.0_mps_sq, speed,
+    char name[8];
+    snprintf(name, 8, "ego_%zu", m_ego_id++);
+    m_ego = createCar<Car>(model, name, EGO_CAR_COLOR, 0.0_mps_sq, speed,
                            position, heading, 0.0_rad);
     return *m_ego;
 }
 
 //------------------------------------------------------------------------------
 Car& City::addEgo(const char* model, Road const& road, TrafficSide const side,
-                  size_t const lane, double const offset_long, double const offset_lat,
-                  MeterPerSecond const speed)
+                  size_t const lane, double const offset_long,
+                  double const offset_lat, MeterPerSecond const speed)
 {
-    return addEgo(model, road.offset(side, lane, offset_long, offset_lat), road.heading(side), speed);
+    return addEgo(model, road.offset(side, lane, offset_long, offset_lat),
+                  road.heading(side), speed);
 }
 
 //------------------------------------------------------------------------------
-Car& City::addCar(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
-                  MeterPerSecond const speed, Degree const steering)
+Car& City::addCar(const char* model, sf::Vector2<Meter> const& position,
+                  Degree const heading, MeterPerSecond const speed,
+                  Degree const steering)
 {
-    std::string name = "car" + std::to_string(m_car_id++);
-    m_cars.push_back(createCar<Car>(model, name.c_str(), CAR_COLOR, 0.0_mps_sq,
-                                    speed, position, heading, steering));
+    char name[8];
+    snprintf(name, 8, "car_%zu", m_car_id++);
+    m_cars.push_back(createCar<Car>(model, name, CAR_COLOR, 0.0_mps_sq, speed,
+                                    position, heading, steering));
     return *m_cars.back();
 }
 
 //------------------------------------------------------------------------------
 Car& City::addCar(const char* model, Road const& road, TrafficSide const side,
-                  size_t const lane, double const offset_long, double const offset_lat,
-                  MeterPerSecond const speed)
+                  size_t const lane, double const offset_long,
+                  double const offset_lat, MeterPerSecond const speed)
 {
-    return addCar(model, road.offset(side, lane, offset_long, offset_lat), road.heading(side), speed);
+    return addCar(model, road.offset(side, lane, offset_long, offset_lat),
+                  road.heading(side), speed);
 }
 
 //------------------------------------------------------------------------------
 Car& City::addCar(const char* model, Parking& parking)
 {
-    Car& car = addCar(model, sf::Vector2<Meter>(0.0_m, 0.0_m), 0.0_deg, 0.0_mps, 0.0_deg);
+    Car& car = addCar(model, sf::Vector2<Meter>(0.0_m, 0.0_m), 0.0_deg,
+                      0.0_mps, 0.0_deg);
     parking.bind(car);
     return car;
 }
 
 //------------------------------------------------------------------------------
-Car& City::addGhost(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
-                    Degree const steering)
+Car& City::addGhost(const char* model, sf::Vector2<Meter> const& position,
+                    Degree const heading, Degree const steering)
 {
-    std::string name = "ghost" + std::to_string(m_ghost_id++);
-    m_ghosts.push_back(createCar<Car>(model, name.c_str(), sf::Color::White,
-                                      0.0_mps_sq, 0.0_mps, position, heading, steering));
+    char name[16];
+    snprintf(name, 16, "ghost_%zu", m_ghost_id++);
+    m_ghosts.push_back(createCar<Car>(model, name, sf::Color::White, 0.0_mps_sq,
+                                      0.0_mps, position, heading, steering));
     return *m_ghosts.back();
 }

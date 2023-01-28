@@ -27,13 +27,6 @@
 static std::mt19937 rng;
 
 //------------------------------------------------------------------------------
-LaneBluePrint::LaneBluePrint(Meter const l, Radian const a, Meter const w)
-    : length(l), angle(a), width(w)
-{
-    // std::cout << "Lane l: " << l << " w: " << w <<  " a: " << a << std::endl;
-}
-
-//------------------------------------------------------------------------------
 Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
            Meter const width, TrafficSide s)
     : blueprint(start, stop, width), side(s), m_start(start), m_stop(stop),
@@ -41,11 +34,18 @@ Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
       m_shape(sf::Vector2f(float(blueprint.length.value()),
                            float(blueprint.width.value())))
 {
-    m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0)));
+    // The origin of the lane is placed on its Top-Left corner.
+    // Note that initially the origin of the parking was placed on its
+    // Center-Left side but this not nice for placing things along roads (like
+    // parking slots) because we to add the offset "Top-Left" => "Center-Left"
+    // in the formula.
+    m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value()))); // Top-Left
+    // m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0))); // Center-Left
     m_shape.setRotation(float(Degree(blueprint.angle)));
     m_shape.setPosition(float(start.x), float(start.y));
-    std::cout << "  Lane " << (s == TrafficSide::RightHand ? "right " : "left ")
-              << start.x << ", " << start.y << std::endl;
+    LOGI("Lane %s: start (%g m, %g m), stop (%g m, %g m)",
+         (s == TrafficSide::RightHand ? "right" : "left"),
+         start.x, start.y, m_stop.x, m_stop.y);
     if (s == TrafficSide::RightHand)
         m_shape.setFillColor(COLOR_DRIVING_LANE);
     else
@@ -60,10 +60,8 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
     : m_start(centers[0]), m_stop(centers[1]), m_width(width),
       m_heading(math::orientation(centers[0], centers[1]))
 {
-    std::cout << "Road (start; " << m_start.x << ", " << m_start.y
-              << "), (stop " << m_stop.x << ", " << m_stop.y << "),"
-              << " (width: " << width << "):"
-              << std::endl;
+    LOGI("Road start (%g m, %g m), stop (%g m, %g m), width %g m",
+         m_start.x, m_start.y, m_stop.x, m_stop.y, width);
 
     // Allocate memory. FIXME manage lanes[] with 0 size
     size_t side = TrafficSide::Max;
@@ -76,14 +74,14 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
     sf::Vector2<Meter> n = normal();
 
     // The center of the lane is offseted relatively from the center of the road by 0.5 * lane width
-    sf::Vector2<Meter> center_offset = sf::Vector2<Meter>(n.x * 0.5 * width.value(), n.y * 0.5 * width.value());
+    //sf::Vector2<Meter> center_offset = sf::Vector2<Meter>(n.x * 0.5 * width.value(), n.y * 0.5 * width.value());
 
     // Translate lanes by their width along the normal
     sf::Vector2<Meter> lane_offset = sf::Vector2<Meter>(n.x * width.value(), n.y * width.value());
 
     // Create the right-hand lanes
-    sf::Vector2<Meter> start = m_start - center_offset;
-    sf::Vector2<Meter> stop = m_stop - center_offset;
+    sf::Vector2<Meter> start = m_start;// - center_offset;
+    sf::Vector2<Meter> stop = m_stop;// - center_offset;
     size_t i = lanes[TrafficSide::RightHand];
     while (i--)
     {
@@ -93,8 +91,8 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
     }
 
     // Create the left-hand lanes
-    start = m_start + center_offset;
-    stop = m_stop + center_offset;
+    start = m_start;// + center_offset;
+    stop = m_stop;// + center_offset;
     i = lanes[TrafficSide::LeftHand];
     while (i--)
     {
@@ -113,10 +111,9 @@ sf::Vector2<Meter> Road::offset(TrafficSide const side, size_t const desired_lan
     Lane const& lane = *m_lanes[side][i];
 
     // Compute offset along the lane
-    Meter const w = 0.5 * lane.blueprint.width;
     sf::Vector2<Meter> const offset(
         math::lerp(0.0_m, lane.blueprint.length, x),
-        math::lerp(-w, w, y)
+        math::lerp(0.0_m, -lane.blueprint.width, y)
     );
 
     sf::Vector2<Meter> const lane_offset = math::heading(offset, lane.blueprint.angle);

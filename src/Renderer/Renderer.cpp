@@ -51,8 +51,18 @@ void Renderer::draw(Road const& road, sf::RenderTarget& target, sf::RenderStates
             draw(*it, target, states);
         }
     }
+
     // Draw the origin of the road
-    target.draw(Circle(road.origin(), 0.01_m, sf::Color::Red, 8u), states);
+    target.draw(Circle(road.origin(), 0.03_m, sf::Color::Red, 8u), states);
+
+    side = TrafficSide::Max;
+    while (side--)
+    {
+        for (auto const& it: road.m_lanes[side])
+        {
+            target.draw(Circle(it->origin(), 0.01_m, sf::Color::Black, 8u), states);
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -65,8 +75,9 @@ void Renderer::draw(Parking const& parking, sf::RenderTarget& target, sf::Render
     shape.setOutlineColor(sf::Color(255, 161, 7));
 
     target.draw(shape, states);
-    // Draw the origin of the parking
+    // Draw the position and the origin of the parking
     target.draw(Circle(parking.position(), 0.01_m, sf::Color::Black, 8u), states);
+    target.draw(Circle(parking.origin(), 0.01_m, sf::Color::Red, 8u), states);
 }
 
 //------------------------------------------------------------------------------

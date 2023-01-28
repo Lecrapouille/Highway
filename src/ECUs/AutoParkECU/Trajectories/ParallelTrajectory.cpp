@@ -113,8 +113,8 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
     Yi = car.position().y;
 
     // Final destination: the parking slot
-    Xf = parking.position().x;
-    Yf = parking.position().y;
+    Xf = parking.origin().x;
+    Yf = parking.origin().y;
 
     // C1: center of the ending turn (end position of the 2nd turning maneuver)
     C[0].x = Xf + car.blueprint.back_overhang;
@@ -184,14 +184,14 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     Yi = car.position().y;
 
     // Final position
-    Xf = parking.position().x + parking.blueprint.length / 2.0f;
-    Yf = parking.position().y - car.blueprint.width / 2.0f;
+    Xf = parking.origin().x + parking.blueprint.length / 2.0f;
+    Yf = parking.origin().y - car.blueprint.width / 2.0f;
 
     // Give extra space to avoid the rear overhang of the ego car collides with
     // the parked car back the ego car.
     //const float MARGIN = 0.0f; // [meter]
 
-    std::cout << "Parking: " << parking.position().x << " " << parking.position().y << std::endl;
+    std::cout << "Parking: " << parking.origin().x << " " << parking.origin().y << std::endl;
     std::cout << "Xf: " << Xf << " " << Yf << std::endl;
     std::cout << "Em0: " << Em[0].x << " " << Em[0].y << std::endl;
 
@@ -339,8 +339,8 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     Xs += Xf;
     Xt += Xf;
     Yt += Yf;
-    Xf = parking.position().x;
-    Yf = parking.position().y;
+    Xf = parking.origin().x;
+    Yf = parking.origin().y;
 
     std::cout << "Em0: " << Em[0].x << ", " << Em[0].y << std::endl;
     std::cout << "Em1: " << Em[1].x << ", " << Em[1].y << std::endl;

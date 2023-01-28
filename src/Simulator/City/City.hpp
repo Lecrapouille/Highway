@@ -97,7 +97,7 @@ public:
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
     Parking& addParking(const char* type, Road const& road, TrafficSide const side,
-                        double const offset_long, double const offset_lat = 0.0f);
+                        double const offset_long, double const offset_lat);
 
     //-------------------------------------------------------------------------
     //! \brief Create or replace the ego vehicle (the autonomous vehicle). The

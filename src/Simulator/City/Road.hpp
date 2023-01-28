@@ -51,7 +51,9 @@ struct LaneBluePrint
     //! \param[in] a road lane angle [deg].
     //! \param[in] w road width [meter].
     //----------------------------------------------------------------------
-    LaneBluePrint(Meter const l, Radian const a, Meter const w);
+    LaneBluePrint(Meter const l, Radian const a, Meter const w)
+        : length(l), angle(a), width(w)
+    {}
 
     //----------------------------------------------------------------------
     //! \brief Set road segment dimensions form initial to final positions.

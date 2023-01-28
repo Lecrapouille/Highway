@@ -181,7 +181,7 @@ static bool halt_simulation_when(Simulator const& simulator)
 static Car& create_city(Simulator& simulator, City& city)
 {
     // Initial states
-    const char *parking_type = "epi.90"; // parallel slots
+    const char *parking_type = "epi.0"; // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type).length;
     const Meter parking_width = BluePrints::get<ParkingBluePrint>(parking_type).width;
     const sf::Vector2<Meter> p(97.0_m, 105.0_m); // Initial road position
@@ -192,23 +192,23 @@ static Car& create_city(Simulator& simulator, City& city)
     const Meter road_distance = double(number_parkings) * parking_length;
     const std::array<size_t, TrafficSide::Max> lanes{1u, 2u}; // Number of lanes constituing the road
     const std::vector<sf::Vector2<Meter>> road_centers = {
-        p, p + sf::Vector2<Meter>(road_distance, 0.0_m)
+        p, p + sf::Vector2<Meter>(road_distance, 0.0*road_distance)
     };
     Road& road1 = city.addRoad(road_centers, road_width, lanes);
 
     // Add cars along the road.
-    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.5, 0.5);
+    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.0, 0.5);
 
     // Create parallel parking slots along the road right side
-    city.addParking(parking_type, road1, TrafficSide::LeftHand, 0.0);
-    Parking& parking0 = city.addParking(parking_type, road1, TrafficSide::RightHand, 0.0);
+    city.addParking(parking_type, road1, TrafficSide::LeftHand, 0.0, 1.0);
+    Parking& parking0 = city.addParking(parking_type, road1, TrafficSide::RightHand, 0.0, 1.0);
     Parking& parking1 = city.addParking(parking0);
     Parking& parking2 = city.addParking(parking1);
     Parking& parking3 = city.addParking(parking2);
     Parking& parking4 = city.addParking(parking3);
 
     // Add parked cars (static). See BluePrints.cpp for the mark of vehicle.
-    // Parking slot2 and 4 are empty.
+    // Parking slots 2 and 4 are empty.
     city.addCar("Renault.Twingo", parking0);
     city.addCar("Audi.A6", parking1);
     city.addCar("Audi.A6", parking3);
