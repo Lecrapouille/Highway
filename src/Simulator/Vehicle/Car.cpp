@@ -19,7 +19,7 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#  include "MyLogger/Logger.hpp" 
+#  include "MyLogger/Logger.hpp"
 #  include "Simulator/BluePrints.hpp"
 #  include "Simulator/Vehicle/Car.hpp"
 #  include "Simulator/Vehicle/VehiclePhysicalModels/TricycleKinematic.hpp"
@@ -28,7 +28,6 @@
 Car::Car(const char* name_, sf::Color const& color_)
     : Vehicle<CarBluePrint>(BluePrints::get<CarBluePrint>(name_), name_, color_)
 {
-    LOGI("Car %s", name_);
     m_physics = std::make_unique<TricycleKinematic>(*m_shape, *m_control);
 }
 

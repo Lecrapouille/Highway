@@ -95,7 +95,7 @@ public:
     SENSOR& addSensor(BP const& bp, Args&&... args)
     {
         std::shared_ptr<SENSOR> sensor = std::make_shared<SENSOR>(bp, std::forward<Args>(args)...);
-        LOGI("Sensor %s attached to vehicle %s", sensor->name.c_str(), name.c_str());
+        LOGI("Sensor '%s' attached to vehicle '%s'", sensor->name.c_str(), name.c_str());
         m_sensors.push_back(sensor);
         m_shape->addSensorShape(sensor->shape);
         return *sensor;
@@ -362,6 +362,7 @@ public:
     //-------------------------------------------------------------------------
     bool reactTo(size_t const key)
     {
+        LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
         auto it = m_callbacks.find(key);
         if (it != m_callbacks.end())
         {

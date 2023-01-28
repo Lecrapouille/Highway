@@ -60,6 +60,7 @@ public:
     //--------------------------------------------------------------------------
     bool open(fs::path const& path, const char separator = ';')
     {
+        LOGI("Monitor open '%s'", path.c_str());
         m_separator = separator;
         if (m_outfile.is_open())
             this->close();
@@ -72,6 +73,7 @@ public:
     //--------------------------------------------------------------------------
     void close()
     {
+        LOGI("Monitor close");
         m_outfile.close();
         m_observations.clear();
         m_headers.clear();

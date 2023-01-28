@@ -22,6 +22,7 @@
 #include "Simulator/Simulator.hpp"
 #include "Renderer/Renderer.hpp"
 #include "Renderer/FontManager.hpp"
+#include "MyLogger/Logger.hpp"
 
 //------------------------------------------------------------------------------
 Simulator::Simulator(sf::RenderWindow& renderer, MessageBar& message_bar)
@@ -33,6 +34,7 @@ Simulator::Simulator(sf::RenderWindow& renderer, MessageBar& message_bar)
 //------------------------------------------------------------------------------
 bool Simulator::load(Scenario const& scenario)
 {
+    LOGI("Simulator loads scenario '%s'", scenario.name());
     m_scenario.name = scenario.name;
     m_scenario.create = scenario.create;
     m_scenario.halt = scenario.halt;
@@ -52,6 +54,8 @@ bool Simulator::load(Scenario const& scenario)
 //------------------------------------------------------------------------------
 bool Simulator::load(fs::path const& libpath)
 {
+    LOGI("Simulator loads '%s'", libpath.c_str());
+
     // The shared lib has been successfully opened. Now load functions.
     if (m_loader.load(libpath))
     {
@@ -105,7 +109,7 @@ bool Simulator::init()
     std::string name(m_scenario.name());
 
     // Set simulation name on the GUI
-    m_message_bar.entry("Starting simulation " + name, sf::Color::Green);
+    m_message_bar.entry("Starting simulation '" + name + "'", sf::Color::Green);
     m_renderer.setTitle(name);
 
     // Create a new city from "scratch".
@@ -149,12 +153,14 @@ void Simulator::pause(bool const state)
 //------------------------------------------------------------------------------
 void Simulator::activate()
 {
+    LOGI("Simulator: activated");
     pause(false);
 }
 
 //------------------------------------------------------------------------------
 void Simulator::deactivate()
 {
+    LOGI("Simulator: deactivated");
     pause(true);
 }
 

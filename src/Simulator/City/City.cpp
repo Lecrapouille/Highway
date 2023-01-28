@@ -31,6 +31,8 @@ City::City()
 //------------------------------------------------------------------------------
 void City::reset()
 {
+    LOGI("Reset city");
+
     m_car_id = m_ego_id = m_ghost_id = 0u;
 
     m_ghosts.clear();
@@ -54,6 +56,9 @@ Car* City::get(const char* name)
 Road& City::addRoad(std::vector<sf::Vector2<Meter>> const& centers,
                     Meter const width, std::array<size_t, TrafficSide::Max> lanes)
 {
+    LOGI("Add road: start (%g m, %g m), stop (%g m, %g m), width %g m",
+         centers[0].x, centers[0].y, centers[1].x, centers[1].y, width);
+
     m_roads.push_back(std::make_unique<Road>(centers, width, lanes));
     return *m_roads.back();
 }
@@ -62,6 +67,9 @@ Road& City::addRoad(std::vector<sf::Vector2<Meter>> const& centers,
 Parking& City::addParking(const char* type, sf::Vector2<Meter> const& position,
                           Radian const heading)
 {
+    LOGI("Add parking: positon (%g m, %g m), heading %g deg", position.x,
+         position.y, Degree(heading));
+
     m_parkings.push_back(std::make_unique<Parking>(
                              BluePrints::get<ParkingBluePrint>(type),
                              position, heading));
@@ -87,15 +95,19 @@ Parking& City::addParking(Parking const& parking)
 
 //------------------------------------------------------------------------------
 Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position,
-                  Degree const heading, MeterPerSecond const speed)
+                  Radian const heading, MeterPerSecond const speed)
 {
+    char name[8];
+    snprintf(name, 8, "ego%zu", m_ego_id++);
+
+    LOGI("Add Ego car '%s': position (%g m, %g m), heading %g deg, speed %g mps",
+         name, position.x, position.y, Degree(heading), speed);
+
     if (m_ego != nullptr)
     {
         LOGW("Ego car already created. Old will be replaced!");
     }
 
-    char name[8];
-    snprintf(name, 8, "ego_%zu", m_ego_id++);
     m_ego = createCar<Car>(model, name, EGO_CAR_COLOR, 0.0_mps_sq, speed,
                            position, heading, 0.0_rad);
     return *m_ego;
@@ -112,11 +124,15 @@ Car& City::addEgo(const char* model, Road const& road, TrafficSide const side,
 
 //------------------------------------------------------------------------------
 Car& City::addCar(const char* model, sf::Vector2<Meter> const& position,
-                  Degree const heading, MeterPerSecond const speed,
-                  Degree const steering)
+                  Radian const heading, MeterPerSecond const speed,
+                  Radian const steering)
 {
     char name[8];
-    snprintf(name, 8, "car_%zu", m_car_id++);
+    snprintf(name, 8, "car%zu", m_car_id++);
+
+    LOGI("Add car '%s': position (%g m, %g m), heading %g deg, speed %g mps",
+         name, position.x, position.y, Degree(heading), speed);
+
     m_cars.push_back(createCar<Car>(model, name, CAR_COLOR, 0.0_mps_sq, speed,
                                     position, heading, steering));
     return *m_cars.back();
@@ -142,10 +158,14 @@ Car& City::addCar(const char* model, Parking& parking)
 
 //------------------------------------------------------------------------------
 Car& City::addGhost(const char* model, sf::Vector2<Meter> const& position,
-                    Degree const heading, Degree const steering)
+                    Radian const heading, Radian const steering)
 {
     char name[16];
-    snprintf(name, 16, "ghost_%zu", m_ghost_id++);
+    snprintf(name, 16, "ghost%zu", m_ghost_id++);
+
+    LOGI("Add ghost car '%s': position (%g m, %g m), heading %g deg",
+         name, position.x, position.y, Degree(heading));
+
     m_ghosts.push_back(createCar<Car>(model, name, sf::Color::White, 0.0_mps_sq,
                                       0.0_mps, position, heading, steering));
     return *m_ghosts.back();

@@ -43,7 +43,7 @@ Lane::Lane(sf::Vector2<Meter> const& start, sf::Vector2<Meter> const& stop,
     // m_shape.setOrigin(sf::Vector2f(0.0f, float(blueprint.width.value() / 2.0))); // Center-Left
     m_shape.setRotation(float(Degree(blueprint.angle)));
     m_shape.setPosition(float(start.x), float(start.y));
-    LOGI("Lane %s: start (%g m, %g m), stop (%g m, %g m)",
+    LOGI("Add lane %s: start (%g m, %g m), stop (%g m, %g m)",
          (s == TrafficSide::RightHand ? "right" : "left"),
          start.x, start.y, m_stop.x, m_stop.y);
     if (s == TrafficSide::RightHand)
@@ -60,9 +60,6 @@ Road::Road(std::vector<sf::Vector2<Meter>> const& centers,
     : m_start(centers[0]), m_stop(centers[1]), m_width(width),
       m_heading(math::orientation(centers[0], centers[1]))
 {
-    LOGI("Road start (%g m, %g m), stop (%g m, %g m), width %g m",
-         m_start.x, m_start.y, m_stop.x, m_stop.y, width);
-
     // Allocate memory. FIXME manage lanes[] with 0 size
     size_t side = TrafficSide::Max;
     while (side--)

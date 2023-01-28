@@ -72,7 +72,7 @@ static void init_config()
         project::info::log_name.c_str(),
         project::info::log_path.c_str()
     ));
-    LOGI("Search path: %s", project::info::data_path.c_str());
+    LOGI("Search path: '%s'", project::info::data_path.c_str());
 }
 
 // -----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ static int start_highway(int argc, char* const argv[])
     // Load fonts
     if (!FontManager::instance().load("main font", "font.ttf"))
     {
-        LOGA("Failed init the application %s", argv[0]);
+        LOGAS("Failed init the application '%s'", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -113,15 +113,13 @@ static int start_highway(int argc, char* const argv[])
         }
         else if (fs::exists(argv[1]))
         {
-            LOGI("Started %s with scenario %s", argv[0], argv[1]);
+            LOGI("Started '%s' with scenario '%s'", argv[0], argv[1]);
             app.push<GUIMainMenu>("GUIMainMenu");
             app.push<GUISimulation>("GUISimulation", argv[1]);
         }
         else
         {
-            std::cerr << "Fatal: the scenario file '" << argv[1]
-                      << "' does not exist"
-                      << std::endl;
+            LOGAS("Fatal: the scenario file '%s' does not exist", argv[1]);
             return EXIT_FAILURE;
         }
     }
@@ -145,14 +143,12 @@ int main(int argc, char* argv[])
     }
     catch (std::string const& msg)
     {
-        LOGC("%s", msg.c_str());
-        std::cerr << "Caught exception: " << msg << std::endl;
+        LOGCS("Caught exception: %s", msg.c_str());
         return EXIT_FAILURE;
     }
     catch (std::exception const& e)
     {
-        LOGC("%s", e.what());
-        std::cerr << "Caught exception: " << e.what() << std::endl;
+        LOGCS("Caught exception: %s", e.what());
         return EXIT_FAILURE;
     }
 }

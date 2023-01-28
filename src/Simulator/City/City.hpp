@@ -107,12 +107,12 @@ public:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
+    //! \param[in] heading: the vehicle direction (yaw angle) in rad.
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
     Car& addEgo(const char* model, sf::Vector2<Meter> const& position,
-                Degree const heading = 0.0_deg, MeterPerSecond const speed = 0.0_mps);
+                Radian const heading = 0.0_deg, MeterPerSecond const speed = 0.0_mps);
 
     //-------------------------------------------------------------------------
     //! \brief Create or replace the ego vehicle (the autonomous vehicle) on a
@@ -146,14 +146,14 @@ public:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
+    //! \param[in] heading: the vehicle direction (yaw angle) in rad.
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in degree). By default: 0
+    //! \param[in] steering: initial steering angle (in rad). By default: 0
     //! rad.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
-    Car& addCar(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
-                MeterPerSecond const speed, Degree const steering = 0.0_deg);
+    Car& addCar(const char* model, sf::Vector2<Meter> const& position, Radian const heading,
+                MeterPerSecond const speed, Radian const steering = 0.0_deg);
 
     //-------------------------------------------------------------------------
     //! \brief Add a new car and place it on a road. The instance is hold by
@@ -200,13 +200,13 @@ public:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
-    //! \param[in] steering: initial steering angle (in degree). By default: 0
+    //! \param[in] heading: the vehicle direction (yaw angle) in rad.
+    //! \param[in] steering: initial steering angle (in rad). By default: 0
     //! rad.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
-    Car& addGhost(const char* model, sf::Vector2<Meter> const& position, Degree const heading,
-                  Degree const steering); // FIXME stored in m_cars or m_ghosts or move it simulator
+    Car& addGhost(const char* model, sf::Vector2<Meter> const& position, Radian const heading,
+                  Radian const steering); // FIXME stored in m_cars or m_ghosts or move it simulator
 
     //-------------------------------------------------------------------------
     //! \brief Find and return the address of the desired car from its name.
@@ -279,17 +279,17 @@ protected:
     //! dimension.
     //! \param[in] position: the position of the middle of the rear axle inside
     //! the world coordinates.
-    //! \param[in] heading: the vehicle direction (yaw angle) in degree.
+    //! \param[in] heading: the vehicle direction (yaw angle) in rad.
     //! \param[in] speed: initial longitudinal speed (m/s). By default: 0 m/s.
-    //! \param[in] steering: initial steering angle (in degree). By default: 0
+    //! \param[in] steering: initial steering angle (in rad). By default: 0
     //! rad.
     //! \return the reference of the created vehicle.
     //-------------------------------------------------------------------------
     template<class CAR>
     std::unique_ptr<CAR> createCar(const char* model, const char* name, sf::Color color,
                                    MeterPerSecondSquared const acceleration, MeterPerSecond const speed,
-                                   sf::Vector2<Meter> const& position, Degree const heading,
-                                   Degree const steering)
+                                   sf::Vector2<Meter> const& position, Radian const heading,
+                                   Radian const steering)
     {
         std::unique_ptr<CAR> car = std::make_unique<CAR>(model, color);
         car->name = name;
