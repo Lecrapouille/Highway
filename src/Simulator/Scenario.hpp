@@ -22,6 +22,8 @@
 #ifndef SCENARIO_HPP
 #  define SCENARIO_HPP
 
+#  include <functional>
+
 #  if defined(_WIN32)
 #    define SHARED_LIB_EXTENSION "dll"
 #  elif defined(__linux__)
@@ -31,7 +33,9 @@
 #  endif
 
 class City;
+class Car;
 class Simulator;
+class DynamicLoader;
 
 // ****************************************************************************
 //! \brief Class holding functions loaded from a shared library depicted in
@@ -60,6 +64,11 @@ public:
     {
         name = nullptr; create = nullptr; halt = nullptr; react = nullptr;
     }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    bool loadSymbols(DynamicLoader& loader);
 
 public:
 

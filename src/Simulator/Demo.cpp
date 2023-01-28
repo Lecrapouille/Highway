@@ -163,14 +163,14 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
 //-----------------------------------------------------------------------------
 //! \brief Define conditions to stop the simulation.
 //-----------------------------------------------------------------------------
-static bool halt_simulation_when(Simulator const& simulator)
+static bool simulation_halt_when(Simulator const& simulator)
 {
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
-                         "Time simulation slipped");
+                         "Time simulation slipped!");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
-                         "Ego car is outside the parking");
+                         "Ego car is outside the parking!");
     HALT_SIMULATION_WHEN(simulator.ego().collided(),
-                         "Ego car collided");
+                         "Ego car collided!");
     CONTINUE_SIMULATION;
 }
 
@@ -178,7 +178,7 @@ static bool halt_simulation_when(Simulator const& simulator)
 //! \brief Create a basic city world made of roads, parking slots and parked
 //! cars. The ego car is on the road.
 //-----------------------------------------------------------------------------
-static Car& create_city(Simulator& simulator, City& city)
+static Car& simulation_create_city(Simulator& simulator, City& city)
 {
     // Initial states
     const char *parking_type = "epi.0"; // parallel slots
@@ -228,8 +228,8 @@ Scenario simple_simulation_demo()
 {
     return {
         .name = simulation_name,
-        .create = create_city,
-        .halt = halt_simulation_when,
+        .create = simulation_create_city,
+        .halt = simulation_halt_when,
         .react = simulation_react_to,
     };
 }

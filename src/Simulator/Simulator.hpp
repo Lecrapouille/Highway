@@ -70,7 +70,7 @@ public:
     //! \return Return true if the shared library has been loaded with success
     //!   else return false and use \c error() to get the reason.
     //-------------------------------------------------------------------------
-    bool load(std::string const& libpath);
+    bool load(fs::path const& libpath);
 
     //-------------------------------------------------------------------------
     //! \brief Restart the simulation. Shall be called after \c load().

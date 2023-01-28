@@ -50,10 +50,7 @@ void GUILoadSimulMenu::createListScenarios()
             Scenario scenario;
             if (loader.load(libpath))
             {
-                scenario.name = loader.prototype<const char* (void)>("simulation_name");
-                scenario.create = loader.prototype<Car& (Simulator&, City&)>("create_city");
-                scenario.halt = loader.prototype<bool (Simulator const&)>("halt_simulation_when");
-                scenario.react = loader.prototype<void(Simulator&, size_t)>("react_to");
+                scenario.loadSymbols(loader);
             }
 
             if (scenario)

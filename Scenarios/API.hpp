@@ -54,7 +54,7 @@ const char* simulation_name();
 //! \return CONTINUE_SIMULATION (false) if the simulation shall continues or
 //! return ABORT_SIMULATION (true) to halt the simulation.
 //-----------------------------------------------------------------------------
-bool halt_simulation_when(Simulator const& simulator);
+bool simulation_halt_when(Simulator const& simulator);
 
 //-----------------------------------------------------------------------------
 //! \brief Helper macro to be returned by \c halt_simulation_when to continue
@@ -90,7 +90,7 @@ bool halt_simulation_when(Simulator const& simulator);
 //!
 //! \return the reference to the ego vehicle.
 //-----------------------------------------------------------------------------
-Car& create_city(City& city);
+Car& simulation_create_city(Simulator& simulator, City& city);
 
 //-----------------------------------------------------------------------------
 //! \brief C++ fonction allows the simulator to react to keyboard events.
@@ -98,7 +98,7 @@ Car& create_city(City& city);
 //! \param[inout] simulator class passed by the application.
 //! \param[in] unique identifier of the event to react to.
 //-----------------------------------------------------------------------------
-void react_to(Simulator& simulator, size_t const key);
+void simulation_react_to(Simulator& simulator, size_t const key);
 
 #  ifdef __cplusplus
 }

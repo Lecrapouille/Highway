@@ -20,6 +20,7 @@
 //=====================================================================
 
 #include "MyLogger/Logger.hpp"
+#include "Common/FileSystem.hpp"
 #include <dlfcn.h>
 #include <functional>
 #include <string>
@@ -56,7 +57,7 @@ public:
     //! to open.
     //! \param[in] rt load symbols immediatly or in lazy way.
     //--------------------------------------------------------------------------
-    bool load(std::string const& libpath, Resolution rt = Resolution::NOW)
+    bool load(fs::path const& libpath, Resolution rt = Resolution::NOW)
     {
         m_path = libpath;
         close();
@@ -75,7 +76,7 @@ public:
             }
             catch(std::logic_error &e)
             {
-                LOGX("%s", e.what());
+                LOGXS("%s", e.what());
                 return false;
             }
         }
@@ -97,6 +98,10 @@ public:
     //--------------------------------------------------------------------------
     bool reloadIfChanged(Resolution rt = Resolution::NOW)
     {
+        if (m_handle == nullptr)
+        {
+            return false;
+        }
         long time = getFileTime();
         if (time == 0)
         {
@@ -172,7 +177,7 @@ public:
         void* addr = address(symbol);
         if (addr == nullptr)
         {
-            LOGX("%s", error().c_str());
+            LOGXS("%s", error().c_str());
             throw std::logic_error(error());
         }
         return reinterpret_cast<T*>(addr);
@@ -181,7 +186,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Return the path of the shared library.
     //--------------------------------------------------------------------------
-    inline std::string const& path() const
+    inline fs::path const& path() const
     {
         return m_path;
     }
@@ -227,7 +232,7 @@ private:
 private:
 
     //! \brief Memorize the path of the shared library.
-    std::string m_path;
+    fs::path m_path;
     //! \brief Memorize the latest error.
     std::string m_error;
     //! \brief The handle on the opened shared library.

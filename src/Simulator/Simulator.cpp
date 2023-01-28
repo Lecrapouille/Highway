@@ -50,15 +50,12 @@ bool Simulator::load(Scenario const& scenario)
 }
 
 //------------------------------------------------------------------------------
-bool Simulator::load(std::string const& libpath)
+bool Simulator::load(fs::path const& libpath)
 {
     // The shared lib has been successfully opened. Now load functions.
     if (m_loader.load(libpath))
     {
-        m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
-        m_scenario.create = m_loader.prototype<Car& (Simulator&, City&)>("create_city");
-        m_scenario.halt = m_loader.prototype<bool (Simulator const&)>("halt_simulation_when");
-        m_scenario.react = m_loader.prototype<void(Simulator&, size_t)>("react_to");
+        m_scenario.loadSymbols(m_loader);
     }
 
     // Check if it all functions are not nullptr
@@ -78,11 +75,7 @@ bool Simulator::autoreload()
     // Auto reload the scenario file if it has changed.
     if (m_loader.reloadIfChanged())
     {
-        std::cerr << m_loader.prototype<const char* (void)>("simulation_name")() << std::endl;
-        m_scenario.name = m_loader.prototype<const char* (void)>("simulation_name");
-        m_scenario.create = m_loader.prototype<Car& (Simulator&, City&)>("create_city");
-        m_scenario.halt = m_loader.prototype<bool (Simulator const&)>("halt_simulation_when");
-        m_scenario.react = m_loader.prototype<void(Simulator&, size_t)>("react_to");
+        m_scenario.loadSymbols(m_loader);
 
         // Check if it all functions are not nullptr
         if (!m_scenario)

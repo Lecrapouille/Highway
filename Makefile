@@ -82,7 +82,7 @@ LIB_OBJS += Pedestrian.o Parking.o Road.o BluePrints.o City.o
 LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o GUILoadSimulMenu.o
 LIB_OBJS += Trajectory.o ParallelTrajectory.o AutoParkECU.o
 # PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o
-LIB_OBJS += Demo.o Simulator.o
+LIB_OBJS += Demo.o Scenario.o Simulator.o
 
 ###################################################
 # Make the list of compiled files for the application

@@ -1,4 +1,4 @@
-//==============================================================================
+//=============================================================================
 // https://github.com/Lecrapouille/Highway
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
@@ -17,68 +17,120 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
-//==============================================================================
+//=============================================================================
 
 #include "API.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
+#include "Sensors/Sensors.hpp"
 
-// FIXME: ajouter bool checkCity(City&) si pas de soucis => ou mieux en interne (par exemple >= 1 voiture ego)
+//-----------------------------------------------------------------------------
+//! \file "Hello simulation" demo. Show a basic simulation. An autonomous car
+//! is entering in the first parking slot.
+//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+//! \brief Needed simulation function: return the simulation name that will be
+//! display in the windows title bar.
 //-----------------------------------------------------------------------------
 const char* simulation_name()
 {
-    return "Parking simulation";
+    return "Hello simulation demo";
 }
 
 //-----------------------------------------------------------------------------
-// TODO restart_simulation_after
-bool halt_simulation_when(Simulator const& simulator)
-{
-    HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
-                         "Time simulation slipped");
-    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
-                         "Ego car is outside the parking");
-    HALT_SIMULATION_WHEN(simulator.ego().collided(),
-                         "Ego car collided");
-    CONTINUE_SIMULATION;
-}
-
+//! \brief "Hello simulation" demo: make the \c simulator reacts to the given
+//! \c key pressed. Here the ego reacts to callbacks set with Vehicle::callback()
+//! defined in the function \c customize_ego().
 //-----------------------------------------------------------------------------
-void react_to(Simulator& simulator, size_t const key)
+void simulation_react_to(Simulator& simulator, size_t key)
 {
-    // Allow the ego car to react to callbacks set with Vehicle::callback()
     simulator.ego().reactTo(key);
 }
 
 //-----------------------------------------------------------------------------
-// FIXME Ajouter:Car& ego_specialisation(Car&) qui est appellé par City::createEgo() { return ego_specialisation(new Car()); }
-static Car& customize(Car& car)
+//! \brief Attach sensor to the ego vehicle and bind sensor to the ECU.
+//! \note the origin position of the car is the middle of the rear axle. Sensors
+//! are placed relatively to the vehicle origin. X-axis is along the vehicle length
+//! directed to the front. the Y-axis is along the vehicle left.
+//-----------------------------------------------------------------------------
+static void attach_sensors(Car& car, AutoParkECU& ecu, City const& city)
 {
-    // If desired, use a different color than the default for the ego car.
-    car.color = sf::Color::Cyan;
+    // Blueprints for 4 antennas placed perpendicularly on each wheel.
+    // Antenna is kind of tactile sensor like done in cockroach robots.
+    // Note the blueprint is static since vehicle does not copy blueprints
+    // but refer it.
+    constexpr Meter range = 4.0_m; // Single detection up to this distance
+    Degree orientation = 90.0_deg; // Perpendicular
+    Meter offx = car.blueprint.wheelbase;
+    Meter offy = car.blueprint.width / 2.0f - /*car.blueprint.wheel_width*/ 0.1_m / 2.0f; // FIXME
+    static const std::map<const char*, AntennaBluePrint> antenna_blueprints = {
+        { "antenna_FL", { sf::Vector2<Meter>(offx,   offy),  orientation, range } },
+        { "antenna_FR", { sf::Vector2<Meter>(offx,  -offy), -orientation, range } },
+        { "antenna_RL", { sf::Vector2<Meter>(0.0_m,  offy),  orientation, range } },
+        { "antenna_RR", { sf::Vector2<Meter>(0.0_m, -offy), -orientation, range } },
+    };
 
-    // Add sensors
-    //car.addRadar(Radar(sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f), 90.0f, 20.0f, 2.0f));
-#if 0
-    car.addRadar({ .offset = sf::Vector2f(car.blueprint.wheelbase + car.blueprint.front_overhang, 0.0f),
-               .orientation = 90.0f,
-               .fov = 20.0f,
-               .range = 2.0f/*174.0f*/ });
-#endif
+    // Attach antennas to the car.
+    for (auto const& bp: antenna_blueprints)
+    {
+        Antenna& antenna = car.addSensor<Antenna, AntennaBluePrint>(bp.second, bp.first, city, sf::Color::Blue);
+        //antenna.renderable = true; // Default param. Set false to hide it
+        ecu.observe(antenna); // Antenna will notify the ECU
+    }
 
-    // Add ECUs
-    //car.addECU<AutoParkECU>(car); // FIXME how to avoid adding car ?
+    // Blueprint for 1 radar. The radar is not yet used.
+    offx = car.blueprint.wheelbase + car.blueprint.front_overhang;
+    offy = 0.0_m;
+    constexpr Degree fov = 45.0_deg;
+    orientation = 0.0_deg;
+    static const std::map<size_t, RadarBluePrint> radar_blueprints = {
+        { 0u, { sf::Vector2<Meter>(offx, offy), orientation, fov, range } },
+    };
+
+    // Attach radars to the car.
+    for (auto const& bp: radar_blueprints)
+    {
+        Radar& radar = car.addSensor<Radar, RadarBluePrint>(bp.second, "radar", city, sf::Color::Red);
+        //radar.renderable = true;
+        // ecu.observe(radar);
+    }
+
+    car.showSensors(false);
+}
+
+//-----------------------------------------------------------------------------
+//! \brief Customize the ego vehicle. Add sensors, an ECU for doing autonomous
+//! parallel maneuvers. The car reacts to the user keyboard events (drive, do
+//! the parallel maneuver). We also monitor the ego car states in a CSV file
+//! for post-analysis in an application such as Scilab.
+//-----------------------------------------------------------------------------
+static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
+{
+    // Monitor the Ego car. You can monitor other states if needed.
+    simulator.monitor.observe(car.position().x, car.position().y, car.speed())
+            .header("Ego X-coord [m]", "Ego Y-coord [m]", "Ego longitudinal speed [mps]");
+
+    // Add ECU for doing autonomous parking.
+    // FIXME how to avoid adding car (shall be implicit)
+    // FIXME avoid passing City but City.collidables() instead.
+    // https://github.com/Lecrapouille/Highway/issues/26
+    AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city);
+
+    // Add sensors to the ego car and bind them to the ECU.
+    attach_sensors(car, ecu, city);
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()
     {
-        //car.turningIndicator(false, m_turning_right ^ true);
+        bool turning_right = (car.turningIndicator() == TurningIndicator::Right);
+        car.turningIndicator(false, turning_right ^ true);
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageUp, [&car]()
     {
-        //car.turningIndicator(m_turning_left ^ true, false);
+        bool turning_left = (car.turningIndicator() == TurningIndicator::Left);
+        car.turningIndicator(turning_left ^ true, false);
     });
 
     // Make the car reacts from the keyboard: set car speed (kinematic).
@@ -109,29 +161,65 @@ static Car& customize(Car& car)
 }
 
 //-----------------------------------------------------------------------------
-Car& create_city(City& city)
+//! \brief Define conditions to stop the simulation.
+//-----------------------------------------------------------------------------
+bool simulation_halt_when(Simulator const& simulator)
 {
-    std::cout << "Creating city for scenario '" << simulation_name()
-              << "'" << std::endl;
+    HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
+                         "Time simulation slipped!");
+    HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
+                         "Ego car is outside the parking!");
+    HALT_SIMULATION_WHEN(simulator.ego().collided(),
+                         "Ego car collided!");
+    CONTINUE_SIMULATION;
+}
 
+//-----------------------------------------------------------------------------
+//! \brief Create a basic city world made of roads, parking slots and parked
+//! cars. The ego car is on the road.
+//-----------------------------------------------------------------------------
+Car& simulation_create_city(Simulator& simulator, City& city)
+{
     // FIXME I do not understand why this is needed while Simulator::create()
     // does it before calling this instance
     BluePrints::init();
 
-    // Create parallel or perpendicular or diagnoal parking slots
-    const int angle = 0u;
-    std::string dim = "epi." + std::to_string(angle);
-    Parking& parking0 = city.addParking(dim.c_str(), sf::Vector2<Meter>(97.5_m, 100.0_m), 0.0_deg); // .attachTo(road1, offset);
-    Parking& parking1 = city.addParking(dim.c_str(), parking0.position() + parking0.delta(), 0.0_deg);
-    Parking& parking2 = city.addParking(dim.c_str(), parking1.position() + parking1.delta(), 0.0_deg);
-    Parking& parking3 = city.addParking(dim.c_str(), parking2.position() + parking2.delta(), 0.0_deg);
-    /*Parking& parking4 =*/ city.addParking(dim.c_str(), parking3.position() + parking3.delta(), 0.0_deg);
+    // Initial states
+    const char *parking_type = "epi.0"; // parallel slots
+    const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type).length;
+    const Meter parking_width = BluePrints::get<ParkingBluePrint>(parking_type).width;
+    const sf::Vector2<Meter> p(97.0_m, 105.0_m); // Initial road position
+    constexpr size_t number_parkings = 5u; // Number of parking slots along the road
 
-    // Add parked cars (static)
+    // Create a road
+    const Meter road_width = 2.0_m;
+    const Meter road_distance = double(number_parkings) * parking_length;
+    const std::array<size_t, TrafficSide::Max> lanes{1u, 2u}; // Number of lanes constituing the road
+    const std::vector<sf::Vector2<Meter>> road_centers = {
+        p, p + sf::Vector2<Meter>(road_distance, 0.0*road_distance)
+    };
+    Road& road1 = city.addRoad(road_centers, road_width, lanes);
+
+    // Add cars along the road.
+    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.0, 0.5);
+
+    // Create parallel parking slots along the road right side
+    city.addParking(parking_type, road1, TrafficSide::LeftHand, 0.0, 1.0);
+    Parking& parking0 = city.addParking(parking_type, road1, TrafficSide::RightHand, 0.0, 1.0);
+    Parking& parking1 = city.addParking(parking0);
+    Parking& parking2 = city.addParking(parking1);
+    Parking& parking3 = city.addParking(parking2);
+    Parking& parking4 = city.addParking(parking3);
+
+    // Add parked cars (static). See BluePrints.cpp for the mark of vehicle.
+    // Parking slots 2 and 4 are empty.
     city.addCar("Renault.Twingo", parking0);
-    city.addCar("Renault.Twingo", parking1);
-    city.addCar("Renault.Twingo", parking3);
+    city.addCar("Audi.A6", parking1);
+    city.addCar("Audi.A6", parking3);
 
-    // Self-parking car (dynamic). Always be the last in the container
-    return customize(city.addEgo("Renault.Twingo", parking0.position() + sf::Vector2<Meter>(0.0_m, 5.0_m)));
+    // Self-parking ego car (dynamic).
+    // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
+    // The ego is centered on its lane (Y-axis).
+    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.1, 0.5);
+    return customize_ego(simulator, city, ego);
 }
