@@ -172,13 +172,25 @@ void GUISimulation::onHandleInput()
 //------------------------------------------------------------------------------
 void GUISimulation::onUpdate(const Second dt) // FIXME to be threaded
 {
-    if (simulator.continuing())
+    if (m_state == GUISimulation::State::Running)
     {
-        simulator.update(dt);
+        if (simulator.continuing())
+        {
+            simulator.update(dt);
+        }
+        else
+        {
+            m_state = GUISimulation::State::Closing;
+            m_message_bar.append("\nHalting the simulation ...");
+        }
     }
-    else
+    else // Wait some seconds before closing the window
     {
-        close();
+        if (m_message_bar.fadded())
+        {
+            m_state = GUISimulation::State::Running;
+            close();
+        }
     }
 }
 

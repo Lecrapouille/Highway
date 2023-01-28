@@ -109,6 +109,8 @@ private: // Derived from Application::GUI
 
 private:
 
+    enum State { Running, Closing };
+
     //! \brief For managing world coordinates, zoom and camera displacement.
     sf::View m_simulation_view;
     //! \brief For displaying the interface.
@@ -123,6 +125,8 @@ private:
     sf::Font m_font;
     //! \brief Display info or error messages.
     mutable MessageBar m_message_bar;
+    //! \brief
+    GUISimulation::State m_state = GUISimulation::State::Running;
 
 public:
 
