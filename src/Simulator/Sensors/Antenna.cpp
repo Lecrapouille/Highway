@@ -51,7 +51,7 @@ void Antenna::update(Second const dt)
 bool Antenna::detects(sf::RectangleShape const& other, sf::Vector2<Meter>& position) const
 {
     sf::Vector2f p;
-    const bool res = ::collide(shape.obb(), other, p);
+    const bool res = math::collide(shape.obb(), other, p);
     position = sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
     return res;
 }

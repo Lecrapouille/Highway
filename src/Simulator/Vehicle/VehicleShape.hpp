@@ -138,7 +138,7 @@ public:
     //--------------------------------------------------------------------------
     inline bool collides(sf::RectangleShape const& other, sf::Vector2f& p) const
     {
-        return ::collide(m_obb, other, p);
+        return math::collide(m_obb, other, p);
     }
 
     //--------------------------------------------------------------------------

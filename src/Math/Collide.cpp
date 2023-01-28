@@ -27,6 +27,8 @@
 #include <cmath>
 #include "Math/Collide.hpp"
 
+namespace math {
+
 using RectVertexArray = std::array<sf::Vector2f, 4>;
 const float TOLERANCE = 0.0001f;
 
@@ -171,3 +173,5 @@ bool collide(const sf::RectangleShape& obb1, const sf::RectangleShape& obb2, sf:
     }
     return true;
 }
+
+} // namespace math

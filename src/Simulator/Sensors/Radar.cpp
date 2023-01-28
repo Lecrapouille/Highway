@@ -49,7 +49,7 @@ void Radar::update(Second const dt)
 //------------------------------------------------------------------------------
 bool Radar::detects(sf::RectangleShape const& other, sf::Vector2f& p) const
 {
-    return ::collide(shape.obb(), other, p);
+    return math::collide(shape.obb(), other, p);
 }
 
 //------------------------------------------------------------------------------
