@@ -24,11 +24,6 @@
 #include "Vehicle/Car.hpp"
 
 //------------------------------------------------------------------------------
-ParkingBluePrint::ParkingBluePrint(Meter const l, Meter const w, Degree const a)
-    : length(l), width(w), angle(a)
-{}
-
-//------------------------------------------------------------------------------
 static Parking::Type convert(Degree const angle)
 {
     size_t a = size_t(angle.value());
@@ -102,6 +97,20 @@ void Parking::setOrigin(Origin const where)
 #endif
 
 //------------------------------------------------------------------------------
+void Parking::update(Second const /*dt*/)
+{
+    if (m_car == nullptr)
+        return ;
+
+    sf::Vector2f p;
+    if (!math::collide(m_shape, m_car->shape().obb(), p))
+    {
+        // Unbind the car that was inside the slot
+        m_car = nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
 bool Parking::bind(Car& car)
 {
     if (!setOccupied(car))
@@ -139,27 +148,4 @@ bool Parking::setOccupied(Car& car)
 
     m_car = &car;
     return true;
-}
-
-//------------------------------------------------------------------------------
-void Parking::unbind()
-{
-    if (m_car == nullptr)
-        return ;
-
-    //m_car.bind(false);
-    m_car = nullptr;
-}
-
-//------------------------------------------------------------------------------
-bool Parking::empty() const
-{
-    return m_car == nullptr;
-}
-
-//------------------------------------------------------------------------------
-Car& Parking::car()
-{
-    assert(m_car != nullptr);
-    return *m_car;
 }

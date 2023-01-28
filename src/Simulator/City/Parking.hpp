@@ -45,7 +45,9 @@ struct ParkingBluePrint
     //! \param[in] a parking lane angle [deg] (0°: parallel, 90°:
     //! perpendicular).
     //----------------------------------------------------------------------
-    ParkingBluePrint(Meter const l, Meter const w, Degree const a);
+    ParkingBluePrint(Meter const l, Meter const w, Degree const a)
+        : length(l), width(w), angle(a)
+    {}
 
     //! \brief Vehicle length [meter]
     Meter length;
@@ -118,29 +120,30 @@ public:
     {}
 
     //--------------------------------------------------------------------------
-    //! \brief Make the slot occupied by the car.
-    //! \param[inout] car to be parked. Its position and orientation will be
-    //! modified by this method to follow the parking slot. Use this method only
-    //! when constructing the simulation world.
-    //! \return true if the parking slot was empty.
+    //! \brief
+    //--------------------------------------------------------------------------
+    void update(Second const dt);
+
+    //--------------------------------------------------------------------------
+    //! \brief Place a vehicle in the parking slot. The slot will be set
+    //! occupied and the car position and orientation will be modified to follow
+    //! the parking slot orientation. You should only call this method during
+    //! the simulation initialization for creating the city (and during the
+    //! simulation but in an off-rendered part of the city) since there is not
+    //! physcally realist.
+    //! \param[inout] car to be parked.
     //--------------------------------------------------------------------------
     bool bind(Car& car);
 
     //--------------------------------------------------------------------------
-    //! \brief Set the parking slot empty. If a car was already parked it stays
-    //! at its current position.
-    //--------------------------------------------------------------------------
-    void unbind();
-
-    //--------------------------------------------------------------------------
     //! \brief Is the parking occupied by a parked car ?
     //--------------------------------------------------------------------------
-    bool empty() const;
+    inline bool empty() const { return m_car == nullptr; }
 
     //--------------------------------------------------------------------------
     //! \brief Parked car getter (non const).
     //--------------------------------------------------------------------------
-    Car& car();
+    inline Car& car() { assert(m_car != nullptr); return *m_car; }
 
     //--------------------------------------------------------------------------
     //! \brief Return the origin position of the parking (middle of the left
@@ -190,8 +193,11 @@ public:
     //--------------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, Parking const& parking)
     {
-        os << "Parking P = (" << parking.position().x << ", " << parking.position().y << "), "
-           << "length = " << parking.blueprint.length << ", width = " << parking.blueprint.width
+        os << "Parking P = ("
+           << parking.position().x << ", "
+           << parking.position().y << "), "
+           << "length = " << parking.blueprint.length
+           << ", width = " << parking.blueprint.width
            << ", angle = " << parking.blueprint.angle;
         return os;
     }
@@ -221,9 +227,6 @@ protected:
     sf::RectangleShape m_shape;
     //! \brief Heading [rad]
     Radian m_heading;
-
-private:
-
     //! \brief Empty/Occupied slot?
     Car* m_car = nullptr;
 };

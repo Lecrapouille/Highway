@@ -228,15 +228,21 @@ void Simulator::update(const Second dt)
         return ;
     }
 
-    // Update physics, ECU, sensors ...
+    // Update physics, ECU, sensors of all NPC vehicles ...
     for (auto& it: m_city.cars())
     {
         it->update(dt);
     }
 
-    // Ego vehicle
+    // Update physics, ECU, sensors of the Ego vehicle
     m_ego->update(dt);
     collisions(*m_ego);
+
+    // Update parkings
+    for (auto& it: m_city.parkings())
+    {
+        it->update(dt);
+    }
 
     // Make the camera follows the car
     if (m_follow != nullptr)
