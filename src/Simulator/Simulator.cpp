@@ -302,6 +302,6 @@ void Simulator::drawSimulation(sf::View const& view)
 void Simulator::drawHUD(sf::View const& view)
 {
     m_renderer.setView(view);
-    m_message_bar.size(m_renderer.getSize());
+    m_message_bar.reshape(float(m_renderer.getSize().x));
     m_renderer.draw(m_message_bar);
 }
