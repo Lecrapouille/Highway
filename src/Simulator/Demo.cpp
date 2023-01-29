@@ -116,6 +116,12 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
     // https://github.com/Lecrapouille/Highway/issues/26
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city);
 
+    // Display ECU message to the GUI
+    ecu.callback(ECU::Event::Message, [&simulator](std::string const&txt)
+    {
+        simulator.messagebox(txt, sf::Color::Yellow);
+    });
+
     // Add sensors to the ego car and bind them to the ECU.
     attach_sensors(car, ecu, city);
 
@@ -216,7 +222,7 @@ static Car& simulation_create_city(Simulator& simulator, City& city)
     // Self-parking ego car (dynamic).
     // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
     // The ego is centered on its lane (Y-axis).
-    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.1, 0.5);
+    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.0, 0.5);
     return customize_ego(simulator, city, ego);
 }
 

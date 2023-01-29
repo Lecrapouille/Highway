@@ -22,9 +22,11 @@
 #ifndef ECU_HPP
 #  define ECU_HPP
 
+#  include "Simulator/Sensors/Sensor.hpp"
 #  include "Math/Units.hpp"
 #  include "Common/Components.hpp"
-#  include "Simulator/Sensors/Sensor.hpp"
+#  include "Common/Observer.hpp"
+#  include "MyLogger/Logger.hpp"
 
 // ****************************************************************************
 //! \brief Electronic Control Unit. An ECU is an embedded system in automotive
@@ -35,32 +37,64 @@ class ECU: public Component, public SensorObserver
 {
 public:
 
-   //-------------------------------------------------------------------------
-   //! \brief Implement Entity-Component-System to allow adding compositions
-   //! dynamically.
-   //-------------------------------------------------------------------------
-   COMPONENT_CLASSTYPE(ECU, Component);
+   enum Event { Message };
 
-   //-------------------------------------------------------------------------
-   //! \brief Needed because of pure virtual methods.
-   //-------------------------------------------------------------------------
-   virtual ~ECU() = default;
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    typedef std::function<void(std::string const&)> Callback;
 
-public:
+    //-------------------------------------------------------------------------
+    //! \brief Implement Entity-Component-System to allow adding compositions
+    //! dynamically.
+    //-------------------------------------------------------------------------
+    COMPONENT_CLASSTYPE(ECU, Component);
 
-   //-------------------------------------------------------------------------
-   //! \brief Observer pattern. Bind the given \c sensor to get information
-   //! from it. A sensor can be used by several ECUs.
-   //-------------------------------------------------------------------------
-   void observe(Sensor& sensor)
-   {
-      sensor.attachObserver(*this);
-   }
+    //-------------------------------------------------------------------------
+    //! \brief Needed because of pure virtual methods.
+    //-------------------------------------------------------------------------
+    virtual ~ECU() = default;
 
-   //-------------------------------------------------------------------------
-   //! \brief Do computation.
-   //-------------------------------------------------------------------------
-   virtual void update(Second const dt) = 0;
+    //-------------------------------------------------------------------------
+    //! \brief Observer pattern. Bind the given \c sensor to get information
+    //! from it. A sensor can be used by several ECUs.
+    //-------------------------------------------------------------------------
+    void observe(Sensor& sensor)
+    {
+        sensor.attachObserver(*this);
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Register a callback for reacting to SFML press events.
+    //-------------------------------------------------------------------------
+    inline void callback(size_t const event, Callback&& cb)
+    {
+        m_callbacks[event] = cb;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    bool reactTo(size_t const event, std::string const& txt)
+    {
+        auto it = m_callbacks.find(event);
+        if (it != m_callbacks.end())
+        {
+            it->second(txt);
+            return true;
+        }
+        return false;
+    }
+
+    //-------------------------------------------------------------------------
+    //! \brief Do computation.
+    //-------------------------------------------------------------------------
+    virtual void update(Second const dt) = 0;
+
+private:
+
+    //! \brief List of reactions to do when events occured
+    std::map<size_t, Callback> m_callbacks;
 };
 
 #endif

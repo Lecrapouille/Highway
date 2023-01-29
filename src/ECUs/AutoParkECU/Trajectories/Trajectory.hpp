@@ -28,6 +28,7 @@
 
 class Car;
 class VehicleControl;
+class ECU;
 
 static const bool USE_KINEMATIC = true;
 
@@ -111,7 +112,7 @@ class CarTrajectory
 public:
 
     using Ptr = std::unique_ptr<CarTrajectory>;
-    static CarTrajectory::Ptr create(Parking::Type const type);
+    static CarTrajectory::Ptr create(ECU& ecu, Parking::Type const type);
 
     virtual ~CarTrajectory() = default;
     virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;

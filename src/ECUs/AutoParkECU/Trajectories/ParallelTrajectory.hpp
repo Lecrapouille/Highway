@@ -33,6 +33,7 @@ class ParallelTrajectory: public CarTrajectory
 {
 public:
 
+    ParallelTrajectory(ECU& ecu) : m_ecu(ecu) {}
     virtual bool init(Car& car, Parking const& parking, bool const entering) override;
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -67,6 +68,8 @@ private:
                             MeterPerSecond const VMAX, MeterPerSecondSquared const ADES);
 private:
 
+    //! \brief Needed for sending messages to the GUI.
+    ECU& m_ecu;
     //! \brief Minimal turning radius for the internal point of the car.
     Meter Rimin;
     //! \brief Minimal turning radius for the external point of the car.

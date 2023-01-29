@@ -68,8 +68,8 @@ private:
         //! \param[in] lmin Minimal turning radius for the external point of the
         //! car.
         //----------------------------------------------------------------------
-        Scanner(Meter const lmin)
-            : Lmin(lmin)
+        Scanner(AutoParkECU& ecu, Meter const lmin)
+            : m_ecu(ecu), Lmin(lmin)
         {}
 
         //----------------------------------------------------------------------
@@ -124,6 +124,8 @@ private:
 
     private:
 
+        //! \brief
+        AutoParkECU& m_ecu;
         //! \brief Minimal turning radius for the external point of the car.
         //! FIXME this is computed when doing the parallel trajectory but we also
         //! need here. Can this be factorized ?
@@ -134,7 +136,7 @@ private:
         //! detected.
         sf::Vector2<Meter> m_position = sf::Vector2<Meter>(0.0_m, 0.0_m);
         //! \brief Estimation of the empty spot length.
-        Meter m_slot_length = 0.0_m;
+        Meter m_spot_length = 0.0_m;
         //! \brief Total vehicle distance since searching for a parking slot
         Meter m_distance = 0.0_m;
         //! \brief Memorize the parking spot once detected.
@@ -165,8 +167,8 @@ private:
         //! \param[in] lmin Minimal turning radius for the external point of the
         //! car.
         //----------------------------------------------------------------------
-        StateMachine(Meter const lmin)
-            : m_scanner(lmin)
+        StateMachine(AutoParkECU& ecu, Meter const lmin)
+            : m_ecu(ecu), m_scanner(ecu, lmin)
         {}
 
         //----------------------------------------------------------------------
@@ -202,6 +204,8 @@ private:
             }
         }
 
+        //! \brief
+        AutoParkECU& m_ecu;
         //! \brief Current state of the state machine.
         States m_state = States::IDLE;
         //! \brief Parking spot scanner state machine.

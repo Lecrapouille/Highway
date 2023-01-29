@@ -32,16 +32,20 @@
 
 //------------------------------------------------------------------------------
 AutoParkECU::Scanner::Status
-AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const& detection)
+AutoParkECU::Scanner::update(Second const dt, Car& car,
+                             Antenna::Detection const& detection)
 {
     States state = m_state;
 
-    // This condition is purely for the simulation: is the ego car outside the
-    // simulation game (parking area) ?
+    // Estimate the distance made by the vehicle from its speed information.
     m_distance += car.speed() * dt;
-    if (m_distance >= 30.0_m)
+
+    // Disable the auto-park ECU if the car travelled too many distance from its
+    // initial position to find an empty parking spot.
+    if (m_distance >= 12.0_m)
     {
-        std::cout << "  Max distance reached: coukd not found parking slot" << std::endl;
+        m_ecu.reactTo(ECU::Event::Message,
+                      "Max distance reached: could not found parking slot");
         m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_NOT_FOUND;
     }
 
@@ -52,16 +56,19 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
         return AutoParkECU::Scanner::Status::FAILED;
 
     case AutoParkECU::Scanner::States::IDLE:
-        // The car was stopped and now it has to drive along parking spots and
-        // scan parked cars to find the first empty parking spot.
-        m_slot_length = 0.0_m;
+        // The car was stopped and now it has to drive along the parking spots
+        // and to scan for parked cars in the aim to find the first empty
+        // parking spot.
+        m_spot_length = 0.0_m;
         m_distance = 0.0_m;
         m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         return AutoParkECU::Scanner::Status::IN_PROGRESS;
 
     case AutoParkECU::Scanner::States::DETECT_FIRST_CAR:
-        // The car has detected the first parked car. Now search a gap (either
-        // space between car either real parking spot).
+        // The car has detected the first parked car. Now we have to estimate
+        // the gap length with the next parked car. Depending on the gap length
+        // we can deduce we have found a real parking spot or either the space
+        // between parked cars.
         if (!detection.valid)
         {
             m_position = car.position();
@@ -70,38 +77,52 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
         return AutoParkECU::Scanner::Status::IN_PROGRESS;
 
     case AutoParkECU::Scanner::States::DETECT_EMPTY_SPOT:
-        // The car is detecting a "hole". Is it a real parking spot ? To know it
-        // it integrates its speed to know the length of the spot.
+        // The car is detecting a gap between parked cars but is it a real
+        // parking spot? To confirm it, we have to integrate the vehicle speed
+        // to know the length of the gap.
         if (detection.valid)
         {
             m_state = AutoParkECU::Scanner::States::DETECT_SECOND_CAR;
         }
-        else if (m_slot_length >= Lmin)
+        else if (m_spot_length >= Lmin)
         {
-            // two consecutive empty spots: avoid to drive to the next parked
-            // car do the maneuver directly
+            // If the gap between vehicle is enough large for doing a
+            // single-trial trajectory (i.e. two consecutive empty spots) avoid
+            // to drive up to the next parked car but let do the maneuver
+            // directly.
             m_state = AutoParkECU::Scanner::States::DETECT_SECOND_CAR;
         }
 
-        m_slot_length += car.speed() * dt;
+        // Estimate the parking spot length by integrating the vehicle
+        // longitunidal speed.
+        m_spot_length += car.speed() * dt;
         return AutoParkECU::Scanner::Status::IN_PROGRESS;
 
     case AutoParkECU::Scanner::States::DETECT_SECOND_CAR:
-        if (detection.valid && (m_slot_length <= car.blueprint.length))
+        if (detection.valid && (m_spot_length <= car.blueprint.length))
         {
-            // Too small length: continue scanning parked cars
-            std::cout << "Scan: No way to park at X: " << m_position.x
-                      << " because distance is too short (" << m_slot_length << " m)" << std::endl;
+            // The gap between parked cars is too small: this is not a parking,
+            // so let continuing scanning other parked cars.
+            std::stringstream ss;
+            ss << "Scan: No way to park at X: " << m_position.x
+               << " because distance is too short (" << m_spot_length << ")";
+            m_ecu.reactTo(ECU::Event::Message, ss.str());
             m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         }
-        else if (detection.valid || m_slot_length >= Lmin)
+        else if (detection.valid || m_spot_length >= Lmin)
         {
             // TODO Missing detection of the type of parking type.
             // https://github.com/Lecrapouille/Highway/issues/32
             Meter pw = BluePrints::get<ParkingBluePrint>("epi.0").width;
-            ParkingBluePrint dim(m_slot_length, pw, 0.0_deg);
-            m_parking = std::make_unique<Parking>(dim, sf::Vector2<Meter>(m_position.x, m_position.y - detection.distance), 0.0_deg);
-            std::cout << "Scan: Parking spot detected: " << *m_parking << std::endl;
+            ParkingBluePrint dim(m_spot_length, pw, 0.0_deg);
+            //ParkingBluePrint dim = BluePrints::get<ParkingBluePrint>("epi.0");
+            m_parking = std::make_unique<Parking>
+                        (dim, sf::Vector2<Meter>(//107.0_m, 101.0_m),
+                         m_position.x, m_position.y /*- detection.distance*/ - 0.5 * pw),
+                         0.0_deg);
+            std::stringstream ss;
+            ss << "Scan: Parking spot detected: " << *m_parking;
+            m_ecu.reactTo(ECU::Event::Message, ss.str());
             m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND;
             return AutoParkECU::Scanner::Status::SUCCEEDED;
         }
@@ -109,15 +130,18 @@ AutoParkECU::Scanner::update(Second const dt, Car& car, Antenna::Detection const
         return AutoParkECU::Scanner::Status::IN_PROGRESS;
 
     case AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND:
-        // The parking was found, stay in this state and return the parking
+        // The parking was found, stay in this state and let returning the
+        // currently found parking dimension.
         return AutoParkECU::Scanner::Status::SUCCEEDED;
     }
 
     // Debug purpose
     if (state != m_state)
     {
-        std::cout << "  SelfParkingCar::Scan new state: "
-                  << AutoParkECU::Scanner::to_string(m_state) << std::endl;
+        std::stringstream ss;
+        ss << "SelfParkingCar::Scan new state: "
+           << AutoParkECU::Scanner::to_string(m_state);
+        m_ecu.reactTo(ECU::Event::Message, ss.str());
     }
 
     return AutoParkECU::Scanner::Status::FAILED;
@@ -132,20 +156,23 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     if ((m_state != AutoParkECU::StateMachine::States::IDLE) &&
         (ecu.m_ego.turningIndicator() == TurningIndicator::Off))
     {
-        std::cout << "The driver has aborted the auto-parking" << std::endl;
+        m_ecu.reactTo(ECU::Event::Message, "The driver has aborted the auto-parking");
         m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
     }
 
     switch (m_state)
     {
     case AutoParkECU::StateMachine::States::IDLE:
-        // Waiting the driver press a button to start the self-parking process.
+        // Waiting the driver has pressed the turning indicator to start the
+        // self-parking process.
         if ((ecu.m_ego.turningIndicator() == TurningIndicator::Left) ||
             (ecu.m_ego.turningIndicator() == TurningIndicator::Right))
         {
             if (true) // TODO car.isParked() https://github.com/Lecrapouille/Highway/issues/28
             {
-                // The car is not parked: start scanning parked cars
+                // The car was not parked when the self-parking process has
+                // started: let scan parked cars along the road finding the
+                // first empty parking spot.
                 ecu.m_ego.showSensors(true);
                 m_state = AutoParkECU::StateMachine::States::SCAN_PARKING_SPOTS;
                 m_scanner.start();
@@ -154,7 +181,8 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
             }
             else
             {
-                // The car was parked: compute the path to leave the spot
+                // The car was parked when the self-parking process has started:
+                // let compute the path to leave the spot.
                 m_state = AutoParkECU::StateMachine::States::COMPUTE_LEAVING_TRAJECTORY;
             }
         }
@@ -162,17 +190,17 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 
     case AutoParkECU::StateMachine::States::SCAN_PARKING_SPOTS:
         {
-            // The car is scanning parked cars to find an empty parking spot
+            // The car is scanning parked cars to find an empty parking spot.
             Antenna::Detection const& detection = ecu.detect();
             AutoParkECU::Scanner::Status scanning = m_scanner.update(dt, ecu.m_ego, detection);
 
-            // Empty parking spot detected
+            // Empty parking spot detected.
             if (scanning == AutoParkECU::Scanner::Status::SUCCEEDED)
             {
                 ecu.m_ego.refSpeed(0.0_mps);
                 m_state = AutoParkECU::StateMachine::States::COMPUTE_ENTERING_TRAJECTORY;
             }
-            // Failed to find an empty parking spot
+            // Failed to find an empty parking spot.
             else if (scanning == AutoParkECU::Scanner::Status::FAILED)
             {
                 ecu.m_ego.refSpeed(0.0_mps);
@@ -208,26 +236,28 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
         else
         {
             // FIXME https://github.com/Lecrapouille/Highway/issues/29
-            std::cerr << "SORRY I do not know how to leave by myself. Not yet implemented" << std::endl;
+            m_ecu.reactTo(ECU::Event::Message, "SORRY I do not know how to leave"
+                          "by myself.Not yet implemented");
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         break;
 
     case AutoParkECU::StateMachine::States::DRIVE_ALONG_TRAJECTORY:
-        // The car is driving along its computed path
+        // The car is driving along its computed path to the parking spot.
         if (!ecu.hasTrajectory())
         {
-            std::cout << "No trajectory" << std::endl;
+            m_ecu.reactTo(ECU::Event::Message, "No trajectory found");
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         else if (ecu.updateTrajectory(dt) == false)
         {
-            std::cout << "Trajectory done" << std::endl;
+            m_ecu.reactTo(ECU::Event::Message, "Trajectory done");
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         else
         {
-            // Do nothing: the car is currently travelling along the trajectory
+            // Do nothing: the car is currently driving along the trajectory to
+            // the parking spot.
         }
         break;
 
@@ -243,9 +273,10 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     // Debug purpose
     if (state != m_state)
     {
-        std::cout << "SelfParkingCar::StateMachine new state: "
-                  << AutoParkECU::StateMachine::to_string(m_state)
-                  << std::endl;
+        std::stringstream ss;
+        ss <<  "SelfParkingCar::StateMachine new state: "
+           << AutoParkECU::StateMachine::to_string(m_state);
+        m_ecu.reactTo(ECU::Event::Message, ss.str());
     }
 }
 
@@ -259,7 +290,7 @@ static Meter computeLmin(Car const& car)
 
 //------------------------------------------------------------------------------
 AutoParkECU::AutoParkECU(Car& car, City const& city)
-    : m_ego(car), m_city(city), m_statemachine(computeLmin(car))
+    : m_ego(car), m_city(city), m_statemachine(*this, computeLmin(car))
 {
     LOGI("AutoParkECU created");
 }
@@ -282,24 +313,25 @@ void AutoParkECU::operator()(Antenna& antenna)
 {
     switch (m_ego.turningIndicator())
     {
-        case TurningIndicator::Right:
-            if (antenna.name != "antenna_RR")
-                return ;
-            break;
-        case TurningIndicator::Left:
-            if (antenna.name != "antenna_RL")
-                return ;
-            break;
-        default:
-            antenna.shape.color = antenna.shape.initial_color;
-            return;
+    case TurningIndicator::Right:
+        if (antenna.name != "antenna_RR")
+            return ;
+        break;
+    case TurningIndicator::Left:
+        if (antenna.name != "antenna_RL")
+            return ;
+        break;
+    default:
+        antenna.shape.color = antenna.shape.initial_color;
+        return;
     }
 
     if (antenna.detection().valid)
     {
         m_detection = antenna.detection();
-        m_detection.distance = 5.0_m;
-        //std::cout << "******* DETECTION " << m_detection.distance << " P: " << m_detection.position.x << ", " << m_detection.position.x << std::endl;
+        m_detection.distance = 0.2_m; // FIXME
+        // std::cout << "******* DETECTION " << m_detection.distance << " P: "
+        // << m_detection.position.x << ", " << m_detection.position.x << std::endl;
 
         antenna.shape.color = sf::Color::Red;
     }
@@ -328,7 +360,7 @@ Antenna::Detection const& AutoParkECU::detect()
 //------------------------------------------------------------------------------
 bool AutoParkECU::park(Parking const& parking, bool const entering)
 {
-    m_trajectory = CarTrajectory::create(parking.type);
+    m_trajectory = CarTrajectory::create(*this, parking.type);
     return m_trajectory->init(m_ego, parking, entering);
 }
 

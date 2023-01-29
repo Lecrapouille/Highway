@@ -98,7 +98,7 @@ public:
     void deactivate();
 
     //-------------------------------------------------------------------------
-    //! \brief Make the simulator reacts to the given event ID.
+    //! \brief Make the simulator reacts to the given input event ID.
     //-------------------------------------------------------------------------
     void reacts(size_t key);
 
