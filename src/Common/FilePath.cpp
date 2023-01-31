@@ -18,7 +18,7 @@
 // along with MyLogger.  If not, see <http://www.gnu.org/licenses/>.
 //==============================================================================
 
-#include "Common/Path.hpp"
+#include "Common/FilePath.hpp"
 #include <sstream>
 #include <sys/stat.h>
 #ifdef __APPLE__
@@ -27,10 +27,10 @@
 
 //------------------------------------------------------------------------------
 #ifdef __APPLE__
-std::string osx_get_resources_dir(std::string const& file)
+fs::path osx_get_resources_dir(fs::path const& file)
 {
     struct stat exists; // folder exists ?
-    std::string path;
+    fs::path path;
 
     CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
     char resourcePath[PATH_MAX];
@@ -43,7 +43,7 @@ std::string osx_get_resources_dir(std::string const& file)
             CFRelease(resourceURL);
         }
 
-        path = std::string(resourcePath) + "/" + file;
+        path = fs::path(resourcePath) + "/" + file;
         if (stat(path.c_str(), &exists) == 0)
         {
             return path;
@@ -51,7 +51,7 @@ std::string osx_get_resources_dir(std::string const& file)
     }
 
 #ifdef DATADIR
-    path = std::string(DATADIR) + "/" + file;
+    path = fs::path(DATADIR) + "/" + file;
     if (stat(path.c_str(), &exists) == 0)
     {
         return path;
@@ -71,7 +71,7 @@ std::string osx_get_resources_dir(std::string const& file)
 //------------------------------------------------------------------------------
 namespace File
 {
-    inline static bool exist(std::string const& path)
+    inline static bool exist(fs::path const& path)
     {
         struct stat buffer;
         return stat(path.c_str(), &buffer) == 0;
@@ -79,13 +79,13 @@ namespace File
 } // namespace
 
 //------------------------------------------------------------------------------
-Path::Path(std::string const& path)
+FilePath::FilePath(fs::path const& path)
 {
     split(path);
 }
 
 //------------------------------------------------------------------------------
-Path& Path::add(std::string const& path)
+FilePath& FilePath::add(fs::path const& path)
 {
     if (!path.empty())
     {
@@ -95,7 +95,7 @@ Path& Path::add(std::string const& path)
 }
 
 //------------------------------------------------------------------------------
-Path& Path::reset(std::string const& path)
+FilePath& FilePath::reset(fs::path const& path)
 {
     m_search_paths.clear();
     split(path);
@@ -103,7 +103,7 @@ Path& Path::reset(std::string const& path)
 }
 
 //------------------------------------------------------------------------------
-Path& Path::clear()
+FilePath& FilePath::clear()
 {
     m_search_paths.clear();
     m_string_path.clear();
@@ -111,7 +111,7 @@ Path& Path::clear()
 }
 
 //------------------------------------------------------------------------------
-Path& Path::remove(std::string const& path)
+FilePath& FilePath::remove(fs::path const& path)
 {
     m_search_paths.remove(path);
     update();
@@ -119,14 +119,14 @@ Path& Path::remove(std::string const& path)
 }
 
 //------------------------------------------------------------------------------
-std::pair<std::string, bool> Path::find(std::string const& filename) const
+std::pair<fs::path, bool> FilePath::find(fs::path const& filename) const
 {
     if (File::exist(filename))
         return std::make_pair(filename, true);
 
     if (!m_stack_path.empty())
     {
-        std::string temporary_file;
+        fs::path temporary_file;
         temporary_file = top();
         temporary_file += filename;
         if (File::exist(temporary_file))
@@ -137,7 +137,7 @@ std::pair<std::string, bool> Path::find(std::string const& filename) const
 
     for (auto const& it: m_search_paths)
     {
-        std::string file(it + filename);
+        fs::path file(it / filename);
         if (File::exist(file))
         {
             return std::make_pair(file, true);
@@ -145,15 +145,15 @@ std::pair<std::string, bool> Path::find(std::string const& filename) const
     }
 
     // Not found
-    return std::make_pair(std::string(), false);
+    return std::make_pair(fs::path(), false);
 }
 
 //------------------------------------------------------------------------------
-std::string Path::expand(std::string const& filename) const
+fs::path FilePath::expand(fs::path const& filename) const
 {
     for (auto const& it: m_search_paths)
     {
-        std::string file(it + filename);
+        fs::path file(it / filename);
         if (File::exist(file))
             return file;
     }
@@ -162,13 +162,13 @@ std::string Path::expand(std::string const& filename) const
 }
 
 //------------------------------------------------------------------------------
-std::string const &Path::toString() const
+fs::path const &FilePath::toString() const
 {
     return m_string_path;
 }
 
 //------------------------------------------------------------------------------
-void Path::update()
+void FilePath::update()
 {
     m_string_path.clear();
     m_string_path += ".";
@@ -181,13 +181,13 @@ void Path::update()
     for (auto const& it: m_search_paths)
     {
         m_string_path += it;
-        m_string_path.pop_back(); // Remove the '/' char
+        //m_string_path.pop_back(); // Remove the '/' char
         m_string_path += m_delimiter;
     }
 }
 
 //------------------------------------------------------------------------------
-void Path::split(std::string const& path)
+void FilePath::split(fs::path const& path)
 {
     std::stringstream ss(path);
     std::string directory;

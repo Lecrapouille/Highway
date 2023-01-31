@@ -82,8 +82,8 @@ private:
 
     struct ScenarioEntry
     {
-        std::string libpath;
-        std::string filename;
+        fs::path libpath;
+        fs::path filename;
         std::string brief;
     };
 

@@ -21,6 +21,7 @@
 #ifndef COMMON_PATH_HPP
 #  define COMMON_PATH_HPP
 
+#  include "Common/FileSystem.hpp"
 #  include "Common/Singleton.hpp"
 #  include <list>
 #  include <string>
@@ -30,7 +31,7 @@
 //! \brief Class manipulating a set of paths for searching files in the same
 //! idea of the Unix environment variable $PATH.
 // *****************************************************************************
-class Path : public Singleton<Path>
+class FilePath : public Singleton<FilePath>
 {
 public:
 
@@ -39,41 +40,41 @@ public:
     //! by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    Path(std::string const& path = "");
+    FilePath(fs::path const& path = "");
 
     //--------------------------------------------------------------------------
     //! \brief Destructor.
     //--------------------------------------------------------------------------
-    ~Path() = default;
+    ~FilePath() = default;
 
     //--------------------------------------------------------------------------
     //! \brief Append a new path. Directories are separated by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    Path& add(std::string const& path);
+    FilePath& add(fs::path const& path);
 
     //--------------------------------------------------------------------------
     //! \brief Reset the path state. Directories are separated by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    Path& reset(std::string const& path);
+    FilePath& reset(fs::path const& path);
 
     //--------------------------------------------------------------------------
     //! \brief Erase the path.
     //--------------------------------------------------------------------------
-    Path& clear();
+    FilePath& clear();
 
     //--------------------------------------------------------------------------
     //! \brief Erase the given directory from the path.
     //--------------------------------------------------------------------------
-    Path& remove(std::string const& path);
+    FilePath& remove(fs::path const& path);
 
     //--------------------------------------------------------------------------
     //! \brief Save temporary the path of currently loading MyLoggerMap
     //! file. The goal of the stack is to avoid to MyLogger to have path
     //! conflict with two loaded MyLoggerMap files.
     //--------------------------------------------------------------------------
-    Path& push(std::string const& path)
+    FilePath& push(fs::path const& path)
     {
         m_stack_path.push_back(path);
         return *this;
@@ -82,7 +83,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief once loaded the path is no longer needed.
     //--------------------------------------------------------------------------
-    Path& pop()
+    FilePath& pop()
     {
         if (!m_stack_path.empty())
         {
@@ -94,7 +95,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Get the top of the stack.
     //--------------------------------------------------------------------------
-    std::string top() const
+    fs::path top() const
     {
         return m_stack_path.back();
     }
@@ -107,17 +108,17 @@ public:
     //!
     //! \return the full path (if found) and the existence of this path.
     //--------------------------------------------------------------------------
-    std::pair<std::string, bool> find(std::string const& filename) const;
+    std::pair<fs::path, bool> find(fs::path const& filename) const;
 
     //--------------------------------------------------------------------------
     //! \brief Return the full path for the file (if found) else return itself.
     //--------------------------------------------------------------------------
-    std::string expand(std::string const& filename) const;
+    fs::path expand(fs::path const& filename) const;
 
     //--------------------------------------------------------------------------
     //! \brief Return the path as string.
     //--------------------------------------------------------------------------
-    std::string const& toString() const;
+    fs::path const& toString() const;
 
     //--------------------------------------------------------------------------
     //! \brief Return true if no path has been set.
@@ -131,27 +132,27 @@ protected:
 
     void update();
 
-    void split(std::string const& path);
+    void split(fs::path const& path);
 
 protected:
 
     //! \brief Path separator when several pathes are given as a single string.
     const char m_delimiter = ':';
     //! \brief the list of pathes.
-    std::list<std::string> m_search_paths;
+    std::list<fs::path> m_search_paths;
     //! \brief the list of pathes converted as a string. Pathes are separated by
     //! the m_delimiter char.
-    std::string m_string_path;
+    fs::path m_string_path;
     //! \brief Stack of temporary pathes. A temporary path is pushed when
     //! loading a MyLogger file: this allows to traverse its resources (a
     //! MyLogger file is a zip file containing directories and files). A stack
     //! is usefull when loading a MyLogger file that loads another MyLogger
     //! file.)
-    std::vector<std::string> m_stack_path;
+    std::vector<fs::path> m_stack_path;
 };
 
 #  ifdef __APPLE__
-std::string osx_get_resources_dir(std::string const& file);
+fs::path osx_get_resources_dir(fs::path const& file);
 #  endif
 
 #endif

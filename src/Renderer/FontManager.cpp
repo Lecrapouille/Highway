@@ -27,7 +27,7 @@
 bool FontManager::load(const char* name, const char* ttf)
 {
     std::unique_ptr<sf::Font> font = std::make_unique<sf::Font>();
-    std::string path(Path::instance().expand(ttf));
+    fs::path path(FilePath::instance().expand(ttf));
     if (font->loadFromFile(path))
     {
         m_fonts[name] = std::move(font);

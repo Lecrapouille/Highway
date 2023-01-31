@@ -23,7 +23,7 @@
 #  define FONT_MANAGER_HPP
 
 #  include "Common/Singleton.hpp"
-#  include "Common/Path.hpp"
+#  include "Common/FilePath.hpp"
 #  include <SFML/Graphics.hpp>
 #  include <memory>
 #  include <map>

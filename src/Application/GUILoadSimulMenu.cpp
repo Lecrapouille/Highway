@@ -22,7 +22,7 @@
 #include "Application/GUILoadSimulMenu.hpp"
 #include "Renderer/FontManager.hpp"
 #include "Common/FileSystem.hpp"
-#include "Common/Path.hpp"
+#include "Common/FilePath.hpp"
 
 //------------------------------------------------------------------------------
 GUILoadSimulMenu::GUILoadSimulMenu(Application& application, std::string const& name)
@@ -38,11 +38,11 @@ void GUILoadSimulMenu::createListScenarios()
     DynamicLoader loader;
     m_scenarios.clear();
 
-    std::pair<std::string, bool> res = Path::instance().find("Scenarios");
+    std::pair<fs::path, bool> res = FilePath::instance().find("Scenarios");
     if (!res.second)
         return ;
 
-    for (auto const& entry: fs::directory_iterator(Path::instance().expand("Scenarios")))
+    for (auto const& entry: fs::directory_iterator(FilePath::instance().expand("Scenarios")))
     {
         auto libpath = entry.path().string();
         if (libpath.substr(libpath.find_last_of(".") + 1) == SHARED_LIB_EXTENSION)
@@ -171,7 +171,7 @@ void GUILoadSimulMenu::onDraw()
     // Selections
     for (size_t i = 0u; i < m_scenarios.size(); ++i)
     {
-        std::string entry(m_scenarios[i].filename + ": " + m_scenarios[i].brief);
+        std::string entry = std::string(m_scenarios[i].filename) + ": " + m_scenarios[i].brief;
         m_text.setString(entry);
         m_text.setPosition(24.0f, 24.0f + 4.0f + 18.0f * float(i));
         m_text.setCharacterSize(18);

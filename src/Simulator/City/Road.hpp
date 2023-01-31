@@ -22,13 +22,8 @@
 #ifndef ROAD_HPP
 #  define ROAD_HPP
 
+#  include "Simulator/City/Network.hpp"
 #  include "Simulator/Actor.hpp"
-#  include "Math/Math.hpp"
-#  include "Math/Units.hpp"
-#  include <SFML/Graphics/RectangleShape.hpp>
-#  include <list>
-#  include <vector>
-#  include <memory>
 
 // https://fr.mathworks.com/help/driving/ref/drivingscenario.road.html
 
@@ -210,22 +205,6 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     inline Meter const& width() const { return m_width; }
-
-#if 0
-    //--------------------------------------------------------------------------
-    //! \brief Make the slot occupied by the car.
-    //! \param[inout] car to be parked. Its position and orientation will be
-    //! modified by this method to follow the parking slot. Use this method only
-    //! when constructing the simulation world.
-    //--------------------------------------------------------------------------
-    //bool bind(Car& car, size_t const way, std::Vector2<Meter> const& offset);
-
-    //--------------------------------------------------------------------------
-    //! \brief Get Cars on the road.
-    //--------------------------------------------------------------------------
-    std::list<Car*> cars(size_t const d, size_t const way);
-
-#endif
 
 private:
 

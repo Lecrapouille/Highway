@@ -45,7 +45,7 @@ static void display_project_info()
               << " mode " << std::endl
               << "Your code was git cloned on branch " << project::info::git_branch
               << " SHA1 " << project::info::git_sha1 << std::endl
-              << "Project searc path: " << Path::instance().toString() << std::endl
+              << "Project searc path: " << FilePath::instance().toString() << std::endl
               << "Log file: " << project::info::log_path << std::endl
               << std::endl;
 }
@@ -57,7 +57,7 @@ static void init_config()
 #ifdef __APPLE__
     Path::instance().add(osx_get_resources_dir("data"));
 #else
-    Path::instance().add("data").add(project::info::data_path);
+    FilePath::instance().add("data").add(project::info::data_path);
 #endif
     CONFIG_LOG(mylogger::project::Info(
         project::info::mode == project::info::debug,
