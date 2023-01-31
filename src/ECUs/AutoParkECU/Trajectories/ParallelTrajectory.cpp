@@ -109,12 +109,15 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
     m_ecu.logMessage("1-trial maneuver");
 
     // Initial car position: current position of the car
-    Xi = car.position().x;
-    Yi = car.position().y;
+    auto P = math::heading(car.position(), -car.heading());
+    Xi = P.x; // car.position().x;
+    Yi = P.y; // car.position().y;
 
     // Final destination: the parking slot
-    Xf = parking.origin().x;
-    Yf = parking.origin().y;
+    //std::cout << "Po: " << parking.origin().x << ", " << parking.origin().y << std::endl;
+    P = math::heading({107.618_m, 108.521_m}, -car.heading());//parking.origin(), -car.heading());
+    Xf = P.x; // parking.origin().x + parking.blueprint.length / 2.0;
+    Yf = P.y; // parking.origin().y - car.blueprint.width / 2.0;
 
     // C1: center of the ending turn (end position of the 2nd turning maneuver)
     C[0].x = Xf + car.blueprint.back_overhang;
@@ -146,7 +149,7 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
     // Minimal central angle for making the turn = atanf((Xt - C[0].x) / (C[0].y - Yt))
     theta_E[1] = theta_E[0] = units::math::atan2(Xt - C[0].x, C[0].y - Yt);
 
-    std::cout << "#############################" << std::endl;
+    std::cout << "### 1-trial maneuver ##########################" << std::endl;
     std::cout << "Initial position: " << Xi << " " << Yi << std::endl;
     std::cout << "Turning at position: " << Xs << " " << Ys << std::endl;
     std::cout << "Center 1st turn: " << C[1].x << " " << C[1].y << std::endl;
@@ -178,12 +181,14 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     Em[0].y = car.blueprint.width / 2.0;
 
     // Initial position
-    Xi = car.position().x;
-    Yi = car.position().y;
+    auto P = math::heading(car.position(), -car.heading());
+    Xi = P.x; // car.position().x;
+    Yi = P.y; // car.position().y;
 
     // Final position
-    Xf = parking.origin().x + parking.blueprint.length / 2.0;
-    Yf = parking.origin().y - car.blueprint.width / 2.0;
+    P = math::heading(parking.origin(), -car.heading());
+    Xf = P.x; // parking.origin().x + parking.blueprint.length / 2.0;
+    Yf = P.y; // parking.origin().y - car.blueprint.width / 2.0;
 
     // Give extra space to avoid the rear overhang of the ego car collides with
     // the parked car back the ego car.
@@ -478,8 +483,8 @@ void ParallelTrajectory::draw(sf::RenderTarget& target, sf::RenderStates states)
         target.draw(Arrow(C[1].x, C[1].y, Xt, Yt, sf::Color::Blue), states);
 
         // Turn 2 to make the ego car parallel to the road
-        target.draw(ARC(C[0].x, C[0].y, Rwmin, 270.0_deg, theta_E[1], sf::Color::Red), states);
-        target.draw(Arrow(C[0].x, C[0].y, C[0].x, Yf, sf::Color::Red), states);
+        target.draw(ARC(C[0].x, C[0].y, Rwmin, 270.0_deg, theta_E[1], sf::Color::Green), states);
+        target.draw(Arrow(C[0].x, C[0].y, C[0].x, Yf, sf::Color::Green), states);
 
         // Draw the path the car will follow.
         // Middle of the rear axle of the ego car when iterating for leaving the

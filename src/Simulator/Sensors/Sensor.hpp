@@ -145,6 +145,8 @@ public:
 
     //-------------------------------------------------------------------------
     //! \brief React to the given sensor when it has fresh data to give.
+    //! The best way to get the concrete type of the sensor is to implement
+    //! the visitor pattern on it.
     //-------------------------------------------------------------------------
     virtual void onSensorUpdated(Sensor& sensor) = 0;
 };
