@@ -102,7 +102,6 @@ void Application::loop(uint8_t const rate)
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
     const sf::Time time_per_frame = sf::seconds(1.0f / float(rate));
 
-
     while (m_renderer.isOpen())
     {
         GUI* gui = peek();
@@ -138,6 +137,17 @@ void Application::loop(uint8_t const rate)
             }
         }
     }
+}
+
+// -----------------------------------------------------------------------------
+bool Application::screenshot(std::string const& screenshot_path)
+{
+    sf::Texture t;
+    t.create(m_renderer.getSize().x, m_renderer.getSize().y);
+    t.update(m_renderer);
+
+    sf::Image screenCap = t.copyToImage();
+    return screenCap.saveToFile(screenshot_path);
 }
 
 // -----------------------------------------------------------------------------

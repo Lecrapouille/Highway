@@ -19,6 +19,7 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //==============================================================================
 
+#include "Common/FileDialogs.hpp"
 #include "Application/GUISimulation.hpp"
 #include "Application/GUIMainMenu.hpp"
 #include "Simulator/Demo.hpp"
@@ -157,6 +158,20 @@ void GUISimulation::onHandleInput()
             else if (event.key.code == sf::Keyboard::F1)
             {
                 simulator.restart();
+            }
+            else if (event.key.code == sf::Keyboard::F5)
+            {
+                pfd::save_file manager("Choose the PNG file to save the screenshot",
+                                       "screenshot.png", { "PNG File", "*.png" });
+                std::string screenshot_filename = manager.result();
+                if (!m_application.screenshot(screenshot_filename))
+                {
+                    m_message_bar.entry("Failed to save screenshot to file '" + screenshot_filename + "'", sf::Color::Red);
+                }
+                else
+                {
+                    m_message_bar.entry("Screenshot taken as file '" + screenshot_filename + "'", sf::Color::Green);
+                }
             }
             else // propagate the key press to the simulator
             {

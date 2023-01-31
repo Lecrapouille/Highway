@@ -129,7 +129,7 @@ public:
         inline void halt()
         {
             m_halting = true;
-        }        
+        }
 
     private:
 
@@ -229,6 +229,11 @@ public:
     {
         return m_renderer.getSize().y;
     }
+
+    //--------------------------------------------------------------------------
+    //! \brief Take a screenshot of the game and save it as PNG to the given path.
+    //--------------------------------------------------------------------------
+    bool screenshot(std::string const& screenshot_path);
 
 #if 0
     //--------------------------------------------------------------------------
