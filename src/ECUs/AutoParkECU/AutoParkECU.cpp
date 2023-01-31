@@ -44,8 +44,7 @@ AutoParkECU::Scanner::update(Second const dt, Car& car,
     // initial position to find an empty parking spot.
     if (m_distance >= 12.0_m)
     {
-        m_ecu.reactTo(ECU::Event::Message,
-                      "Max distance reached: could not found parking slot");
+        m_ecu.logMessage("Max distance reached: could not found parking slot");
         m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_NOT_FOUND;
     }
 
@@ -103,10 +102,10 @@ AutoParkECU::Scanner::update(Second const dt, Car& car,
         {
             // The gap between parked cars is too small: this is not a parking,
             // so let continuing scanning other parked cars.
-            std::stringstream ss;
-            ss << "Scan: No way to park at X: " << m_position.x
-               << " because distance is too short (" << m_spot_length << ")";
-            m_ecu.reactTo(ECU::Event::Message, ss.str());
+             m_ecu.logMessage("Scan: No way to park at X: ",
+                              m_position.x,
+                              " because distance is too short (",
+                              m_spot_length, ")");
             m_state = AutoParkECU::Scanner::States::DETECT_FIRST_CAR;
         }
         else if (detection.valid || m_spot_length >= Lmin)
@@ -119,10 +118,8 @@ AutoParkECU::Scanner::update(Second const dt, Car& car,
             m_parking = std::make_unique<Parking>
                         (dim, sf::Vector2<Meter>(//107.0_m, 101.0_m),
                          m_position.x, m_position.y /*- detection.distance*/ - 0.5 * pw),
-                         0.0_deg);
-            std::stringstream ss;
-            ss << "Scan: Parking spot detected: " << *m_parking;
-            m_ecu.reactTo(ECU::Event::Message, ss.str());
+                         0.0_deg); // FIXME matrice de passage entre coordonnees monde et coordonnees du parking
+            m_ecu.logMessage("Scan: Parking spot detected: ", *m_parking);
             m_state = AutoParkECU::Scanner::States::EMPTY_SPOT_FOUND;
             return AutoParkECU::Scanner::Status::SUCCEEDED;
         }
@@ -138,10 +135,8 @@ AutoParkECU::Scanner::update(Second const dt, Car& car,
     // Debug purpose
     if (state != m_state)
     {
-        std::stringstream ss;
-        ss << "SelfParkingCar::Scan new state: "
-           << AutoParkECU::Scanner::to_string(m_state);
-        m_ecu.reactTo(ECU::Event::Message, ss.str());
+        auto const& s = AutoParkECU::Scanner::to_string(m_state);
+        m_ecu.logMessage("SelfParkingCar::Scan new state: ", s);
     }
 
     return AutoParkECU::Scanner::Status::FAILED;
@@ -156,7 +151,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     if ((m_state != AutoParkECU::StateMachine::States::IDLE) &&
         (ecu.m_ego.turningIndicator() == TurningIndicator::Off))
     {
-        m_ecu.reactTo(ECU::Event::Message, "The driver has aborted the auto-parking");
+        m_ecu.logMessage("The driver has aborted the auto-parking");
         m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
     }
 
@@ -236,8 +231,8 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
         else
         {
             // FIXME https://github.com/Lecrapouille/Highway/issues/29
-            m_ecu.reactTo(ECU::Event::Message, "SORRY I do not know how to leave"
-                          "by myself.Not yet implemented");
+            m_ecu.logMessage("SORRY I do not know how to leave"
+                             "by myself.Not yet implemented");
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         break;
@@ -246,12 +241,12 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
         // The car is driving along its computed path to the parking spot.
         if (!ecu.hasTrajectory())
         {
-            m_ecu.reactTo(ECU::Event::Message, "No trajectory found");
+            m_ecu.logMessage("No trajectory found");
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         else if (ecu.updateTrajectory(dt) == false)
         {
-            m_ecu.reactTo(ECU::Event::Message, "Trajectory done");
+            m_ecu.logMessage("Trajectory done");
             m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
         }
         else
@@ -273,10 +268,8 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     // Debug purpose
     if (state != m_state)
     {
-        std::stringstream ss;
-        ss <<  "SelfParkingCar::StateMachine new state: "
-           << AutoParkECU::StateMachine::to_string(m_state);
-        m_ecu.reactTo(ECU::Event::Message, ss.str());
+        auto const& s = AutoParkECU::StateMachine::to_string(m_state);
+        m_ecu.logMessage("SelfParkingCar::StateMachine new state: ", s);
     }
 }
 

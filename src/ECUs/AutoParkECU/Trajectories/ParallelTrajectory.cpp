@@ -106,7 +106,7 @@ bool ParallelTrajectory::init(Car& car, Parking const& parking, bool const enter
 //------------------------------------------------------------------------------
 size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& parking)
 {
-    m_ecu.reactTo(ECU::Event::Message, "1-trial maneuver");
+    m_ecu.logMessage("1-trial maneuver");
 
     // Initial car position: current position of the car
     Xi = car.position().x;
@@ -131,7 +131,7 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
     {
         // To fix this case: we can add a segment line to reach the two circles but who cares
         // since this happens when the car is outside the road.
-        m_ecu.reactTo(ECU::Event::Message, "Car is too far away on Y-axis (greater than its turning radius)");
+        m_ecu.logMessage("Car is too far away on Y-axis (greater than its turning radius)");
         return 0u;
     }
     Xt = C[0].x + units::math::sqrt(d);
@@ -162,7 +162,7 @@ size_t ParallelTrajectory::computePath1Trial(Car const& car, Parking const& park
 // FIXME https://github.com/Lecrapouille/Highway/issues/27
 size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& parking)
 {
-    m_ecu.reactTo(ECU::Event::Message, "N-trial maneuvers");
+    m_ecu.logMessage("N-trial maneuvers");
 
     const Radian PI_2 = 180.0_deg / 2.0; // pi / 2
     const Radian PI3_2 = 3.0 * 180.0_deg / 2.0; // 3 pi / 2
@@ -198,9 +198,8 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
         // Too many maneuvers: abort and try to find another parking spot
         if (i + TWO_LAST_TURNS >= MAX_MANEUVERS)
         {
-            std::stringstream ss;
-            ss << "Too many maneuvers needed to park (" << i << ". max: " << MAX_MANEUVERS << ")";
-            m_ecu.reactTo(ECU::Event::Message, ss.str());
+            m_ecu.logMessage("Too many maneuvers needed to park (", i,
+                             ". max: ", MAX_MANEUVERS, ")");
             return 0u;
         }
 
@@ -264,7 +263,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
             std::cout << "Putain C.x=" << x << ", C.y=" << y << ", Remin=" << Remin << std::endl;
             if ((w.value() >= 0.0) && (y - units::math::sqrt(w) > parking.blueprint.width))
             {
-                m_ecu.reactTo(ECU::Event::Message, "Can leave!!!!");
+                m_ecu.logMessage("Can leave!!!!");
                 break;
             }
 
@@ -312,7 +311,7 @@ size_t ParallelTrajectory::computePathNTrials(Car const& car, Parking const& par
     const auto d = units::math::pow<2>(Rwmin) - units::math::pow<2>(Yt - C[i].y);
     if (d.value() < 0.0)
     {
-        m_ecu.reactTo(ECU::Event::Message, "Car is too far away on Y-axis (greater than its turning radius)");
+        m_ecu.logMessage("Car is too far away on Y-axis (greater than its turning radius)");
         return 0u;
     }
     Xt = C[i].x + units::math::sqrt(d);

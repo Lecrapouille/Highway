@@ -24,6 +24,7 @@
 
 #  include "Simulator/City/City.hpp"
 #  include "Simulator/Scenario.hpp"
+#  include "Simulator/Vehicle/ECU.hpp"
 #  include "Renderer/MessageBar.hpp"
 #  include "Common/DynamicLoader.hpp"
 #  include "Common/Monitoring.hpp"
@@ -40,7 +41,7 @@ class Renderer;
 //! Idea:
 //! https://www.mathworks.com/help/driving/ug/motion-planning-using-dynamic-map.html
 // ****************************************************************************
-class Simulator //! FIXME make Demo/Simulation does not reach to all public Simulator methods
+class Simulator : public ECU::Listener //! FIXME make Demo/Simulation does not reach to all public Simulator methods
 {
 public:
 
@@ -240,6 +241,13 @@ private:
     //! \brief
     //--------------------------------------------------------------------------
     void collisions(Car& ego);
+
+private: // Inheritance from ECU::Listener
+
+    virtual void onMessageToLog(std::string const& message) const override
+    {
+        messagebox(message, sf::Color::Yellow);
+    }
 
 public:
 

@@ -117,10 +117,7 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city);
 
     // Display ECU message to the GUI
-    ecu.callback(ECU::Event::Message, [&simulator](std::string const&txt)
-    {
-        simulator.messagebox(txt, sf::Color::Yellow);
-    });
+    ecu.setListener(simulator);
 
     // Add sensors to the ego car and bind them to the ECU.
     attach_sensors(car, ecu, city);
