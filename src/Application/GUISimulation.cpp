@@ -163,6 +163,12 @@ void GUISimulation::onHandleInput()
                 simulator.reacts(event.key.code);
             }
             break;
+        case sf::Event::LostFocus:
+            simulator.pause(true);
+            break;
+        case sf::Event::GainedFocus:
+            simulator.pause(false);
+            break;
         default:
             break;
         }
