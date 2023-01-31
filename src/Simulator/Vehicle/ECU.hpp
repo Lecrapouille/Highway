@@ -23,9 +23,7 @@
 #  define ECU_HPP
 
 #  include "Simulator/Sensors/Sensor.hpp"
-#  include "Math/Units.hpp"
 #  include "Common/Components.hpp"
-#  include "MyLogger/Logger.hpp"
 
 // ****************************************************************************
 //! \brief Base class for Electronic Control Units.

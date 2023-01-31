@@ -28,8 +28,6 @@
 #  include "City/Road.hpp"
 #  include "City/Pedestrian.hpp"
 #  include "Vehicle/Vehicles.hpp"
-#  include <vector>
-#  include <memory>
 
 // TODO:https://www.mathworks.com/help/driving/ug/create-driving-scenario-interactively-and-generate-synthetic-detections.html
 // TODO show the grid

@@ -28,7 +28,6 @@
 //! current header file. These functions will be loaded by the Simulator class.
 // ****************************************************************************
 
-#  include "City/City.hpp"
 #  include "Simulator/Simulator.hpp"
 
 #  ifdef __cplusplus

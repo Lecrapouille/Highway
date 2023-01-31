@@ -21,7 +21,6 @@
 
 #include "Simulator/Demo.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
-#include "Sensors/Sensors.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file "Hello simulation" demo. Show a basic simulation. An autonomous car

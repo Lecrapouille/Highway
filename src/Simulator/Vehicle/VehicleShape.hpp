@@ -23,7 +23,6 @@
 #  define VEHICLESHAPE_HPP
 
 #  include "Math/Collide.hpp"
-#  include "Math/Math.hpp"
 #  include "Simulator/Sensors/Sensor.hpp"
 #  include <vector>
 #  include <cassert>

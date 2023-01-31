@@ -25,7 +25,6 @@
 #  include "Vehicle/ECU.hpp"
 #  include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
 #  include "Sensors/Sensors.hpp"
-#  include "Common/Visitor.hpp"
 #  include <atomic>
 #  include <deque>
 

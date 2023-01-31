@@ -25,7 +25,6 @@
 #  include <SFML/Graphics/RectangleShape.hpp>
 #  include "Renderer/Drawable.hpp"
 #  include "Math/Math.hpp"
-#  include "Math/Units.hpp"
 #  include "Common/Visitor.hpp"
 
 class Sensor;

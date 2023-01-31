@@ -22,14 +22,10 @@
 #ifndef VEHICLE_HPP
 #  define VEHICLE_HPP
 
-#  include "MyLogger/Logger.hpp"
-#  include "Simulator/Actor.hpp"
 #  include "Simulator/Vehicle/Wheel.hpp"
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
 #  include "Simulator/Vehicle/VehiclePhysics.hpp"
 #  include "Simulator/Vehicle/ECU.hpp"
-#  include "Simulator/Sensors/Sensor.hpp"
-#  include <memory>
 #  include <functional>
 
 #  define COLISION_COLOR sf::Color(255, 0, 0)
