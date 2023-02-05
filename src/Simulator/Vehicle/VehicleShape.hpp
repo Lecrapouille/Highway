@@ -48,12 +48,10 @@ public:
         : m_blueprint(blueprint)
     {
         // Origin on the middle of the rear wheel axle
-        const sf::Vector2f s(float(m_blueprint.length.value()),
-                             float(m_blueprint.width.value()));
-        m_obb.setSize(s);
-        const sf::Vector2f o(float(m_blueprint.back_overhang.value()),
-                             m_obb.getSize().y / 2.0f);
-        m_obb.setOrigin(o);
+        m_obb.setSize(sf::Vector2f(float(m_blueprint.length.value()),
+                                   float(m_blueprint.width.value())));
+        m_obb.setOrigin(sf::Vector2f(float(m_blueprint.back_overhang.value()),
+                                     m_obb.getSize().y / 2.0f));
 
         // Undefined states
         update(sf::Vector2<Meter>(Meter(NAN), Meter(NAN)), Radian(NAN));
@@ -80,11 +78,15 @@ public:
         m_heading = heading;
 
         // Update wheel shape
-        size_t i(BLUEPRINT::WheelName::MAX);
+        size_t i(BLUEPRINT::Where::MAX);
         while (i--)
         {
             m_blueprint.wheels[i].position =
                 position + math::heading(m_blueprint.wheels[i].offset, heading);
+            m_blueprint.turning_indicators[i].position =
+                position + math::heading(m_blueprint.turning_indicators[i].offset, heading);
+            m_blueprint.lights[i].position =
+                position + math::heading(m_blueprint.lights[i].offset, heading);
         }
 
         // Update sensor shape
@@ -111,9 +113,9 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief const getter: return the oriented bounding box (OBB) of the nth
+    //! \brief Const getter: Return the oriented bounding box (OBB) of the nth
     //! wheel.
-    //! \param[in] nth the nth wheel: shall be < BLUEPRINT::WheelName::MAX.
+    //! \param[in] nth the nth wheel: shall be < BLUEPRINT::Where::MAX.
     //! \param[in] heading the heading of the vehicle in radian.
     //--------------------------------------------------------------------------
     inline sf::RectangleShape obb_wheel(size_t const nth, Radian steering) const
@@ -126,6 +128,46 @@ public:
         shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
         shape.setPosition(float(w.position.x.value()), float(w.position.y.value()));
         shape.setRotation(float(Degree(m_heading + steering)));
+        return shape;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: Return the oriented bounding box (OBB) of the nth
+    //! turning indicator.
+    //! \param[in] nth the nth turning indicator: shall be < BLUEPRINT::Where::MAX.
+    //--------------------------------------------------------------------------
+    inline sf::RectangleShape turning_indicator(size_t const nth) const
+    {
+        assert(nth < m_blueprint.turning_indicators.size());
+        auto const& ti = m_blueprint.turning_indicators[nth];
+
+        sf::RectangleShape shape(sf::Vector2f(0.1f, 0.1f));
+        shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
+        shape.setPosition(float(ti.position.x.value()), float(ti.position.y.value()));
+        shape.setRotation(float(Degree(m_heading)));
+        shape.setFillColor(sf::Color::Black);
+        shape.setOutlineThickness(OUTLINE_THICKNESS);
+        shape.setOutlineColor(sf::Color::White);
+        return shape;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Const getter: Return the oriented bounding box (OBB) of the nth
+    //! turning indicator.
+    //! \param[in] nth the nth turning indicator: shall be < BLUEPRINT::Where::MAX.
+    //--------------------------------------------------------------------------
+    inline sf::RectangleShape light(size_t const nth) const
+    {
+        assert(nth < m_blueprint.lights.size());
+        auto const& l = m_blueprint.lights[nth];
+
+        sf::RectangleShape shape(sf::Vector2f(0.1f, 0.1f));
+        shape.setOrigin(shape.getSize().x / 2.0f, shape.getSize().y / 2.0f);
+        shape.setPosition(float(l.position.x.value()), float(l.position.y.value()));
+        shape.setRotation(float(Degree(m_heading)));
+        shape.setFillColor(sf::Color::Black);
+        shape.setOutlineThickness(OUTLINE_THICKNESS);
+        shape.setOutlineColor(sf::Color::White);
         return shape;
     }
 
@@ -178,6 +220,8 @@ private:
 
     //! \brief Dimension of the vehicle
     BLUEPRINT m_blueprint;
+    //! \brief Turning indicators offsets
+    std::vector<sf::Vector2<Meter>> m_turning_indicators_offsets;
     //! \brief Sensors shapes
     std::vector<SensorShape*> m_sensor_shapes;
     //! \brief Oriented bounding box for attitude and collision

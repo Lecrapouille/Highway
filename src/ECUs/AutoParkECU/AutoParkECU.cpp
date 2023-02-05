@@ -149,7 +149,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 
     // Has the driver aborted the auto-parking system ?
     if ((m_state != AutoParkECU::StateMachine::States::IDLE) &&
-        (ecu.m_ego.turningIndicator() == TurningIndicator::Off))
+        (ecu.m_ego.turningIndicator.state() == TurningIndicator::Off))
     {
         m_ecu.logMessage("The driver has aborted the auto-parking");
         m_state = AutoParkECU::StateMachine::States::TRAJECTORY_DONE;
@@ -160,8 +160,8 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     case AutoParkECU::StateMachine::States::IDLE:
         // Waiting the driver has pressed the turning indicator to start the
         // self-parking process.
-        if ((ecu.m_ego.turningIndicator() == TurningIndicator::Left) ||
-            (ecu.m_ego.turningIndicator() == TurningIndicator::Right))
+        if ((ecu.m_ego.turningIndicator.state() == TurningIndicator::Left) ||
+            (ecu.m_ego.turningIndicator.state() == TurningIndicator::Right))
         {
             if (true) // TODO car.isParked() https://github.com/Lecrapouille/Highway/issues/28
             {
@@ -259,7 +259,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
     case AutoParkECU::StateMachine::States::TRAJECTORY_DONE:
         // Reset the car states
         m_state = AutoParkECU::StateMachine::States::IDLE;
-        ecu.m_ego.turningIndicator(false, false);
+        ecu.m_ego.turningIndicator.state(TurningIndicator::Off);
         ecu.m_ego.refSpeed(0.0_mps);
         ecu.m_ego.showSensors(false);
         break;
@@ -304,7 +304,7 @@ void AutoParkECU::onSensorUpdated(Sensor& sensor)
 //------------------------------------------------------------------------------
 void AutoParkECU::operator()(Antenna& antenna)
 {
-    switch (m_ego.turningIndicator())
+    switch (m_ego.turningIndicator.state())
     {
     case TurningIndicator::Right:
         if (antenna.name != "antenna_RR")

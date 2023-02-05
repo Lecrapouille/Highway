@@ -119,7 +119,52 @@ void Renderer::draw(Car const& car, sf::RenderTarget& target, sf::RenderStates c
         }
     }
 
-    // Turning indicator https://github.com/Lecrapouille/Highway/issues/17
+    // Draw Turning indicators
+    bool left_light, right_light;
+    car.turningIndicator.getLights(left_light, right_light);
+    i = car.blueprint.turning_indicators.size();
+    while (i--)
+    {
+        sf::RectangleShape shape = car.shape().turning_indicator(i);
+        const bool r = (right_light) && ((i == CarBluePrint::Where::RR) || (i == CarBluePrint::Where::FR));
+        const bool l = (left_light) && ((i == CarBluePrint::Where::RL) || (i == CarBluePrint::Where::FL));
+        if (r || l)
+        {
+            shape.setFillColor(sf::Color::Yellow);
+        }
+        else
+        {
+            shape.setFillColor(sf::Color::Black);
+        }
+        target.draw(shape, states);
+    }
+
+    // Draw Lights
+    bool light = true;
+    i = car.blueprint.lights.size();
+    while (i--)
+    {
+        sf::RectangleShape shape = car.shape().light(i);
+        const bool front = light && ((i == CarBluePrint::Where::FL) || (i == CarBluePrint::Where::FR));
+        const bool rear = light && ((i == CarBluePrint::Where::RL) || (i == CarBluePrint::Where::RR));
+        if (front)
+        {
+            shape.setFillColor(sf::Color::Yellow);
+        }
+        else
+        {
+            shape.setFillColor(sf::Color::Black);
+        }
+        if (rear) // TODO brake pressed (use listener ?)
+        {
+            shape.setFillColor(sf::Color::Red);
+        }
+        else
+        {
+            shape.setFillColor(sf::Color::Black);
+        }
+        target.draw(shape, states);
+    }
 
     // TODO Trailers https://github.com/Lecrapouille/Highway/issues/16
 

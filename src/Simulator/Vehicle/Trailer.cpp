@@ -34,9 +34,9 @@ Trailer::Trailer(const char* name_, sf::Color const& color_)
 //------------------------------------------------------------------------------
 void Trailer::update_wheels(MeterPerSecond const speed, Radian const steering)
 {
-    m_wheels[TrailerBluePrint::WheelName::RL].speed = speed;
-    m_wheels[TrailerBluePrint::WheelName::RR].speed = speed;
+    m_wheels[TrailerBluePrint::Where::RL].speed = speed;
+    m_wheels[TrailerBluePrint::Where::RR].speed = speed;
 
-    m_wheels[TrailerBluePrint::WheelName::RL].steering = 0.0_rad;
-    m_wheels[TrailerBluePrint::WheelName::RR].steering = 0.0_rad;
+    m_wheels[TrailerBluePrint::Where::RL].steering = 0.0_rad;
+    m_wheels[TrailerBluePrint::Where::RR].steering = 0.0_rad;
 }

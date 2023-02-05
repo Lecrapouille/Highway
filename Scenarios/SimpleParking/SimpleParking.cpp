@@ -122,15 +122,13 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageDown, [&car]()
     {
-        bool turning_right = (car.turningIndicator() == TurningIndicator::Right);
-        car.turningIndicator(false, turning_right ^ true);
+        car.turningIndicator.down();
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     car.callback(sf::Keyboard::PageUp, [&car]()
     {
-        bool turning_left = (car.turningIndicator() == TurningIndicator::Left);
-        car.turningIndicator(turning_left ^ true, false);
+        car.turningIndicator.up();
     });
 
     // Make the car reacts from the keyboard: set car speed (kinematic).

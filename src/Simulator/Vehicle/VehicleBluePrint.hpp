@@ -26,6 +26,17 @@
 #  include <array>
 
 // *************************************************************************
+//! \brief Turning indicator blueprint.
+// *************************************************************************
+struct LightsBluePrint
+{
+    //! \brief Relative position from the car shape position (middle rear axle)
+    sf::Vector2<Meter> offset;
+    //! \brief current position and altitude inside the world coordinate.
+    sf::Vector2<Meter> position; // FIXME to be moved outside + 3D
+};
+
+// *************************************************************************
 //! \brief Wheel blueprint.
 // *************************************************************************
 struct WheelBluePrint
@@ -49,7 +60,7 @@ struct CarBluePrint
     //! \brief Wheel's names: FL: front left, FR: front rigeht, RR: rear right,
     //! RL: rear left.
     //--------------------------------------------------------------------------
-    enum WheelName { RR, RL, FL, FR, MAX };
+    enum Where { RR, RL, FL, FR, MAX };
 
     //----------------------------------------------------------------------
     //! \brief Define vehicle constants:
@@ -79,7 +90,11 @@ struct CarBluePrint
     //! \brief Limit of control.outputs.steering angle absolute angle [rad]
     Radian max_steering_angle;
     //! \brief Blue prints for the wheels
-    std::array<WheelBluePrint, WheelName::MAX> wheels;
+    std::array<WheelBluePrint, CarBluePrint::Where::MAX> wheels;
+    //! \brief Blue prints for the turning indicators
+    std::array<LightsBluePrint, CarBluePrint::Where::MAX> turning_indicators;
+    //! \brief Blue prints for the vehicle lights
+    std::array<LightsBluePrint, CarBluePrint::Where::MAX> lights;
 };
 
 // *****************************************************************************
@@ -90,7 +105,7 @@ struct TrailerBluePrint
     //--------------------------------------------------------------------------
     //! \brief Wheel's names: RR: rear right, RL: rear left.
     //--------------------------------------------------------------------------
-    enum WheelName { RR, RL, MAX };
+    enum Where { RR, RL, MAX };
 
     //--------------------------------------------------------------------------
     //! \brief Define trailer constants
@@ -116,7 +131,11 @@ struct TrailerBluePrint
     //! \brief Width of the fork [meter] (only used for the rendering)
     Meter fork_width = 0.1_m;
     //! \brief Blue prints for the wheels
-    std::array<WheelBluePrint, WheelName::MAX> wheels;
+    std::array<WheelBluePrint, TrailerBluePrint::Where::MAX> wheels;
+    //! \brief Blue prints for the turning indicators
+    std::array<LightsBluePrint, TrailerBluePrint::Where::MAX> turning_indicators;
+    //! \brief Blue prints for the vehicle lights
+    std::array<LightsBluePrint, CarBluePrint::Where::MAX> lights;
 };
 
 #endif

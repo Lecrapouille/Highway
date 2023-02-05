@@ -35,15 +35,31 @@ CarBluePrint::CarBluePrint(const Meter l, const Meter w, const Meter wb,
     assert(max_steering_angle > 0.0_deg);
     assert(max_steering_angle < 90.0_deg);
 
+    // Wheels
     const Meter K = track / 2.0f;
-    wheels[WheelName::FL].offset = sf::Vector2<Meter>(wheelbase, K);
-    wheels[WheelName::FR].offset = sf::Vector2<Meter>(wheelbase, -K);
-    wheels[WheelName::RL].offset = sf::Vector2<Meter>(0.0_m, K);
-    wheels[WheelName::RR].offset = sf::Vector2<Meter>(0.0_m, -K);
+    wheels[CarBluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase, K);
+    wheels[CarBluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase, -K);
+    wheels[CarBluePrint::Where::RL].offset = sf::Vector2<Meter>(0.0_m, K);
+    wheels[CarBluePrint::Where::RR].offset = sf::Vector2<Meter>(0.0_m, -K);
 
-    size_t i = WheelName::MAX;
+    // Turning indicators
+    turning_indicators[CarBluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase + front_overhang, K);
+    turning_indicators[CarBluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase + front_overhang, -K);
+    turning_indicators[CarBluePrint::Where::RL].offset = sf::Vector2<Meter>(-back_overhang, K);
+    turning_indicators[CarBluePrint::Where::RR].offset = sf::Vector2<Meter>(-back_overhang, -K);
+
+    // Lights
+    const Meter K1 = K - 0.1_m; // 0.1: Turning indicators size
+    lights[CarBluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase + front_overhang, K1);
+    lights[CarBluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase + front_overhang, -K1);
+    lights[CarBluePrint::Where::RL].offset = sf::Vector2<Meter>(-back_overhang, K1);
+    lights[CarBluePrint::Where::RR].offset = sf::Vector2<Meter>(-back_overhang, -K1);
+
+    size_t i = CarBluePrint::Where::MAX;
     while (i--)
     {
+        turning_indicators[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
+        lights[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
         wheels[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
         wheels[i].radius = wr;
         wheels[i].width = WHEEL_WIDTH;
@@ -57,12 +73,14 @@ TrailerBluePrint::TrailerBluePrint(const Meter l, const Meter w, const Meter d,
       back_overhang(bo)
 {
     const Meter K = track / 2.0f;
-    wheels[WheelName::RL].offset = sf::Vector2<Meter>(0.0_m, -K);
-    wheels[WheelName::RR].offset = sf::Vector2<Meter>(0.0_m, K);
+    wheels[Where::RL].offset = sf::Vector2<Meter>(0.0_m, -K);
+    wheels[Where::RR].offset = sf::Vector2<Meter>(0.0_m, K);
 
-    size_t i = WheelName::MAX;
+    size_t i = Where::MAX;
     while (i--)
     {
+        //turning_indicators[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
+        //lights[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
         wheels[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
         wheels[i].radius = wr;
         wheels[i].width = WHEEL_WIDTH;

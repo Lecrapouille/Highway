@@ -43,7 +43,7 @@ public:
     struct Inputs
     {
         float throttle = 0.0f; // [%]
-        float brake = 0.0f; // [%]
+        float brake = 0.0f; // [%] // FIXME callback to rear light => change to red color
     };
 
     //----------------------------------------------------------------------

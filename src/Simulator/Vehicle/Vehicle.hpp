@@ -25,7 +25,7 @@
 #  include "Simulator/Vehicle/Wheel.hpp"
 #  include "Simulator/Vehicle/VehicleBluePrint.hpp"
 #  include "Simulator/Vehicle/VehiclePhysics.hpp"
-#  include "Simulator/Vehicle/ECU.hpp"
+#  include "ECUs/TurningIndicator/TurningIndicator.hpp"
 #  include <functional>
 
 #  define COLISION_COLOR sf::Color(255, 0, 0)
@@ -34,11 +34,6 @@
 
 // TODO faire callback collides
 // TODO faire get actors around the car comme std::functional
-
-// ****************************************************************************
-//! \brief
-// ****************************************************************************
-enum class TurningIndicator { Off, Left, Right, Warnings };
 
 // ****************************************************************************
 //! \brief
@@ -62,7 +57,8 @@ public:
     //! \brief
     //-------------------------------------------------------------------------
     Vehicle(BLUEPRINT const& blueprint_, const char* name_, sf::Color const& color_)
-        : blueprint(blueprint_), name(name_), color(color_)
+        : blueprint(blueprint_), name(name_), color(color_),
+          turningIndicator(addECU<TurningIndicatorECU>())
     {
         m_shape = std::make_unique<VehicleShape<BLUEPRINT>>(blueprint);
         m_control = std::make_unique<VehicleControl>();
@@ -189,7 +185,7 @@ public:
     //! \brief Getter: return the const reference of the container holding
     //! all the wheels.
     //--------------------------------------------------------------------------
-    inline std::array<Wheel, BLUEPRINT::WheelName::MAX>& wheels()
+    inline std::array<Wheel, BLUEPRINT::Where::MAX>& wheels()
     {
         return m_wheels;
     }
@@ -198,7 +194,7 @@ public:
     //! \brief Const getter: return the const reference of the container holding
     //! all the wheels.
     //-------------------------------------------------------------------------
-    inline std::array<Wheel, BLUEPRINT::WheelName::MAX> const& wheels() const
+    inline std::array<Wheel, BLUEPRINT::Where::MAX> const& wheels() const
     {
         return m_wheels;
     }
@@ -369,56 +365,6 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Set left and right turning indicators. This is not purely for
-    //! rendering cosmetic but can activate event for a state machine (ie for
-    //! entering or leaving a parking slot).
-    //! turningIndicators(true, false) for indicating turning left.
-    //! turningIndicators(false, true) for indicating turning right.
-    //! turningIndicators(true, true) for indicating warnings.
-    //! turningIndicators(false, false) when not turning or not in fault.
-    //-------------------------------------------------------------------------
-    void turningIndicator(bool const left, bool const right)
-    {
-        m_turning_left = left;
-        m_turning_right = right;
-    }
-
-    void turningIndicator(TurningIndicator const state)
-    {
-        switch (state)
-        {
-            case TurningIndicator::Warnings:
-               m_turning_left = true;
-               m_turning_right = true;
-            break;
-            case TurningIndicator::Left:
-               m_turning_left = true;
-               m_turning_right = false;
-            break;
-            case TurningIndicator::Right:
-               m_turning_left = false;
-               m_turning_right = true;
-            break;
-            case TurningIndicator::Off:
-               m_turning_left = false;
-               m_turning_right = false;
-            break;
-        }
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Is the car turning left, rigth, warning or not flashing.
-    //-------------------------------------------------------------------------
-    TurningIndicator turningIndicator() const
-    {
-        if (m_turning_left)
-        {
-           return m_turning_right ? TurningIndicator::Warnings : TurningIndicator::Left;
-        }
-        return m_turning_right ? TurningIndicator::Right : TurningIndicator::Off;
-    }
-
-    //-------------------------------------------------------------------------
     //! \brief By default a vehicle to be concidered as ego shall have is name
     //! starting by "ego".
     //! FIXME https://github.com/Lecrapouille/Highway/issues/6
@@ -449,6 +395,12 @@ public:
                   << "}";
     }
 
+protected:
+
+    //! \brief Simulate Electronic Control Units.
+    //! \note Shall be decalred before references to ECUs.
+    std::vector<ECU*> m_ecus;
+
 public:
 
     //! \brief Dimension of the vehicle
@@ -458,11 +410,11 @@ public:
     //! \brief Current car color. Public: to allow to change it for distinguish
     //! car between them or for showing collisions ...
     sf::Color color;
+    //! \brief Turning Indicator ECU
+    TurningIndicatorECU& turningIndicator;
 
 protected:
 
-    //! \brief Simulate Electronic Control Unit
-    std::vector<ECU*> m_ecus;
     //! \brief List of vehicle sensors
     std::vector<std::shared_ptr<Sensor>> m_sensors;
     //! \brief The shape of the vehicle, dimension, wheel positions
@@ -472,15 +424,11 @@ protected:
     //! \brief The cruse control
     std::unique_ptr<VehicleControl> m_control;
     //! \brief Vehicle's wheels
-    std::array<Wheel, BLUEPRINT::WheelName::MAX> m_wheels;
+    std::array<Wheel, BLUEPRINT::Where::MAX> m_wheels;
     //! \brief The vehicle tracked by this vehicle instance
     Vehicle* m_trailer = nullptr;
     //! \brief List of reactions to do when events occured
     std::map<size_t, Callback> m_callbacks;
-    //! \brief Truning indicator
-    bool m_turning_left = false;
-    //! \brief Truning indicator
-    bool m_turning_right = false;
     //! \brief Has car collided again an other object?
     bool m_collided = false;
 };
