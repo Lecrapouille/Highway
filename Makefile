@@ -38,15 +38,15 @@ include $(M)/Makefile.header
 ###################################################
 # Inform Makefile where to find header files
 #
-INCLUDES += -I$(P)/src -I$(P)/src/Simulator
+INCLUDES += -I$(P)/src
 
 ###################################################
 # Inform Makefile where to find *.cpp and *.o files
 #
-VPATH += $(P)/src $(P)/src/Application $(P)/src/Math $(P)/src/Simulator/Sensors	\
-  $(P)/src/Simulator $(P)/src/Simulator/City $(P)/src/Simulator/Vehicle		\
-  $(P)/src/Renderer $(P)/src/Simulator/Vehicle/VehiclePhysicalModels		\
-  $(P)/src/Common $(P)/src/ECUs/AutoParkECU $(P)/src/ECUs/AutoParkECU/Trajectories
+VPATH += $(P)/src $(P)/src/Common $(P)/src/Application $(P)/src/Math	\
+  $(P)/src/Sensors $(P)/src/Simulation $(P)/src/City $(P)/src/Vehicle	\
+  $(P)/src/Renderer $(P)/src/Vehicle/VehiclePhysicalModels		\
+  $(P)/src/ECUs/AutoParkECU $(P)/src/ECUs/AutoParkECU/Trajectories
 
 ###################################################
 # Project defines

@@ -20,17 +20,18 @@
 //==============================================================================
 
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
-#include "ECUs/AutoParkECU/Trajectories/ParallelTrajectory.hpp"
-#include "Simulator/Vehicle/TurningRadius.hpp"
-#include "Simulator/Vehicle/Car.hpp"
-#include "Simulator/City/Parking.hpp"
-#include "Simulator/BluePrints.hpp"
+#include "ECUs/AutoParkECU/ParallelTrajectory.hpp"
+#include "Vehicle/TurningRadius.hpp"
+#include "Vehicle/Car.hpp"
+#include "City/Parking.hpp"
+#include "Simulation/BluePrints.hpp"
 #include <iostream>
 
 // FIXME https://github.com/Lecrapouille/Highway/issues/14
 // How to access to MessageBar to remove std::cout << ?
 
 //------------------------------------------------------------------------------
+// doc/StateMachines/ScanStateMachine.jpg
 AutoParkECU::Scanner::Status
 AutoParkECU::Scanner::update(Second const dt, Car& car,
                              Antenna::Detection const& detection)
@@ -143,6 +144,7 @@ AutoParkECU::Scanner::update(Second const dt, Car& car,
 }
 
 //------------------------------------------------------------------------------
+// doc/StateMachines/ParkingStateMachine.jpg
 void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 {
     States state = m_state;
@@ -274,6 +276,7 @@ void AutoParkECU::StateMachine::update(Second const dt, AutoParkECU& ecu)
 }
 
 //------------------------------------------------------------------------------
+// doc/Parallel/ParallelLeavingCondition.png
 static Meter computeLmin(Car const& car)
 {
     TurningRadius radius(car.blueprint, car.blueprint.max_steering_angle);
@@ -291,6 +294,7 @@ AutoParkECU::AutoParkECU(Car& car, City const& city)
 //------------------------------------------------------------------------------
 void AutoParkECU::update(Second const dt)
 {
+    // doc/StateMachines/ParkingStrategyFig.png
     m_statemachine.update(dt, *this);
 }
 
@@ -304,6 +308,7 @@ void AutoParkECU::onSensorUpdated(Sensor& sensor)
 //------------------------------------------------------------------------------
 void AutoParkECU::operator()(Antenna& antenna)
 {
+    // Detect parked vehicles on the side given by the turning indicator.
     switch (m_ego.turningIndicator.state())
     {
     case TurningIndicator::Right:
@@ -319,6 +324,7 @@ void AutoParkECU::operator()(Antenna& antenna)
         return;
     }
 
+    // Has detected a parked vehicle ?
     if (antenna.detection().valid)
     {
         m_detection = antenna.detection();
@@ -335,15 +341,13 @@ void AutoParkECU::operator()(Antenna& antenna)
 }
 
 //------------------------------------------------------------------------------
-// https://github.com/Lecrapouille/Highway/issues/30
-// FIXME for the moment a single sensor is used
-// FIXME simulate defectuous sensor
 Antenna::Detection const& AutoParkECU::detect()
 {
     m_detection.valid = false;
     for (auto const& sensor: m_ego.sensors())
     {
-        // This will call AutoParkECU::operator()(XXX&)
+        // This will call AutoParkECU::operator()(X&) with X of the correct type
+        // (Antenna i.e.).
         sensor->accept(*this);
     }
 
@@ -353,6 +357,7 @@ Antenna::Detection const& AutoParkECU::detect()
 //------------------------------------------------------------------------------
 bool AutoParkECU::park(Parking const& parking, bool const entering)
 {
+    // Parallel, perpendicular, diagonal trajectories.
     m_trajectory = CarTrajectory::create(*this, parking.type);
     return m_trajectory->init(m_ego, parking, entering);
 }
@@ -360,9 +365,12 @@ bool AutoParkECU::park(Parking const& parking, bool const entering)
 //------------------------------------------------------------------------------
 bool AutoParkECU::updateTrajectory(Second const dt)
 {
+    // The vehicle cannot park or is already parked or has lelft.
     if (m_trajectory == nullptr)
         return true;
 
+    // In the case of parallel trajectory.
+    // doc/Parallel/ParallelFinalStep.png
     if (m_trajectory->update(m_ego, dt))
         return true;
 

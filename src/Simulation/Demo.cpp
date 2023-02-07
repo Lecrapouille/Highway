@@ -19,9 +19,8 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
-#include "Highway/API.hpp"
+#include "Demo.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
-#include "Sensors/Sensors.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file "Hello simulation" demo. Show a basic simulation. An autonomous car
@@ -32,7 +31,7 @@
 //! \brief Needed simulation function: return the simulation name that will be
 //! display in the windows title bar.
 //-----------------------------------------------------------------------------
-const char* simulation_name()
+static const char* simulation_name()
 {
     return "Hello simulation demo";
 }
@@ -42,7 +41,7 @@ const char* simulation_name()
 //! \c key pressed. Here the ego reacts to callbacks set with Vehicle::callback()
 //! defined in the function \c customize_ego().
 //-----------------------------------------------------------------------------
-void simulation_react_to(Simulator& simulator, size_t key)
+static void simulation_react_to(Simulator& simulator, size_t key)
 {
     simulator.ego().reactTo(key);
 }
@@ -116,6 +115,9 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
     // https://github.com/Lecrapouille/Highway/issues/26
     AutoParkECU& ecu = car.addECU<AutoParkECU>(car, city);
 
+    // Display ECU message to the GUI
+    ecu.setListener(simulator);
+
     // Add sensors to the ego car and bind them to the ECU.
     attach_sensors(car, ecu, city);
 
@@ -161,14 +163,14 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& car)
 //-----------------------------------------------------------------------------
 //! \brief Define conditions to stop the simulation.
 //-----------------------------------------------------------------------------
-bool simulation_halt_when(Simulator const& simulator)
-{
+static bool simulation_halt_when(Simulator const& simulator)
+{/*
     HALT_SIMULATION_WHEN((simulator.elapsedTime() > 60.0_s),
                          "Time simulation slipped!");
     HALT_SIMULATION_WHEN((simulator.ego().position().x >= 140.0_m),
                          "Ego car is outside the parking!");
     HALT_SIMULATION_WHEN(simulator.ego().collided(),
-                         "Ego car collided!");
+                         "Ego car collided!");*/
     CONTINUE_SIMULATION;
 }
 
@@ -176,12 +178,8 @@ bool simulation_halt_when(Simulator const& simulator)
 //! \brief Create a basic city world made of roads, parking slots and parked
 //! cars. The ego car is on the road.
 //-----------------------------------------------------------------------------
-Car& simulation_create_city(Simulator& simulator, City& city)
+static Car& simulation_create_city(Simulator& simulator, City& city)
 {
-    // FIXME I do not understand why this is needed while Simulator::create()
-    // does it before calling this instance
-    BluePrints::init();
-
     // Initial states
     const char *parking_type = "epi.0"; // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type).length;
@@ -192,14 +190,17 @@ Car& simulation_create_city(Simulator& simulator, City& city)
     // Create a road
     const Meter road_width = 2.0_m;
     const Meter road_distance = double(number_parkings) * parking_length;
-    const std::array<size_t, TrafficSide::Max> lanes{1u, 2u}; // Number of lanes constituing the road
-    const std::vector<sf::Vector2<Meter>> road_centers = {
-        p, p + sf::Vector2<Meter>(road_distance, 0.0*road_distance)
+    const std::vector<sf::Vector2<Meter>> road_centers1 = {
+        p, p + sf::Vector2<Meter>(road_distance, road_distance)
     };
-    Road& road1 = city.addRoad(road_centers, road_width, lanes);
+    const std::vector<sf::Vector2<Meter>> road_centers2 = {
+        sf::Vector2<Meter>(105.753_m, 149.745_m), sf::Vector2<Meter>(156.371_m, 103.166_m)
+    };
+    Road& road1 = city.addRoad(road_centers1, road_width, {1u, 2u});
+    Road& road2 = city.addRoad(road_centers2, road_width, {2u, 2u});
 
     // Add cars along the road.
-    city.addCar("Mini.Cooper", road1, TrafficSide::LeftHand, 0u, 0.0, 0.5);
+    city.addCar("Renault.Twingo", road1, TrafficSide::LeftHand, 0u, 0.0, 0.5);
 
     // Create parallel parking slots along the road right side
     city.addParking(parking_type, road1, TrafficSide::LeftHand, 0.0, 1.0);
@@ -212,12 +213,26 @@ Car& simulation_create_city(Simulator& simulator, City& city)
     // Add parked cars (static). See BluePrints.cpp for the mark of vehicle.
     // Parking slots 2 and 4 are empty.
     city.addCar("Renault.Twingo", parking0);
-    city.addCar("Audi.A6", parking1);
-    city.addCar("Audi.A6", parking3);
+    city.addCar("Renault.Twingo", parking1);
+    city.addCar("Renault.Twingo", parking3);
 
     // Self-parking ego car (dynamic).
     // Place the ego car on the begining of the 1st right-side hand of the lane (X-axis).
     // The ego is centered on its lane (Y-axis).
-    Car& ego = city.addEgo("Mini.Cooper", road1, TrafficSide::RightHand, 0u, 0.1, 0.5);
+    Car& ego = city.addEgo("Renault.Twingo", road1, TrafficSide::RightHand, 0u, 0.0, 0.5);
     return customize_ego(simulator, city, ego);
+}
+
+//-----------------------------------------------------------------------------
+//! \brief Simulation entry point. Return functions needed by the simulator to
+//! run a simulation.
+//-----------------------------------------------------------------------------
+Scenario simple_simulation_demo()
+{
+    return {
+        .name = simulation_name,
+        .create = simulation_create_city,
+        .halt = simulation_halt_when,
+        .react = simulation_react_to,
+    };
 }

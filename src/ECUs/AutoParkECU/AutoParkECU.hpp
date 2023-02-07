@@ -23,7 +23,7 @@
 #  define AUTO_PARK_ECU_HPP
 
 #  include "Vehicle/ECU.hpp"
-#  include "ECUs/AutoParkECU/Trajectories/Trajectory.hpp"
+#  include "ECUs/AutoParkECU/Trajectory.hpp"
 #  include "Sensors/Sensors.hpp"
 #  include <atomic>
 #  include <deque>
@@ -33,17 +33,23 @@ class Parking;
 class City;
 
 // ****************************************************************************
-//! \brief ECU controling the ego car for doing autonomous parking maneuvers
+//! \brief ECU controling the ego car for doing autonomous parking maneuvers.
+//! The initial step is to find a empty spot.
+//! doc/StateMachines/ParkingStrategyFig.png
+//! The final step is to park the vehcile.
+//! doc/Parallel/ParallelFinalStep.png
 // ****************************************************************************
 class AutoParkECU : public ECU, public Visitor
 {
 private:
 
     // *************************************************************************
-    //! \brief Helper class holding the state machine for scaning parked cars
-    //! and detect the first empty parking spot. The implementation of this
-    //! state machine is made in SelfParkingScanParking.cpp: Detect the first
-    //! parked car, then detect the empty spot, then detect the next parked car.
+    //! \brief Helper class holding the state machine for scanning parked cars
+    //! and detect the first empty parking spot. The implementation is: detect
+    //! the first parked car, then detect the empty spot, then detect the next
+    //! parked car. Distances are made from vehicle speed. The acceptation for
+    //! a "correct empty spot" is made by the state machine calling this one.
+    //! doc/StateMachines/ScanStateMachine.jpg
     // *************************************************************************
     class Scanner // FIXME https://github.com/Lecrapouille/Highway/issues/25
     {
@@ -147,6 +153,7 @@ private:
     //! scan parked cars and detect empty spot, compute the path for parking and
     //! compute the reference speed and reference steering angle for the cruise
     //! controler.
+    //! doc/StateMachines/ParkingStateMachine.jpg
     // *************************************************************************
     class StateMachine // FIXME https://github.com/Lecrapouille/Highway/issues/25
     {

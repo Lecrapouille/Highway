@@ -22,7 +22,7 @@
 #  define GUI_SIMULATION_STATE_HPP
 
 #  include "Application/Application.hpp"
-#  include "Simulator/Simulator.hpp"
+#  include "Simulation/Simulator.hpp"
 #  include "Renderer/MessageBar.hpp"
 #  include <atomic>
 

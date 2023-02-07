@@ -22,7 +22,7 @@
 #include "Common/FileDialogs.hpp"
 #include "Application/GUISimulation.hpp"
 #include "Application/GUIMainMenu.hpp"
-#include "Simulator/Demo.hpp"
+#include "Simulation/Demo.hpp"
 
 //------------------------------------------------------------------------------
 GUISimulation::GUISimulation(Application& application, std::string const& name,

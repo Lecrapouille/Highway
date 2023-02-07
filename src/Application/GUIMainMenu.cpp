@@ -22,7 +22,7 @@
 #include "Application/GUIMainMenu.hpp"
 #include "Application/GUILoadSimulMenu.hpp"
 #include "Renderer/FontManager.hpp"
-#include "Simulator/Demo.hpp"
+#include "Simulation/Demo.hpp"
 
 //------------------------------------------------------------------------------
 GUIMainMenu::GUIMainMenu(Application& application, std::string const& name)
@@ -127,7 +127,7 @@ void GUIMainMenu::onUpdate(const Second /*dt*/)
 //------------------------------------------------------------------------------
 void GUIMainMenu::onDraw()
 {
-    const float y_positions[2] = {24.0f + 4.0f, 
+    const float y_positions[2] = {24.0f + 4.0f,
                                   24.0f + 4.0f + 18.0f + 4.0f };
 
     // Title
