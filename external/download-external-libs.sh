@@ -35,3 +35,7 @@ cloning Lecrapouille/MyLogger
 #### License: MIT
 cloning nholthaus/units
 (cd units/include && mkdir units && cp units.h units/units.h)
+
+#### Quick and simple implementation of the Perlin Noise gradient.
+#### License: MIT
+cloning daniilsjb/perlin-noise

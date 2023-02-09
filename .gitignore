@@ -10,6 +10,7 @@ data/Scenarios/*.lib
 data/Scenarios/*.a
 external/MyLogger
 external/units
+external/perlin-noise
 .vscode
 doc/html
 .DS_Store

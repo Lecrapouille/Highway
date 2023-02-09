@@ -38,7 +38,7 @@ include $(M)/Makefile.header
 ###################################################
 # Inform Makefile where to find header files
 #
-INCLUDES += -I$(P)/src
+INCLUDES += -I$(P)/src -I$(THIRDPART)
 
 ###################################################
 # Inform Makefile where to find *.cpp and *.o files
@@ -74,7 +74,7 @@ INCLUDES += -I$(THIRDPART)/units/include
 # Make the list of compiled files for the library
 #
 LIB_OBJS += FilePath.o Collide.o SpatialHashGrid.o Prolog.o
-LIB_OBJS += FontManager.o Drawable.o Renderer.o
+LIB_OBJS += FontManager.o Drawable.o Renderer.o Perlin.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o Antenna.o
 LIB_OBJS += Car.o Trailer.o
