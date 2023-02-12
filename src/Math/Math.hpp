@@ -26,6 +26,7 @@
 #  include <SFML/System/Vector2.hpp>
 #  include <SFML/System/Vector3.hpp>
 #  include <cmath>
+#  include <tuple>
 
 namespace math {
 
@@ -161,6 +162,91 @@ inline sf::Vector2<Meter> heading(sf::Vector2<Meter> const& p, Radian const a)
 {
    return sf::Vector2<Meter>(units::math::cos(a) * p.x - units::math::sin(a) * p.y,
                              units::math::sin(a) * p.x + units::math::cos(a) * p.y);
+}
+
+template<class T>
+using Segment = std::tuple<sf::Vector2<T>, sf::Vector2<T>>;
+
+//------------------------------------------------------------------------------
+//! \brief Return P the projected position of M on the segment line AB.
+//! doc/pics/projectPointToLine.png
+//! \param[in] M the position of the point to project on the line AB.
+//! \param[in] lineAB the segment line.
+//! \param[in] capped if set true then
+//! \return The projected position point.
+//! \note the algorithm comes from Godot Engine code source.
+//------------------------------------------------------------------------------
+inline sf::Vector2<Meter>
+project(sf::Vector2<Meter> const& M, Segment<Meter> const& lineAB,
+        const bool capped = false)
+{
+   const sf::Vector2<Meter>& A = std::get<0>(lineAB);
+   const sf::Vector2<Meter>& B = std::get<1>(lineAB);
+
+   const sf::Vector2<Meter> AM = M - A;
+   const sf::Vector2<Meter> AB = B - A;
+
+   // Squared mangitude of AB.
+   const double l = AB.x.value() * AB.x.value() + AB.y.value() * AB.y.value();
+   if (l < 1e-20)
+   {
+      // Both points are the same, just give any.
+      return A;
+   }
+
+   // Dot product AM, AB.
+   const double d = (AM.x.value() * AB.x.value() + AM.y.value() * AB.y.value()) / l;
+
+   if (capped && (d <= 0.0))
+      return A;
+   if (capped && (d >= 1.0))
+      return B;
+
+   return {A.x + d * AB.x, A.y + d * AB.y};
+}
+
+//------------------------------------------------------------------------------
+//! \brief Return the intersection of two lines (AB) and (CD).
+//! \param[in] result the intersection iff lines intersected (if this function
+//! returns true), else \c result is undefined.
+//! \return true if the lines intersected.
+//! \note the algorithm comes from
+//! https://flassari.is/2008/11/line-line-intersection-in-cplusplus/
+//------------------------------------------------------------------------------
+inline bool intersect(Segment<Meter> const& lineAB, Segment<Meter> const& lineCD,
+                      sf::Vector2<Meter>& result)
+{
+   const sf::Vector2<Meter>& p1 = std::get<0>(lineAB);
+   const sf::Vector2<Meter>& p2 = std::get<1>(lineAB);
+   const sf::Vector2<Meter>& p3 = std::get<0>(lineCD);
+   const sf::Vector2<Meter>& p4 = std::get<1>(lineCD);
+
+   // Store the values for fast access and easy equations-to-code conversion
+   const double x1 = p1.x.value(), x2 = p2.x.value(), x3 = p3.x.value(), x4 = p4.x.value();
+   const double y1 = p1.y.value(), y2 = p2.y.value(), y3 = p3.y.value(), y4 = p4.y.value();
+
+   // If d is zero, there is no intersection
+   const double d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+   if (d < 1e-20)
+      return false;
+
+   // Get the x and y
+   const double pre = (x1 * y2 - y1 * x2), post = (x3 * y4 - y3 * x4);
+   const double x = (pre * (x3 - x4) - (x1 - x2) * post) / d;
+   const double y = (pre * (y3 - y4) - (y1 - y2) * post) / d;
+
+   // Check if the x and y coordinates are within both lines
+   if ((x < std::min(x1, x2)) || (x > std::max(x1, x2)) ||
+       (x < std::min(x3, x4)) || (x > std::max(x3, x4)))
+      return false;
+
+   if ((y < std::min(y1, y2)) || (y > std::max(y1, y2)) ||
+       (y < std::min(y3, y4)) || (y > std::max(y3, y4)))
+      return false;
+
+   // Return the point of intersection
+   result.x = Meter(x), result.y = Meter(y);
+   return true;
 }
 
 } // namespace math
