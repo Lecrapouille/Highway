@@ -104,6 +104,22 @@ inline Degree lerp_angle(Degree const from, Degree const to, double weight)
 }
 
 //------------------------------------------------------------------------------
+//! \brief Return the dot product.
+//------------------------------------------------------------------------------
+inline SquareMeter dot(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
+{
+   return a.x * b.x + a.y * b.y;
+}
+
+//------------------------------------------------------------------------------
+//! \brief Return the length in Meter of two given positions.
+//------------------------------------------------------------------------------
+inline SquareMeter distance2(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
+{
+   return units::math::pow<2>(b.x - a.x) + units::math::pow<2>(b.y - a.y);
+}
+
+//------------------------------------------------------------------------------
 //! \brief Return the length in Meter of two given positions.
 //------------------------------------------------------------------------------
 inline Meter distance(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
@@ -131,6 +147,15 @@ inline Radian orientation(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const&
    else if (b.y < a.y)
       angle += 360.0_deg;
    return angle;
+}
+
+//------------------------------------------------------------------------------
+//! \brief
+//------------------------------------------------------------------------------
+inline Degree wrap_angle(Degree const angle)
+{
+   Degree const a = units::math::fmod(units::math::abs(angle), 180.0_deg);
+   return units::math::min(a, units::math::abs(a - 180.0_deg));
 }
 
 //------------------------------------------------------------------------------
@@ -164,6 +189,9 @@ inline sf::Vector2<Meter> heading(sf::Vector2<Meter> const& p, Radian const a)
                              units::math::sin(a) * p.x + units::math::cos(a) * p.y);
 }
 
+//------------------------------------------------------------------------------
+//! \brief
+//------------------------------------------------------------------------------
 template<class T>
 using Segment = std::tuple<sf::Vector2<T>, sf::Vector2<T>>;
 
@@ -187,7 +215,7 @@ project(sf::Vector2<Meter> const& M, Segment<Meter> const& lineAB,
    const sf::Vector2<Meter> AB = B - A;
 
    // Squared mangitude of AB.
-   const double l = AB.x.value() * AB.x.value() + AB.y.value() * AB.y.value();
+   const double l = math::dot(AB, AB).value();
    if (l < 1e-20)
    {
       // Both points are the same, just give any.
@@ -195,7 +223,7 @@ project(sf::Vector2<Meter> const& M, Segment<Meter> const& lineAB,
    }
 
    // Dot product AM, AB.
-   const double d = (AM.x.value() * AB.x.value() + AM.y.value() * AB.y.value()) / l;
+   const double d = math::dot(AM, AB).value() / l;
 
    if (capped && (d <= 0.0))
       return A;
@@ -247,6 +275,20 @@ inline bool intersect(Segment<Meter> const& lineAB, Segment<Meter> const& lineCD
    // Return the point of intersection
    result.x = Meter(x), result.y = Meter(y);
    return true;
+}
+
+//------------------------------------------------------------------------------
+//! \brief
+//------------------------------------------------------------------------------
+inline bool aligned(sf::Vector2<Meter> const& P, Segment<Meter> const& lineAB)
+{
+   const sf::Vector2<Meter>& A = std::get<0>(lineAB);
+   const sf::Vector2<Meter>& B = std::get<1>(lineAB);
+
+   sf::Vector2<Meter> const AB = B - A;
+   sf::Vector2<Meter> const AP = P - A;
+   SquareMeter const d = math::dot(AP, AB);
+   return (d >= 0.0_m * 0.0_m) && (d <= math::dot(AP, AP));
 }
 
 } // namespace math

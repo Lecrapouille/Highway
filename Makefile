@@ -78,7 +78,7 @@ LIB_OBJS += FontManager.o Drawable.o Renderer.o Perlin.o
 LIB_OBJS += VehicleBluePrint.o VehicleShape.o TricycleKinematic.o
 LIB_OBJS += Radar.o Antenna.o
 LIB_OBJS += Car.o Trailer.o
-LIB_OBJS += Pedestrian.o Parking.o Network.o Road.o BluePrints.o City.o
+LIB_OBJS += Pedestrian.o Parking.o Network.o Road.o BluePrints.o City.o CityGenerator.o
 LIB_OBJS += Application.o GUIMainMenu.o GUISimulation.o GUILoadSimulMenu.o
 LIB_OBJS += Trajectory.o ParallelTrajectory.o AutoParkECU.o
 # PerpendicularTrajectory.o ParallelTrajectory.o DiagonalTrajectory.o

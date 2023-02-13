@@ -40,6 +40,7 @@
 using namespace units::literals;
 
 using Meter = units::length::meter_t;
+using SquareMeter = units::area::square_meter_t;
 using Radian = units::angle::radian_t;
 using Degree = units::angle::degree_t;
 using RadianPerSecond = units::angular_velocity::radians_per_second_t;
