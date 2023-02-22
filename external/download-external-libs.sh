@@ -15,7 +15,7 @@ ARCHI="$1"
 TARGET="$2"
 
 ### Delete all previous directories to be sure to have and compile fresh code source.
-rm -fr MyLogger units 2> /dev/null
+rm -fr MyLogger units perlin-noise random 2> /dev/null
 
 ### Git clone a GitHub repository $1
 function cloning
@@ -39,3 +39,7 @@ cloning nholthaus/units
 #### Quick and simple implementation of the Perlin Noise gradient.
 #### License: MIT
 cloning daniilsjb/perlin-noise
+
+#### Random for modern C++ with convenient API
+#### License: MIT
+cloning effolkronium/random

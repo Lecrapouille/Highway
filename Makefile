@@ -71,6 +71,11 @@ INCLUDES += -I$(THIRDPART)/MyLogger/include
 INCLUDES += -I$(THIRDPART)/units/include
 
 ###################################################
+# Thirdpart: Random number
+#
+INCLUDES += -I$(THIRDPART)/random/include
+
+###################################################
 # Make the list of compiled files for the library
 #
 LIB_OBJS += FilePath.o Collide.o SpatialHashGrid.o Prolog.o
