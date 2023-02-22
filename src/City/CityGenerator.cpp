@@ -19,199 +19,133 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
-#include "project_info.hpp"
-#include "Math/Math.hpp"
 #include "City/CityGenerator.hpp"
-#include "MyLogger/Logger.hpp"
+#include "City/CityGeneratorRules.hpp"
+#include "project_info.hpp"
+#include "Math/Random.hpp"
 #include <iostream>
 #include <algorithm>
-#include <tuple>
-#include <cassert>
 
 // -----------------------------------------------------------------------------
-CityGenerator::Segment::Segment(sf::Vector2<Meter> const& from_,
-                                sf::Vector2<Meter> const& to_, int const t_)
-    : from(from_), to(to_), t(t_)
-{}
-
-// -----------------------------------------------------------------------------
-CityGenerator::Segment CityGenerator::Segment::split(sf::Vector2<Meter> const& point)
+static double non_linear_distribution(double const limit)
 {
-    CityGenerator::Segment split_part(from, point, t);
-    from = point;
+    // Non-linear distribution
+    double const non_uniform_norm = limit * limit * limit;
+    double val;
+    do {
+        val = Random::get(-limit, limit);
+    } while (Random::get(0.0, 1.0) < (val * val * val / non_uniform_norm));
 
-    return split_part;
+    return val;
 }
 
 // -----------------------------------------------------------------------------
-bool IntersectingRoadsRule::accept(CityGenerator::Segment& segment,
-                                    CityGenerator::Segment& other)
+static Radian random_angle(Radian const limit)
 {
-    LOGD("IntersectingRoadsRule::accept");
-    // Roads do not intersect ?
-    if (!math::intersect(std::make_tuple(segment.from, segment.to),
-                         std::make_tuple(other.from, other.to),
-                         m_intersection))
-    {
-        LOGD("FALSE");
-        return false;
-    }
-
-    // Check the distance to the intersection.
-    // (note: we are using [Meter^2] to avoid using sqrt())
-    SquareMeter const d2 = math::distance2(segment.from, m_intersection);
-    if (d2 < m_previous_intersection_distance_squared)
-    {
-        // If intersecting lines are too similar don't accept
-        //Degree const deviation = wrap_angle(other.direction() - segment.direction());
-        //if (deviation < m_context.config.minimum_intersection_deviation)
-        //    return false;
-
-        m_previous_intersection_distance_squared = d2;
-        m_other = &other;
-        LOGD("TRUE");
-        return true;
-    }
-
-LOGD("FALSE");
-    return false;
+    return Radian(non_linear_distribution(limit.value()));
 }
 
 // -----------------------------------------------------------------------------
-bool IntersectingRoadsRule::apply(CityGenerator::Segment& segment)
+void CityGenerator::Road::setup_branch_links()
 {
-LOGD("IntersectingRoadsRule::apply");
-    assert(m_other != nullptr);
-    m_context.split(*m_other, m_intersection);
-	segment.to = m_intersection;
-LOGD("TRUE");
-    return true;
-}
+    if (previous_segment_to_link == nullptr)
+        return ;
 
-// -----------------------------------------------------------------------------
-bool SnapToCrossingRule::accept(CityGenerator::Segment& segment, CityGenerator::Segment& other)
-{
-LOGD("SnapToCrossingRule::accept");
-    if (math::distance2(segment.to, other.to) <=
-        units::math::pow<2>(m_context.config.max_snap_distance))
+    for (auto& link: previous_segment_to_link->backwards)
     {
-        m_other = &other;
-        LOGD("TRUE");
-        return true;
-    }
-
-LOGD("FALSE");
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-bool SnapToCrossingRule::apply(CityGenerator::Segment& segment)
-{
-LOGD("SnapToCrossingRule::apply");
-    assert(m_other != nullptr);
-    segment.to = m_other->to;
-/*
-    // Check for duplicate lines, don't add if it exists
-    for (auto& link: links)
-    {
-
-    }
-
-    if ((link.from.is_equal_approx(segment.to) && link.end.is_equal_approx(segment.from)) ||
-        (link.from.is_equal_approx(segment.from) && link.end.is_equal_approx(segment.to)))
-    {
-        return false;
-    }
-
-    for (auto& link: links)
-    {
-        // Pick links of remaining segments at junction corresponding to other.end
-        link.links_for_end_containing(m_other).append(segment)
-        // Add junction segments to snapped segment
-        segment.links_f.append(link)
-    }
-
-    links.append(segment)
-    segment.links_f.append(self.other)
-*/
-    return true;
-}
-
-// -----------------------------------------------------------------------------
-bool RadiusIntersectionRule::accept(CityGenerator::Segment& segment, CityGenerator::Segment& other)
-{
-LOGD("RadiusIntersectionRule::accept");
-
-    math::Segment<Meter> seg(other.from, other.to);
-    if (math::aligned(segment.to, seg))
-    {
-        m_intersection = math::project(segment.to, seg, false);
-        SquareMeter d2 = math::dot(segment.to, m_intersection);
-        if (d2 < units::math::pow<2>(m_context.config.max_snap_distance))
+        backwards.push_back(link);
+        if (std::find(backwards.begin(), backwards.end(), previous_segment_to_link) != backwards.end())
         {
-            // If intersecting lines are too similar don't accept
-            //Degree const deviation = wrap_angle(other.direction() - segment.direction());
-            //if (deviation < m_context.config.minimum_intersection_deviation)
-            //    return false;
-
-            m_other = &other;
-            LOGD("TRUE");
-            return true;
+            backwards.push_back(this);
+        }
+        else if (std::find(forwards.begin(), forwards.end(), previous_segment_to_link) != forwards.end())
+        {
+            forwards.push_back(this);
         }
     }
-
-LOGD("FALSE");
-    return false;
+    previous_segment_to_link->forwards.push_back(this);
+    backwards.push_back(previous_segment_to_link);
 }
 
 // -----------------------------------------------------------------------------
-bool RadiusIntersectionRule::apply(CityGenerator::Segment& segment)
+void CityGenerator::junction(CityGenerator::Road& road, CityGenerator::Road& other,
+                             sf::Vector2<Meter>& intersection)
 {
-LOGD("RadiusIntersectionRule::apply");
-    assert(m_other != nullptr);
+    // Create a new road segment
+    m_roads.push_back(CityGenerator::Road(other));
+    CityGenerator::Road& split_part = m_roads.back();
+    split_part.to = intersection;
 
-    segment.to = m_intersection;
-    m_context.split(*m_other, m_intersection);
-    return true;
-}
+    // Update state of the older roads
+    road.to = intersection;
+    road.has_severed = true;
+    other.from = intersection;
 
-// -----------------------------------------------------------------------------
-//    m_context.split(m_other, m_intersection);
-//    m_other.split(m_intersection, segment, m_context.segments())
-void CityGenerator::split(CityGenerator::Segment& segment, sf::Vector2<Meter>& point)
-{
-    m_segments.push_back(segment.split(point));
+    // Which links correspond to which end of the split segment
+    if (true)
+    {
+        for (auto& link: split_part.backwards)
+        {
+            auto it = std::find(link->backwards.begin(), link->backwards.end(), &other);
+            if (it != link->backwards.end())
+            {
+                *it = &split_part;
+            }
+            else
+            {
+                it = std::find(link->forwards.begin(), link->forwards.end(), &other);
+                assert(it != link->forwards.end());
+                *it = &split_part;
+            }
+        }
+
+        split_part.forwards.push_back(&road);
+        split_part.forwards.push_back(&other);
+        other.backwards.push_back(&road);
+        other.backwards.push_back(&split_part);
+        road.forwards.push_back(&other);
+        road.forwards.push_back(&split_part);
+    }
+    else
+    {
+
+    }
 }
 
 // -----------------------------------------------------------------------------
 CityGenerator::CityGenerator()
 {
-    m_rules.emplace_back(std::make_unique<DummyRule>(*this, size_t(CityGenerator::Rules::None)));
-    m_rules.emplace_back(std::make_unique<RadiusIntersectionRule>(*this, size_t(CityGenerator::Rules::RadiusIntersection)));
-    m_rules.emplace_back(std::make_unique<SnapToCrossingRule>(*this, size_t(CityGenerator::Rules::SnapToCrossing)));
-    m_rules.emplace_back(std::make_unique<IntersectingRoadsRule>(*this, size_t(CityGenerator::Rules::IntersectionCheck)));
+    size_t priority = 0u;
+
+    // Order rules by inverse of priority (hightest priority == lower value)
+    // Be sure the priority value match with the index.
+    m_rules.emplace_back(std::make_unique<DummyRule>(*this, priority++));
+    m_rules.emplace_back(std::make_unique<RadiusIntersectionRule>(*this, priority++));
+    m_rules.emplace_back(std::make_unique<SnapToCrossingRule>(*this, priority++));
+    m_rules.emplace_back(std::make_unique<IntersectingRoadsRule>(*this, priority++));
 }
 
 // -----------------------------------------------------------------------------
-std::vector<CityGenerator::Segment> const&
-CityGenerator::create(sf::Vector2<Meter> const& dimension)
+CityGenerator::Roads const&
+CityGenerator::generate(sf::Vector2<Meter> const& dimension)
 {
-    m_dimension = dimension;
-    generatePopulationMap();
+    PriorityQueue empty;
+    m_pendings.swap(empty);
+    m_roads.clear();
+    m_new_branches.clear();
+
+    generatePopulationMap(dimension);
     exportPopulationMap(project::info::tmp_path + "heatmap.png");
-    m_segments.clear();
-    m_pendings.clear();
-    generateInitialSegments(sf::Vector2<Meter>(0.0_m, 0.0_m));
-    generateSegments();
-
-    return m_segments;
+    generateInitialRoads(sf::Vector2<Meter>(0.0_m, 0.0_m), true);
+        //dimension.x / 2.0, dimension.y / 2.0), false);
+    return generateRoads();
 }
 
 // -----------------------------------------------------------------------------
-void CityGenerator::generatePopulationMap()
+void CityGenerator::generatePopulationMap(sf::Vector2<Meter> const& dimension)
 {
-    sf::Vector2u dim(static_cast<unsigned int>(m_dimension.x),
-                     static_cast<unsigned int>(m_dimension.y));
+    sf::Vector2u dim(static_cast<unsigned int>(dimension.x),
+                     static_cast<unsigned int>(dimension.y));
     perlin(m_heatmap, dim, [](double const x, double const y) -> sf::Color {
         double const dt = 1.0;
         auto const noise = (
@@ -220,7 +154,8 @@ void CityGenerator::generatePopulationMap()
         ) / 1.5;
 
         auto const brightness = sf::Uint8((noise * 0.5 + 0.5) * 255.0);
-        return { brightness, brightness, brightness };
+        // TODO Idea: store 3 other maps (water, park, elevation, pedestrians)
+        return { brightness, brightness, brightness, 255 };
     });
 }
 
@@ -233,71 +168,206 @@ bool CityGenerator::exportPopulationMap(fs::path const& path)
 }
 
 // -----------------------------------------------------------------------------
-bool CityGenerator::localConstraints(CityGenerator::Segment& segment)
+double CityGenerator::population(sf::Vector2<Meter> const position)
 {
-    CityGenerator::Rules priority = CityGenerator::Rules::None;
-    CityGenerator::Rules action = CityGenerator::Rules::None;
+    // FIXME: convert world position to map position
+    const unsigned int u = static_cast<unsigned int>(position.x.value());
+    const unsigned int v = static_cast<unsigned int>(position.y.value());
 
-    for (auto& other: m_segments)
+    std::cout << "Population at " << position.x << ", " << position.y << std::endl;
+
+    return 0.0;//double(m_heatmap.getPixel(u, v).r);
+}
+
+// -----------------------------------------------------------------------------
+bool CityGenerator::localConstraints(CityGenerator::Road& road)
+{
+    size_t priority = 0u;
+    size_t action = 0u;
+
+    std::cout << "localConstraints Road " << road << std::endl;
+    for (auto& other: m_roads)
     {
+        std::cout << "  vs. Other " << other << std::endl;
         for (auto& rule: m_rules)
         {
-            if (size_t(priority) <= rule->priority)
+            if (priority <= rule->priority)
             {
-                if (rule->accept(segment, other))
+                if (rule->accept(road, other))
                 {
-                    priority = CityGenerator::Rules(rule->priority);
+                    priority = rule->priority;
                     action = priority;
                 }
             }
         }
     }
 
-    return m_rules[size_t(action)]->apply(segment);
+    return m_rules[action]->apply(road);
 }
 
 // -----------------------------------------------------------------------------
-void CityGenerator::generateInitialSegments(sf::Vector2<Meter> const& initial_position)
+void CityGenerator::generateInitialRoads(sf::Vector2<Meter> const& initial_position,
+                                         bool const highway)
 {
-    m_pendings.push_back(Segment(initial_position, {config.highway_segment_length, 0.0_m}, 0));
-    // TODO
-    // m_pendings.push_back(Segment(initial_position, {-config.highway_segment_length, 0.0_m}, 0));
-    // link initial roads together
+    // Since we do not store initial roads inside \c m_roads and the graph structure
+    // uses pointers we cannot use local variables.
+    static std::vector<Road> m_initial_roads;
+    m_initial_roads.clear();
+
+    // Create two initial roads with opposite direction and along the X axis. Indeed,
+    // since the algorithm will make roads "growth" along their direction, this will
+    // help spreading the city.
+    //
+    //        Init. Pos.
+    //  <---------|--------->
+    //     road1     road2
+    const sf::Vector2<Meter> dx(config.highway_road_length, 0.0_m);
+    m_initial_roads.emplace_back(initial_position, initial_position + dx, 0, highway);
+    m_initial_roads.emplace_back(initial_position, initial_position - dx, 0, highway);
+    m_initial_roads[0].backwards.push_back(&m_initial_roads[1]);
+    m_initial_roads[1].backwards.push_back(&m_initial_roads[0]);
+
+    // Spread other roads form these initial roads.
+    m_pendings.push(&m_initial_roads[0]);
+    m_pendings.push(&m_initial_roads[1]);
 }
 
 // -----------------------------------------------------------------------------
-std::vector<CityGenerator::Segment> const& CityGenerator::generateSegments()
+CityGenerator::Roads const& CityGenerator::generateRoads()
 {
-    while ((m_pendings.size() >= 1u) && (m_segments.size() < config.segment_count_limit))
+    while ((m_pendings.size() >= 1u) && (m_roads.size() < config.max_roads))
     {
-        // Find the segment with the hightest priority (lower value)
-        auto itseg = std::min_element(m_pendings.begin(), m_pendings.end(),
-                                       [](Segment const& lhs, Segment const& rhs) { return lhs.t > rhs.t; });
-        Segment seg = *itseg;
-        m_pendings.erase(itseg);
+        // Get the road with the hightest priority (lower value)
+        Road& road = *m_pendings.top();
+        m_pendings.pop();
 
-std::cout << "Seg " << seg << std::endl;
-        if (localConstraints(seg))
+        std::cout << "Road " << road << std::endl;
+        if (localConstraints(road))
         {
-            std::cout << "OUI" << std::endl;
-            m_segments.push_back(seg);
-            for (auto& it: globalGoals(seg))
-            { // TODO deplacer la boucle dans globalGoals()
-                it.t += seg.t + 1u;
-                m_pendings.push_back(it);
-            }
+            road.setup_branch_links();
+            m_roads.push_back(road);
+            globalGoals(road);
         }
     }
 
-    return m_segments;
+    return m_roads;
 }
 
 // -----------------------------------------------------------------------------
-std::vector<CityGenerator::Segment>&
-CityGenerator::globalGoals(CityGenerator::Segment const& segment)
+CityGenerator::Road
+CityGenerator::continueRoad(CityGenerator::Road const& previous, Radian const direction)
 {
-    static std::vector<CityGenerator::Segment> dummy; // TODO
-    return dummy;
+    size_t const priority = 0u;
+    Meter const& l = previous.length();
+    sf::Vector2<Meter> const to(previous.to.x + l * units::math::sin(direction),
+                                previous.to.y + l * units::math::cos(direction));
+    return Road(previous.from, to, priority, previous.highway); // FIXME severed ?
+}
+
+// -----------------------------------------------------------------------------
+CityGenerator::Road
+CityGenerator::branchRoad(CityGenerator::Road const& previous, Radian const direction)
+{
+    const size_t priority = (previous.highway)
+                          ? config.normal_branch_time_delay_from_highway
+                          : 0u;
+    Meter const& l = config.default_road_length;
+    const sf::Vector2<Meter> to(previous.to.x + l * units::math::sin(direction),
+                                previous.to.y + l * units::math::cos(direction));
+    return Road(previous.from, to, priority, false); // Dummy meatadata
+}
+
+// -----------------------------------------------------------------------------
+double CityGenerator::samplePopulation(Road const& road)
+{
+    // TODO: Along the way, samples of the population density are taken
+    // from the population density map.
+    // The population at every sample point on the ray is weighted with
+    // the inverse distance to the roadend and summed up.
+    return (population(road.from) + population(road.to)) / 2.0;
+}
+
+// -----------------------------------------------------------------------------
+void CityGenerator::globalGoals(CityGenerator::Road& previous)
+{
+    std::cout << "    global_goals_generate " << previous << std::endl;
+    if (previous.has_severed)
+        return ;
+
+    std::cout << "       severed" << std::endl;
+    auto it = m_new_branches.end();
+
+    // Continue the direction of the previous road
+    const Road next_straight = continueRoad(previous, previous.heading());
+    const double population_straight = samplePopulation(next_straight);
+    if (previous.highway)
+    {
+        std::cout << "         highway" << std::endl;
+        // Direction of the previous road straight with deviation
+        const Road next_random = continueRoad(previous, previous.heading()
+                         + random_angle(config.straight_angle_deviation));
+        const double population_random = samplePopulation(next_random);
+
+        // Compare populations between the two choices. Select the
+        // direction where the gradient of population density increases.
+        double road_pop;
+        if (population_random > population_straight)
+        {
+            m_new_branches.push_back(next_random);
+            road_pop = population_random;
+        }
+        else
+        {
+            m_new_branches.push_back(next_straight);
+            road_pop = population_straight;
+        }
+
+        // Turn the higway
+        if (road_pop > config.highway_branch_population_threshold)
+        {
+            // Left branch for the highway
+            if (Random::get<bool>(config.highway_branch_probability))
+            {
+                const Radian angle = previous.heading() - 90.0_deg + random_angle(config.straight_angle_deviation);
+                m_new_branches.push_back(continueRoad(previous, angle));
+            }
+            // Right branch for the highway
+            else if (Random::get<bool>(config.highway_branch_probability))
+            {
+                const Radian angle = previous.heading() + 90.0_deg + random_angle(config.straight_angle_deviation);
+                m_new_branches.push_back(continueRoad(previous, angle));
+            }
+        }
+    }
+    else if (population_straight > config.normal_branch_population_threshold)
+    {
+        m_new_branches.push_back(next_straight);
+    }
+
+    // Turn the road
+    if (population_straight > config.normal_branch_population_threshold)
+    {
+        // Left branch for the road
+        if (Random::get<bool>(config.default_branch_probability))
+        {
+            const Radian angle = previous.heading() - 90.0_deg + random_angle(config.straight_angle_deviation);
+            m_new_branches.push_back(continueRoad(previous, angle));
+        }
+        // Right branch for the road
+        else if (Random::get<bool>(config.default_branch_probability))
+        {
+            const Radian angle = previous.heading() + 90.0_deg + random_angle(config.straight_angle_deviation);
+            m_new_branches.push_back(continueRoad(previous, angle));
+        }
+    }
+
+    for (auto& branch = it; branch != m_new_branches.end(); ++branch)
+    {
+        std::cout << "       new branch: " << *branch << std::endl;
+        branch->previous_segment_to_link = &previous;
+        branch->priority += previous.priority + 1u;
+        m_pendings.push(&(*branch));
+    }
 }
 
 /*
@@ -306,10 +376,10 @@ int main()
     CityGenerator g;
     g.create(sf::Vector2u(800u, 600u));
 
-    std::vector<Segment> const& segments = g.generateSegments(sf::sf::Vector2f(0.0f, 0.0f), sf::sf::Vector2f(100.0f, 0.0f), 10u);
-    for (auto const& it: segments)
+    std::vector<Road> const& roads = g.generateRoads(sf::sf::Vector2f(0.0f, 0.0f), sf::sf::Vector2f(100.0f, 0.0f), 10u);
+    for (auto const& it: roads)
     {
-        std::cout << "Segment (" << it.from.x << ", " << it.from.y << "), ("
+        std::cout << "Road (" << it.from.x << ", " << it.from.y << "), ("
                   << it.to.x << ", " << it.to.y << ")" << std::endl;
     }
 

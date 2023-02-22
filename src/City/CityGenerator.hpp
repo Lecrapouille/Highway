@@ -22,7 +22,10 @@
 #ifndef CITY_GENERATOR_HPP
 #  define CITY_GENERATOR_HPP
 
+#  include <queue>
 #  include <vector>
+#  include <list>
+#  include "Math/Math.hpp"
 #  include "Math/Units.hpp"
 #  include "Math/Perlin.hpp"
 #  include "Common/FileSystem.hpp"
@@ -35,102 +38,163 @@ class CityGenerator
 public:
 
     // *************************************************************************
-    //! \brief
+    //! \brief Private representation of roads lighter representation than the
+    //! \c Road class.
     // *************************************************************************
-    class Segment
+    class Road
     {
     public:
 
-        Segment(sf::Vector2<Meter> const& from_, sf::Vector2<Meter> const& to_,
-                int const t_);
+        //----------------------------------------------------------------------
+        //! \brief Default Road constructor with given origin and destination,
+        //! the time-step delay before this road is evaluated and if the road
+        //! is a highway.
+        //----------------------------------------------------------------------
+        Road(sf::Vector2<Meter> const& from_, sf::Vector2<Meter> const& to_,
+             size_t const priority_, bool const highway_)
+            : from(from_), to(to_), priority(priority_), highway(highway_)
+        {}
 
-        Segment split(sf::Vector2<Meter> const& p);
-
-        friend std::ostream& operator<<(std::ostream& os, Segment const& seg)
+        //----------------------------------------------------------------------
+        //! \brief Copy constructor.
+        //----------------------------------------------------------------------
+        Road(Road const& other)
+            : Road(other.from, other.to, other.priority, other.highway)
         {
-            return os << "((" << seg.from.x << ", " << seg.from.y << "), "
-                      << "(" << seg.to.x << ", " << seg.to.y << "))"
-                      << std::endl;
+            has_severed = other.has_severed;
+            backwards = other.backwards;
+            forwards = other.forwards;
         }
 
-        bool highway = false;
+        //----------------------------------------------------------------------
+        //! \brief Copy operator.
+        //----------------------------------------------------------------------
+        Road& operator=(Road const& other)
+        {
+            this->~Road(); // destroy
+            new (this) Road(other); // copy construct in place
+            return *this;
+        }
+
+        //----------------------------------------------------------------------
+        //! \brief
+        //----------------------------------------------------------------------
+        void setup_branch_links();
+
+        //----------------------------------------------------------------------
+        //! \brief Return the heading of the road [radian].
+        //----------------------------------------------------------------------
+        inline Radian heading() const { return math::orientation(from, to); }
+
+        //----------------------------------------------------------------------
+        //! \brief Return the magnitude of the road [meter].
+        //----------------------------------------------------------------------
+        inline Meter length() const { return math::distance(from, to); }
+
+        friend std::ostream& operator<<(std::ostream& os, Road const& seg)
+        {
+            return os << seg.priority
+                      << " ((" << seg.from.x << ", " << seg.from.y << "), "
+                      << "(" << seg.to.x << ", " << seg.to.y << "))";
+        }
+
+        //! \brief World coordiante where the road starts (origin).
         sf::Vector2<Meter> from;
+        //! \brief World coordiante where the road ends (destination).
         sf::Vector2<Meter> to;
-        int t;
+        //! \brief Time-step delay before this road is evaluated.
+        size_t priority;
+        //! \brief Has the road splited another road ?
+        bool has_severed = false;
+        //! \brief Higway vs. basic roads.
+        bool highway;
+        //! \brief Backward links: are segments merged with this road segment at its origin point.
+        std::vector<Road*> backwards;
+        //! \brief Forward links are segments splited off at the destination point.
+        std::vector<Road*> forwards;
+        //! \brief Used for postponing the update for \c backwards and \c forwards.
+        Road* previous_segment_to_link = nullptr;
     };
 
     // *************************************************************************
-    //! \brief
+    //! \brief Settings for the generator.
     // *************************************************************************
     struct Config
     {
-        //! \brief generate this number of segments - a higher limit produces
+        //! \brief generate this number of roads: a higher limit produces
         //! larger networks.
-        size_t segment_count_limit = 2000u;
-        //! \brief a segment branching off at a 90 degree angle from an existing
-        //! segment can vary its direction by +/- this amount.
+        size_t max_roads = 2000u;
+        //! \brief a road branching off at a 90 degree angle from an existing
+        //! road can vary its direction by +/- this amount.
         Degree branch_angle_deviation = 3.0_deg;
-        //! \brief a segment continuing straight ahead from an existing segment
+        //! \brief a road continuing straight ahead from an existing road
         //! can vary its direction by +/- this amount.
         Degree straight_angle_deviation = 15.0_deg;
-        //! \brief segments are allowed to intersect if they have a large enough
+        //! \brief roads are allowed to intersect if they have a large enough
         //! difference in direction - this helps enforce grid-like networks
         Degree minimum_intersection_deviation = 30.0_deg;
-        //! \brief try to produce 'normal' segments with this length if possible
-        Meter default_segment_length = 300.0_m;
-        //! \brief try to produce 'highway' segments with this length if
+        //! \brief try to produce 'normal' roads with this length if possible
+        Meter default_road_length = 300.0_m;
+        //! \brief try to produce 'highway' roads with this length if
         //! possible
-        Meter highway_segment_length = 400.0_m;
-        //! \brief each 'normal' segment has this probability of producing a
-        //! branching segment
+        Meter highway_road_length = 400.0_m;
+        //! \brief each 'normal' road has this probability of producing a
+        //! branching road
         float default_branch_probability = 0.4f;
-        //! \brief each 'highway' segment has this probability of producing a
-        //! branching segment
+        //! \brief each 'highway' road has this probability of producing a
+        //! branching road
         float highway_branch_probability = 0.05f;
-        //! \brief only place 'normal' segments when the population is high
+        //! \brief only place 'normal' roads when the population is high
         //! enough
         float normal_branch_population_threshold = 0.5f;
-        //! \brief only place 'highway' segments when the population is high
+        //! \brief only place 'highway' roads when the population is high
         //! enough
         float highway_branch_population_threshold = 0.5f;
         //! \brief delay branching from 'highways' by this amount to prevent
-        //! them from being blocked by 'normal' segments
-        float normal_branch_time_delay_from_highway = 5;
-        //! \brief allow a segment to intersect with an existing segment within
+        //! them from being blocked by 'normal' roads
+        size_t normal_branch_time_delay_from_highway = 5u;
+        //! \brief allow a road to intersect with an existing road within
         //! this distance
         Meter max_snap_distance = 50.0_m;
-        //! \brief select every nth segment to place buildings around - a lower
+        //! \brief select every nth road to place buildings around - a lower
         //! period produces denser building placement
-        size_t building_segment_period = 5u;
-        //! \brief the number of buildings to generate per selected segment
-        size_t building_count_per_segment = 10u;
+        size_t building_road_period = 5u;
+        //! \brief the number of buildings to generate per selected road
+        size_t building_count_per_road = 10u;
         //! \brief the maximum distance that a building can be placed from a
-        //! selected segment
+        //! selected road
         Meter MAX_BUILDING_DISTANCE_FROM_SEGMENT = 400.0_m;
     };
 
     // *************************************************************************
-    //! \brief Base class for creating roads.
+    //! \brief Base class for creating roads in the same way of C++ functor.
     // *************************************************************************
     class GenerationRule
     {
     public:
 
+        //-------------------------------------------------------------------------
+        //! \brief Default constructor taking the reference to the city generator
+        //! instance and the current time-step delay before the road is evaluated.
+        //-------------------------------------------------------------------------
         GenerationRule(CityGenerator& context, size_t const priority_)
             : priority(priority_), m_context(context)
         {}
 
+        //-------------------------------------------------------------------------
+        //! \brief Needed because of pure virtual methods.
+        //-------------------------------------------------------------------------
         virtual ~GenerationRule() = default;
 
         //-------------------------------------------------------------------------
         //! \brief Check if the rule can be apply.
         //-------------------------------------------------------------------------
-        virtual bool accept(CityGenerator::Segment& segment, CityGenerator::Segment& other) = 0;
+        virtual bool accept(CityGenerator::Road& road, CityGenerator::Road& other) = 0;
 
         //-------------------------------------------------------------------------
-        //! \brief Create road
+        //! \brief Apply the rule for creating the road.
         //-------------------------------------------------------------------------
-        virtual bool apply(CityGenerator::Segment& segment) = 0;
+        virtual bool apply(CityGenerator::Road& road) = 0;
 
         //! \brief Rule priority.
         size_t const priority;
@@ -140,8 +204,10 @@ public:
         CityGenerator& m_context;
     };
 
+    using Roads = std::list<CityGenerator::Road>;
+
     //-------------------------------------------------------------------------
-    //! \brief Dummy constructor. Do nothing except create generation rules.
+    //! \brief Dummy constructor. Do nothing except storing generation rules.
     //-------------------------------------------------------------------------
     CityGenerator();
 
@@ -149,149 +215,114 @@ public:
     //! \brief Generate city roads.
     //! \param[in] dimension city dimension [Meter x Meter].
     //-------------------------------------------------------------------------
-    std::vector<Segment> const& create(sf::Vector2<Meter> const& dimension);
+    Roads const& generate(sf::Vector2<Meter> const& dimension);
 
     //-------------------------------------------------------------------------
-    //! \brief Export the map of population density to a PNG file.
+    //! \brief Export the map of population density as PNG file.
     //-------------------------------------------------------------------------
     bool exportPopulationMap(fs::path const& path);
 
     //-------------------------------------------------------------------------
-    //! \brief
-    //! FIXME should be private
+    //! FIXME shall not be public
+    //! \brief The new road \c road will cross the road \c other at the given
+    //! intersection \c intersection. This function update the junction states
+    //! between the two roads.
+    //! \param[in] road the new road crossing the older road.
+    //! \param[in] other the older road.
+    //! \param[in] intersection where roads are spliting together. This position
+    //! shall be valid and will not be checked by this function.
     //-------------------------------------------------------------------------
-    void split(CityGenerator::Segment& segment, sf::Vector2<Meter>& p);
+    void junction(CityGenerator::Road& road, CityGenerator::Road& other,
+                  sf::Vector2<Meter>& intersection);
 
 private:
 
     //-------------------------------------------------------------------------
-    //! \brief Generate the map of population density.
+    //! \brief Generate the population density map.
     //-------------------------------------------------------------------------
-    void generatePopulationMap();
+    void generatePopulationMap(sf::Vector2<Meter> const& dimension);
+
+    //-------------------------------------------------------------------------
+    //! \brief Generate initial roads where other roads will follow.
+    //-------------------------------------------------------------------------
+    void generateInitialRoads(sf::Vector2<Meter> const& initial_position,
+                              bool const highway);
+
+    //-------------------------------------------------------------------------
+    //! \brief Generate all the roads from initial roads.
+    //! \return Return the reference to the list of created roads.
+    //-------------------------------------------------------------------------
+    Roads const& generateRoads();
+
+    //-------------------------------------------------------------------------
+    //! \brief Adjust the parameter values proposed by the \c globalGoals()
+    //! function to the local environment.
+    //-------------------------------------------------------------------------
+    bool localConstraints(CityGenerator::Road& road);
 
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    void generateInitialSegments(sf::Vector2<Meter> const& initial_position);
+    void globalGoals(CityGenerator::Road& previous);
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Used for highways or going straight on a normal branch.
+    //! \return the new created road segment.
     //-------------------------------------------------------------------------
-    std::vector<CityGenerator::Segment> const& generateSegments();
+    Road continueRoad(Road const& previous, Radian const direction);
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Used for branches extending from highways i.e. not highways
+    //! themselves
+    //! \return the new created road segment.
     //-------------------------------------------------------------------------
-    bool localConstraints(CityGenerator::Segment& segment);
+    Road branchRoad(Road const& previous, Radian const direction);
 
     //-------------------------------------------------------------------------
-    //! \brief
+    //! \brief Return the population density to the given position.
     //-------------------------------------------------------------------------
-    std::vector<CityGenerator::Segment>& globalGoals(CityGenerator::Segment const& segment);
+    double population(sf::Vector2<Meter> const position);
+
+    //-------------------------------------------------------------------------
+    //! \brief Return the population density given the road. This function is
+    //! used to follow the gradient of population density.
+    //-------------------------------------------------------------------------
+    double samplePopulation(Road const& road);
 
 public:
 
+    //! \brief Control the behavior of the city generator.
     CityGenerator::Config config;
 
 private:
 
+    // *************************************************************************
     //! \brief
-    enum class Rules {
-        None, RadiusIntersection, SnapToCrossing, IntersectionCheck
+    // *************************************************************************
+    class Priority
+    {
+    public:
+        bool operator() (Road const* road1, Road const* road2)
+        {
+            return road1->priority < road2->priority;
+        }
     };
 
+    //! \brief
+    using PriorityQueue =
+    std::priority_queue<Road*, std::vector<Road*>, Priority>;
+
     //! \brief Dimension of the city [meter x meter].
-    sf::Vector2<Meter> m_dimension;
-    //! \brief Hold roads as segments.
-    std::vector<Segment> m_segments;
+    //sf::Vector2<Meter> m_dimension;
+    //! \brief Hold roads as roads.
+    Roads m_roads;
     //! \brief Pending roads waiting for their operation.
-    std::vector<Segment> m_pendings;
+    PriorityQueue m_pendings;
     //! \brief Map of population density.
     sf::Image m_heatmap;
     //! \brief List of rules for creating roads
+    Roads m_new_branches;
     std::vector<std::unique_ptr<CityGenerator::GenerationRule>> m_rules;
-};
-
-// *****************************************************************************
-//! \brief Dummy rule.
-// *****************************************************************************
-class DummyRule: public CityGenerator::GenerationRule
-{
-public:
-
-    DummyRule(CityGenerator& context, size_t const priority_)
-        : CityGenerator::GenerationRule(context, priority_)
-    {}
-
-    virtual bool accept(CityGenerator::Segment&, CityGenerator::Segment&) override
-    {
-        return true;
-    }
-
-    virtual bool apply(CityGenerator::Segment&) override
-    {
-        return true;
-    }
-};
-
-// *****************************************************************************
-//! \brief Road intersecting road rule.
-// *****************************************************************************
-class IntersectingRoadsRule: public CityGenerator::GenerationRule
-{
-public:
-
-    IntersectingRoadsRule(CityGenerator& context, size_t const priority_)
-        : CityGenerator::GenerationRule(context, priority_)
-    {}
-
-    virtual bool accept(CityGenerator::Segment& segment, CityGenerator::Segment& other) override;
-    virtual bool apply(CityGenerator::Segment& segment) override;
-
-private:
-
-    sf::Vector2<Meter> m_intersection;
-    CityGenerator::Segment* m_other = nullptr;
-    SquareMeter m_previous_intersection_distance_squared = 100000.0_m * 100000.0_m;
-};
-
-// *****************************************************************************
-//! \brief Snap to crossing within radius rule.
-// *****************************************************************************
-class SnapToCrossingRule: public CityGenerator::GenerationRule
-{
-public:
-
-    SnapToCrossingRule(CityGenerator& context, size_t const priority_)
-        : CityGenerator::GenerationRule(context, priority_)
-    {}
-
-    virtual bool accept(CityGenerator::Segment& segment, CityGenerator::Segment& other) override;
-    virtual bool apply(CityGenerator::Segment& segment) override;
-
-private:
-
-    CityGenerator::Segment* m_other = nullptr;
-};
-
-// *****************************************************************************
-//! \brief Intersection within radius rule.
-// *****************************************************************************
-class RadiusIntersectionRule: public CityGenerator::GenerationRule
-{
-public:
-
-    RadiusIntersectionRule(CityGenerator& context, size_t const priority_)
-        : CityGenerator::GenerationRule(context, priority_)
-    {}
-
-    virtual bool accept(CityGenerator::Segment& segment, CityGenerator::Segment& other) override;
-    virtual bool apply(CityGenerator::Segment& segment) override;
-
-private:
-
-    sf::Vector2<Meter> m_intersection;
-    CityGenerator::Segment* m_other = nullptr;
 };
 
 #endif

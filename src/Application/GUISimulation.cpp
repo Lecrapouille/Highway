@@ -47,7 +47,7 @@ GUISimulation::GUISimulation(Application& application, std::string const& name,
 
 std::cout << "ICI" << std::endl;
     CityGenerator g;
-    std::vector<CityGenerator::Segment> const& seg = g.create(sf::Vector2<Meter>(200.0_m, 200.0_m));
+    CityGenerator::Roads const& seg = g.generate(sf::Vector2<Meter>(1024.0_m, 1024.0_m));
     for (auto const &it: seg)
     {
         std::cout << it << std::endl;
