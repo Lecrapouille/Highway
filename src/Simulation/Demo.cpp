@@ -21,6 +21,7 @@
 
 #include "Demo.hpp"
 #include "ECUs/AutoParkECU/AutoParkECU.hpp"
+#include "City/CityGenerator.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file "Hello simulation" demo. Show a basic simulation. An autonomous car
@@ -180,6 +181,20 @@ static bool simulation_halt_when(Simulator const& simulator)
 //-----------------------------------------------------------------------------
 static Car& simulation_create_city(Simulator& simulator, City& city)
 {
+    CityGenerator g;
+    CityGenerator::Roads const& seg = g.generate(sf::Vector2<Meter>(5.0_km, 5.0_km));
+    for (auto const &it: seg)
+    {
+        if (it.highway)
+            city.addRoad({ it.from, it.to }, 2.5_m, {2u, 2u});
+        else
+            city.addRoad({ it.from, it.to }, 2.0_m, {1u, 1u});
+    }
+
+    Car& ego = city.addEgo("Renault.Twingo", *city.roads()[0], TrafficSide::RightHand, 0u, 0.0, 0.5);
+    return customize_ego(simulator, city, ego);
+
+#if 0
     // Initial states
     const char *parking_type = "epi.0"; // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type).length;
@@ -221,6 +236,7 @@ static Car& simulation_create_city(Simulator& simulator, City& city)
     // The ego is centered on its lane (Y-axis).
     Car& ego = city.addEgo("Renault.Twingo", road1, TrafficSide::RightHand, 0u, 0.0, 0.5);
     return customize_ego(simulator, city, ego);
+#endif
 }
 
 //-----------------------------------------------------------------------------

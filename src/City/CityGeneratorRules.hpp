@@ -75,13 +75,13 @@ public:
     //-------------------------------------------------------------------------
     virtual bool accept(CityGenerator::Road& road, CityGenerator::Road& other) override
     {
-        std::cout << "    Checking intersection:" << std::endl;
+        std::cout << "    Checking roads intersecting:" << std::endl;
         // Roads do not intersect ?
         if (!math::intersect(std::make_tuple(road.from, road.to),
                              std::make_tuple(other.from, other.to),
                              m_intersection))
         {
-            std::cout << "NO (do not intersect)" << std::endl;
+            std::cout << "        NO (do not intersect)" << std::endl;
             return false;
         }
 
@@ -146,7 +146,7 @@ public:
     //-------------------------------------------------------------------------
     virtual bool accept(CityGenerator::Road& road, CityGenerator::Road& other) override
     {
-        std::cout << "    Checking radius crossing:" << std::endl;
+        std::cout << "    Checking snap to crossing:" << std::endl;
         if (math::distance2(road.to, other.to) <=
             units::math::pow<2>(m_context.config.max_snap_distance))
         {
@@ -218,7 +218,7 @@ public:
     //-------------------------------------------------------------------------
     virtual bool accept(CityGenerator::Road& road, CityGenerator::Road& other) override
     {
-        std::cout << "    Checking intersection:" << std::endl;
+        std::cout << "    Checking radius intersection:" << std::endl;
 
         math::Segment<Meter> seg(other.from, other.to);
         if (math::aligned(road.to, seg))

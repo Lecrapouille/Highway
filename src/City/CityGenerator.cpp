@@ -46,6 +46,48 @@ static Radian random_angle(Radian const limit)
 }
 
 // -----------------------------------------------------------------------------
+void CityGenerator::HeatMap::generate(sf::Vector2<Meter> const& world_dimension, sf::Vector2u map_dimension)
+{
+    m_world_dimension = world_dimension;
+    m_map_dimension = map_dimension;
+    m_scaling.x = world_dimension.x.value() / double(map_dimension.x);
+    m_scaling.y = world_dimension.y.value() / double(map_dimension.y);
+
+    perlin(m_heatmap, m_map_dimension, [](double const x, double const y) -> sf::Color {
+        double const dt = 1.0;
+        auto const noise = (
+            db::perlin(x / 64.0, y / 64.0, dt * 0.25) * 1.0 +
+            db::perlin(x / 32.0, y / 32.0, dt * 0.75) * 0.5
+        ) / 1.5;
+
+        auto const brightness = sf::Uint8((noise * 0.5 + 0.5) * 255.0);
+        return { brightness, brightness, brightness, 255 };
+    });
+}
+
+// -----------------------------------------------------------------------------
+bool CityGenerator::HeatMap::save(fs::path const& path)
+{
+    sf::Texture texture;
+    texture.loadFromImage(m_heatmap);
+    return texture.copyToImage().saveToFile(path);
+}
+
+// -----------------------------------------------------------------------------
+double CityGenerator::HeatMap::get(sf::Vector2<Meter> const& p)
+{
+    const Meter x = math::map(p.x, -m_world_dimension.x / 2.0, m_world_dimension.x / 2.0, 0.0_m, Meter(m_map_dimension.x));
+    const Meter y = math::map(p.y, -m_world_dimension.y / 2.0, m_world_dimension.y / 2.0, 0.0_m, Meter(m_map_dimension.y));
+    const unsigned int u = static_cast<unsigned int>(x.value());
+    const unsigned int v = static_cast<unsigned int>(y.value());
+
+//std::cout << "Heatmap(" << p.x << ", " << p.y << ") => (" << u << ", " << v << "): "
+//<< int(m_heatmap.getPixel(u, v).r) << std::endl;
+
+    return double(m_heatmap.getPixel(u, v).r);
+}
+
+// -----------------------------------------------------------------------------
 void CityGenerator::Road::setup_branch_links()
 {
     if (previous_segment_to_link == nullptr)
@@ -133,50 +175,13 @@ CityGenerator::generate(sf::Vector2<Meter> const& dimension)
     m_pendings.swap(empty);
     m_roads.clear();
     m_new_branches.clear();
+    m_dimension = dimension;
 
-    generatePopulationMap(dimension);
-    exportPopulationMap(project::info::tmp_path + "heatmap.png");
+    m_population.generate(dimension, sf::Vector2u(512u, 512u));
+    m_population.save(project::info::tmp_path + "heatmap.png");
     generateInitialRoads(sf::Vector2<Meter>(0.0_m, 0.0_m), true);
         //dimension.x / 2.0, dimension.y / 2.0), false);
     return generateRoads();
-}
-
-// -----------------------------------------------------------------------------
-void CityGenerator::generatePopulationMap(sf::Vector2<Meter> const& dimension)
-{
-    sf::Vector2u dim(static_cast<unsigned int>(dimension.x),
-                     static_cast<unsigned int>(dimension.y));
-    perlin(m_heatmap, dim, [](double const x, double const y) -> sf::Color {
-        double const dt = 1.0;
-        auto const noise = (
-            db::perlin(x / 64.0, y / 64.0, dt * 0.25) * 1.0 +
-            db::perlin(x / 32.0, y / 32.0, dt * 0.75) * 0.5
-        ) / 1.5;
-
-        auto const brightness = sf::Uint8((noise * 0.5 + 0.5) * 255.0);
-        // TODO Idea: store 3 other maps (water, park, elevation, pedestrians)
-        return { brightness, brightness, brightness, 255 };
-    });
-}
-
-// -----------------------------------------------------------------------------
-bool CityGenerator::exportPopulationMap(fs::path const& path)
-{
-    sf::Texture texture;
-    texture.loadFromImage(m_heatmap);
-    return texture.copyToImage().saveToFile(path);
-}
-
-// -----------------------------------------------------------------------------
-double CityGenerator::population(sf::Vector2<Meter> const position)
-{
-    // FIXME: convert world position to map position
-    const unsigned int u = static_cast<unsigned int>(position.x.value());
-    const unsigned int v = static_cast<unsigned int>(position.y.value());
-
-    std::cout << "Population at " << position.x << ", " << position.y << std::endl;
-
-    return 0.0;//double(m_heatmap.getPixel(u, v).r);
 }
 
 // -----------------------------------------------------------------------------
@@ -189,13 +194,14 @@ bool CityGenerator::localConstraints(CityGenerator::Road& road)
     for (auto& other: m_roads)
     {
         std::cout << "  vs. Other " << other << std::endl;
-        for (auto& rule: m_rules)
+        size_t i = m_rules.size();
+        while (i--)
         {
-            if (priority <= rule->priority)
+            if (priority <= m_rules[i]->priority)
             {
-                if (rule->accept(road, other))
+                if (m_rules[i]->accept(road, other))
                 {
-                    priority = rule->priority;
+                    priority = m_rules[i]->priority;
                     action = priority;
                 }
             }
@@ -241,7 +247,7 @@ CityGenerator::Roads const& CityGenerator::generateRoads()
         Road& road = *m_pendings.top();
         m_pendings.pop();
 
-        std::cout << "Road " << road << std::endl;
+        std::cout << "Road " << road << ":" << std::endl;
         if (localConstraints(road))
         {
             road.setup_branch_links();
@@ -257,24 +263,26 @@ CityGenerator::Roads const& CityGenerator::generateRoads()
 CityGenerator::Road
 CityGenerator::continueRoad(CityGenerator::Road const& previous, Radian const direction)
 {
+    std::cout << "segment_continue" << std::endl;
     size_t const priority = 0u;
     Meter const& l = previous.length();
-    sf::Vector2<Meter> const to(previous.to.x + l * units::math::sin(direction),
-                                previous.to.y + l * units::math::cos(direction));
-    return Road(previous.from, to, priority, previous.highway); // FIXME severed ?
+    sf::Vector2<Meter> const to(previous.to.x + l * units::math::cos(direction),
+                                previous.to.y + l * units::math::sin(direction));
+    return Road(previous.to, to, priority, previous.highway); // FIXME severed ?
 }
 
 // -----------------------------------------------------------------------------
 CityGenerator::Road
 CityGenerator::branchRoad(CityGenerator::Road const& previous, Radian const direction)
 {
+    std::cout << "segment_branch" << std::endl;
     const size_t priority = (previous.highway)
                           ? config.normal_branch_time_delay_from_highway
                           : 0u;
     Meter const& l = config.default_road_length;
-    const sf::Vector2<Meter> to(previous.to.x + l * units::math::sin(direction),
-                                previous.to.y + l * units::math::cos(direction));
-    return Road(previous.from, to, priority, false); // Dummy meatadata
+    const sf::Vector2<Meter> to(previous.to.x + l * units::math::cos(direction),
+                                previous.to.y + l * units::math::sin(direction));
+    return Road(previous.to, to, priority, false); // Dummy meatadata
 }
 
 // -----------------------------------------------------------------------------
@@ -284,7 +292,7 @@ double CityGenerator::samplePopulation(Road const& road)
     // from the population density map.
     // The population at every sample point on the ray is weighted with
     // the inverse distance to the roadend and summed up.
-    return (population(road.from) + population(road.to)) / 2.0;
+    return (m_population.get(road.from) + m_population.get(road.to)) / 2.0;
 }
 
 // -----------------------------------------------------------------------------
@@ -313,11 +321,13 @@ void CityGenerator::globalGoals(CityGenerator::Road& previous)
         double road_pop;
         if (population_random > population_straight)
         {
+            std::cout << "         random selected" << std::endl;
             m_new_branches.push_back(next_random);
             road_pop = population_random;
         }
         else
         {
+            std::cout << "         straight selected" << std::endl;
             m_new_branches.push_back(next_straight);
             road_pop = population_straight;
         }
@@ -328,12 +338,14 @@ void CityGenerator::globalGoals(CityGenerator::Road& previous)
             // Left branch for the highway
             if (Random::get<bool>(config.highway_branch_probability))
             {
+                std::cout << "         left_highway_branch" << std::endl;
                 const Radian angle = previous.heading() - 90.0_deg + random_angle(config.straight_angle_deviation);
                 m_new_branches.push_back(continueRoad(previous, angle));
             }
             // Right branch for the highway
             else if (Random::get<bool>(config.highway_branch_probability))
             {
+                std::cout << "         right_highway_branch" << std::endl;
                 const Radian angle = previous.heading() + 90.0_deg + random_angle(config.straight_angle_deviation);
                 m_new_branches.push_back(continueRoad(previous, angle));
             }
@@ -341,6 +353,7 @@ void CityGenerator::globalGoals(CityGenerator::Road& previous)
     }
     else if (population_straight > config.normal_branch_population_threshold)
     {
+        std::cout << "         straight pop" << std::endl;
         m_new_branches.push_back(next_straight);
     }
 
@@ -350,23 +363,26 @@ void CityGenerator::globalGoals(CityGenerator::Road& previous)
         // Left branch for the road
         if (Random::get<bool>(config.default_branch_probability))
         {
+            std::cout << "         left_road_branch" << std::endl;
             const Radian angle = previous.heading() - 90.0_deg + random_angle(config.straight_angle_deviation);
             m_new_branches.push_back(continueRoad(previous, angle));
         }
         // Right branch for the road
         else if (Random::get<bool>(config.default_branch_probability))
         {
+            std::cout << "         right_road_branch" << std::endl;
             const Radian angle = previous.heading() + 90.0_deg + random_angle(config.straight_angle_deviation);
             m_new_branches.push_back(continueRoad(previous, angle));
         }
     }
 
-    for (auto& branch = it; branch != m_new_branches.end(); ++branch)
+    //for (auto& branch = it; branch != m_new_branches.end(); ++branch)
+    for (auto& branch: m_new_branches)
     {
-        std::cout << "       new branch: " << *branch << std::endl;
-        branch->previous_segment_to_link = &previous;
-        branch->priority += previous.priority + 1u;
-        m_pendings.push(&(*branch));
+        std::cout << "       new branch: " << branch << std::endl;
+        branch.previous_segment_to_link = &previous;
+        branch.priority += previous.priority + 1u;
+        m_pendings.push(&branch);
     }
 }
 

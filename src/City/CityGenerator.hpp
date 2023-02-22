@@ -38,6 +38,25 @@ class CityGenerator
 public:
 
     // *************************************************************************
+    //! \brief
+    // *************************************************************************
+    class HeatMap
+    {
+    public:
+
+        void generate(sf::Vector2<Meter> const& world_dimension, sf::Vector2u map_dimension);
+        bool save(fs::path const& path);
+        double get(sf::Vector2<Meter> const& p);
+
+    private:
+
+        sf::Vector2<Meter> m_world_dimension;
+        sf::Vector2u m_map_dimension;
+        sf::Vector2<double> m_scaling;
+        sf::Image m_heatmap;
+    };
+
+    // *************************************************************************
     //! \brief Private representation of roads lighter representation than the
     //! \c Road class.
     // *************************************************************************
@@ -146,10 +165,10 @@ public:
         float highway_branch_probability = 0.05f;
         //! \brief only place 'normal' roads when the population is high
         //! enough
-        float normal_branch_population_threshold = 0.5f;
+        double normal_branch_population_threshold = 128.0;
         //! \brief only place 'highway' roads when the population is high
         //! enough
-        float highway_branch_population_threshold = 0.5f;
+        double highway_branch_population_threshold = 128.0;
         //! \brief delay branching from 'highways' by this amount to prevent
         //! them from being blocked by 'normal' roads
         size_t normal_branch_time_delay_from_highway = 5u;
@@ -240,7 +259,7 @@ private:
     //-------------------------------------------------------------------------
     //! \brief Generate the population density map.
     //-------------------------------------------------------------------------
-    void generatePopulationMap(sf::Vector2<Meter> const& dimension);
+    void generatePopulationMap();
 
     //-------------------------------------------------------------------------
     //! \brief Generate initial roads where other roads will follow.
@@ -304,7 +323,7 @@ private:
     public:
         bool operator() (Road const* road1, Road const* road2)
         {
-            return road1->priority < road2->priority;
+            return road1->priority > road2->priority;
         }
     };
 
@@ -319,10 +338,13 @@ private:
     //! \brief Pending roads waiting for their operation.
     PriorityQueue m_pendings;
     //! \brief Map of population density.
-    sf::Image m_heatmap;
+    // TODO Idea: store 3 other maps (water, park, elevation, pedestrians)
+    HeatMap m_population;
     //! \brief List of rules for creating roads
     Roads m_new_branches;
     std::vector<std::unique_ptr<CityGenerator::GenerationRule>> m_rules;
+
+    sf::Vector2<Meter> m_dimension;
 };
 
 #endif
