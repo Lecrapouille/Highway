@@ -25,6 +25,7 @@
 #  include <queue>
 #  include <vector>
 #  include <list>
+#  include <atomic>
 #  include "Math/Math.hpp"
 #  include "Math/Units.hpp"
 #  include "Math/Perlin.hpp"
@@ -71,18 +72,28 @@ public:
         //----------------------------------------------------------------------
         Road(sf::Vector2<Meter> const& from_, sf::Vector2<Meter> const& to_,
              size_t const priority_, bool const highway_)
-            : from(from_), to(to_), priority(priority_), highway(highway_)
-        {}
+            : id(m_next_id++), from(from_), to(to_), priority(priority_), highway(highway_)
+        {
+            std::cout << "       Constructor: " << *this << std::endl;
+        }
 
         //----------------------------------------------------------------------
         //! \brief Copy constructor.
         //----------------------------------------------------------------------
         Road(Road const& other)
-            : Road(other.from, other.to, other.priority, other.highway)
+            : id(other.id), from(other.from), to(other.to), priority(other.priority),
+                has_severed(other.has_severed), highway(other.highway), backwards(other.backwards),
+                forwards(other.forwards), previous_segment_to_link(other.previous_segment_to_link)
         {
-            has_severed = other.has_severed;
-            backwards = other.backwards;
-            forwards = other.forwards;
+            std::cout << "       Copy Constructor: " << *this << std::endl;
+        }
+
+        Road(Road && other)
+            : id(other.id), from(other.from), to(other.to), priority(other.priority),
+              has_severed(other.has_severed), highway(other.highway), backwards(other.backwards),
+              forwards(other.forwards), previous_segment_to_link(other.previous_segment_to_link)
+        {
+            std::cout << "       Move Constructor: " << *this << std::endl;
         }
 
         //----------------------------------------------------------------------
@@ -92,6 +103,15 @@ public:
         {
             this->~Road(); // destroy
             new (this) Road(other); // copy construct in place
+            std::cout << "       Copy operator: " << *this << std::endl;
+            return *this;
+        }
+
+        Road& operator=(Road && other)
+        {
+            this->~Road(); // destroy
+            new (this) Road(other); // copy construct in place
+            std::cout << "       Move operator: " << *this << std::endl;
             return *this;
         }
 
@@ -99,6 +119,16 @@ public:
         //! \brief
         //----------------------------------------------------------------------
         void setup_branch_links();
+
+        //----------------------------------------------------------------------
+        //! \brief
+        //----------------------------------------------------------------------
+	    std::vector<Road*>& links_for_end_containing(Road* road);
+
+        //----------------------------------------------------------------------
+        //! \brief
+        //----------------------------------------------------------------------
+        bool isInversed();
 
         //----------------------------------------------------------------------
         //! \brief Return the heading of the road [radian].
@@ -112,11 +142,28 @@ public:
 
         friend std::ostream& operator<<(std::ostream& os, Road const& seg)
         {
-            return os << seg.priority
-                      << " ((" << seg.from.x << ", " << seg.from.y << "), "
-                      << "(" << seg.to.x << ", " << seg.to.y << "))";
+            os << (seg.highway ? "Highway" : "Road") << seg.id
+               << " ((" << seg.from.x << ", " << seg.from.y << ") => "
+               << "(" << seg.to.x << ", " << seg.to.y << ")) "
+               << " Prio: " << seg.priority << ", Sev: " << seg.has_severed;
+            os << ", Backwards: [";
+            for (auto const& it: seg.backwards)
+                os << " " << it->id;
+            os << " ], Forwards: [";
+            for (auto const& it: seg.forwards)
+                os << " " << it->id;
+            os << " ]";
+            return os;
         }
 
+    private:
+
+        //! \brief Static member saving the number of instances.
+        static std::atomic<size_t> m_next_id;
+
+    public:
+
+        size_t const id;
         //! \brief World coordiante where the road starts (origin).
         sf::Vector2<Meter> from;
         //! \brief World coordiante where the road ends (destination).
@@ -223,8 +270,6 @@ public:
         CityGenerator& m_context;
     };
 
-    using Roads = std::list<CityGenerator::Road>;
-
     //-------------------------------------------------------------------------
     //! \brief Dummy constructor. Do nothing except storing generation rules.
     //-------------------------------------------------------------------------
@@ -234,7 +279,7 @@ public:
     //! \brief Generate city roads.
     //! \param[in] dimension city dimension [Meter x Meter].
     //-------------------------------------------------------------------------
-    Roads const& generate(sf::Vector2<Meter> const& dimension);
+    std::list<CityGenerator::Road*> const& generate(sf::Vector2<Meter> const& dimension);
 
     //-------------------------------------------------------------------------
     //! \brief Export the map of population density as PNG file.
@@ -271,7 +316,7 @@ private:
     //! \brief Generate all the roads from initial roads.
     //! \return Return the reference to the list of created roads.
     //-------------------------------------------------------------------------
-    Roads const& generateRoads();
+    std::list<CityGenerator::Road*> const& generateRoads();
 
     //-------------------------------------------------------------------------
     //! \brief Adjust the parameter values proposed by the \c globalGoals()
@@ -331,17 +376,16 @@ private:
     using PriorityQueue =
     std::priority_queue<Road*, std::vector<Road*>, Priority>;
 
-    //! \brief Dimension of the city [meter x meter].
-    //sf::Vector2<Meter> m_dimension;
-    //! \brief Hold roads as roads.
-    Roads m_roads;
     //! \brief Pending roads waiting for their operation.
     PriorityQueue m_pendings;
     //! \brief Map of population density.
     // TODO Idea: store 3 other maps (water, park, elevation, pedestrians)
     HeatMap m_population;
-    //! \brief List of rules for creating roads
-    Roads m_new_branches;
+    //! \brief Generated roads (valid and invalid)
+    std::list<CityGenerator::Road> m_branches;
+    //! \brief Hold accepted roads.
+    std::list<CityGenerator::Road*> m_roads;
+
     std::vector<std::unique_ptr<CityGenerator::GenerationRule>> m_rules;
 
     sf::Vector2<Meter> m_dimension;

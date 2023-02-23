@@ -91,12 +91,12 @@ public:
         if (d2 < m_previous_intersection_distance_squared)
         {
             // If intersecting lines are too similar don't accept
-            // Degree const deviation = wrap_angle(other.direction() - road.direction());
-            // if (deviation < m_context.config.minimum_intersection_deviation)
-            // {
-            //    std::cout << "        NO (previously)" << std::endl;
-            //    return false;
-            // }
+            Degree const deviation = math::wrap_angle(other.heading() - road.heading());
+            if (deviation < m_context.config.minimum_intersection_deviation)
+            {
+                std::cout << "        NO (previously)" << std::endl;
+                return false;
+            }
 
             m_previous_intersection_distance_squared = d2;
             m_other = &other;
@@ -151,6 +151,7 @@ public:
             units::math::pow<2>(m_context.config.max_snap_distance))
         {
             m_other = &other;
+            road.has_severed = true;
             std::cout << "        YES" << std::endl;
             return true;
         }
@@ -167,30 +168,31 @@ public:
         std::cout << "SnapToCrossingRule::apply" << std::endl;
         assert(m_other != nullptr);
         road.to = m_other->to;
-        /*
+        road.has_severed = true;
+
         // Check for duplicate lines, don't add if it exists
+        auto& links = m_other->isInversed() ? m_other->forwards : m_other->backwards;
         for (auto& link: links)
         {
-
-        }
-
-        if ((link.from.is_equal_approx(road.to) && link.end.is_equal_approx(road.from)) ||
-        (link.from.is_equal_approx(road.from) && link.end.is_equal_approx(road.to)))
-        {
-        return false;
+            if ((math::is_equal_approx(link->from, road.to) && math::is_equal_approx(link->to, road.from)) ||
+                (math::is_equal_approx(link->from, road.from) && math::is_equal_approx(link->to, road.to)))
+            {
+                std::cout << "Snap action not done" << std::endl;
+                return false;
+            }
         }
 
         for (auto& link: links)
         {
-        // Pick links of remaining roads at junction corresponding to other.end
-        link.links_for_end_containing(m_other).append(road)
-        // Add junction roads to snapped road
-        road.links_f.append(link)
+            // Pick links of remaining roads at junction corresponding to other.end
+            link->links_for_end_containing(m_other).push_back(&road);
+            // Add junction roads to snapped road
+            road.forwards.push_back(link);
         }
 
-        links.append(road)
-        road.links_f.append(self.other)
-        */
+        links.push_back(&road);
+        road.forwards.push_back(m_other);
+
         return true;
     }
 
@@ -228,19 +230,24 @@ public:
             if (d2 < units::math::pow<2>(m_context.config.max_snap_distance))
             {
                 // If intersecting lines are too similar don't accept
-                // Degree const deviation = wrap_angle(other.direction() - road.direction());
-                // if (deviation < m_context.config.minimum_intersection_deviation)
-                // {
-                //    std::cout << "        NO (alig)" << std::endl;
-                //    return false;
-                // }
+                Degree const deviation = math::wrap_angle(other.heading() - road.heading());
+                if (deviation < m_context.config.minimum_intersection_deviation)
+                {
+                    std::cout << "        NO (similar)" << std::endl;
+                    return false;
+                }
                 m_other = &other;
                 std::cout << "        YES" << std::endl;
                 return true;
             }
+            else
+            {
+                std::cout << "        NO (distance)" << std::endl;
+                return false;
+            }
         }
 
-        std::cout << "        NO (distance)" << std::endl;
+        std::cout << "        NO (alig)" << std::endl;
         return false;
     }
 

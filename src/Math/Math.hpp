@@ -31,6 +31,42 @@
 namespace math {
 
 //------------------------------------------------------------------------------
+// Taken from the Godot Engine
+inline bool is_equal_approx(double const a, double const b)
+{
+   constexpr double CMP_EPSILON = 0.00001;
+
+#if !defined(_WIN32)
+#  pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+
+   // Check for exact equality first, required to handle "infinity" values.
+   if (a == b) {
+      return true;
+   }
+
+#if !defined(_WIN32)
+#  pragma GCC diagnostic pop
+#endif
+
+   // Then check for approximate equality.
+   double tolerance = CMP_EPSILON * std::abs(a);
+   if (tolerance < CMP_EPSILON) {
+      tolerance = CMP_EPSILON;
+   }
+   return std::abs(a - b) < tolerance;
+}
+
+//------------------------------------------------------------------------------
+// Taken from the Godot Engine
+inline bool is_equal_approx(sf::Vector2<Meter> const a, sf::Vector2<Meter> const b)
+{
+   return math::is_equal_approx(a.x.value(), b.x.value()) ||
+          math::is_equal_approx(a.y.value(), b.y.value());
+}
+
+//------------------------------------------------------------------------------
 //! \brief Linear interpolation between \c from and \c to.
 //! \param[in] weight is clamped to the range [0.0, 1.0].
 //! \param[in] from initial value (when weight == 0.0).
