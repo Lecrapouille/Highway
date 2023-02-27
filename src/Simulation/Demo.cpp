@@ -181,6 +181,7 @@ static bool simulation_halt_when(Simulator const& simulator)
 //-----------------------------------------------------------------------------
 static Car& simulation_create_city(Simulator& simulator, City& city)
 {
+#if 0
     CityGenerator g;
     auto const& seg = g.generate(sf::Vector2<Meter>(5.0_km, 5.0_km));
     for (auto const &it: seg)
@@ -194,7 +195,7 @@ static Car& simulation_create_city(Simulator& simulator, City& city)
     Car& ego = city.addEgo("Renault.Twingo", *city.roads()[0], TrafficSide::RightHand, 0u, 0.0, 0.5);
     return customize_ego(simulator, city, ego);
 
-#if 0
+#else
     // Initial states
     const char *parking_type = "epi.0"; // parallel slots
     const Meter parking_length = BluePrints::get<ParkingBluePrint>(parking_type).length;

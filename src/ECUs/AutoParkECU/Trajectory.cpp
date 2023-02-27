@@ -53,9 +53,11 @@ bool CarTrajectory::update(Car& car, Second const dt)
 //------------------------------------------------------------------------------
 CarTrajectory::Ptr CarTrajectory::create(ECU& ecu, Parking::Type const type)
 {
+    std::cout << "CarTrajectory::create\n";
     switch (type)
     {
     case Parking::Type::Parallel:
+        std::cout << "CarTrajectory::create Parallel\n";
         return std::make_unique<ParallelTrajectory>(ecu);
     case Parking::Type::Perpendicular:
         // FIXME https://github.com/Lecrapouille/Highway/issues/33

@@ -252,8 +252,7 @@ CityGenerator::generate(sf::Vector2<Meter> const &dimension)
 {
     // Reset internal states
     std::cout << "CityGenerator::generate clear" << std::endl;
-    PriorityQueue empty;
-    m_pendings.swap(empty);
+    m_pendings.clear();
     m_roads.clear();
     m_branches.clear();
 
@@ -331,8 +330,7 @@ std::list<CityGenerator::Road *> const &CityGenerator::generateRoads()
     while ((m_pendings.size() >= 1u) && (m_roads.size() < config.max_roads))
     {
         // Get the road with the hightest priority (lower value)
-        Road &road = *m_pendings.top();
-        m_pendings.pop();
+        Road &road = *m_pendings.pop();
 
         std::cout << "\n-----------------\n"
                   << road << std::endl;
@@ -477,11 +475,10 @@ void CityGenerator::globalGoals(CityGenerator::Road &previous)
     }
 
     std::cout << "       new branches: " << std::endl;
-    size_t p = 1u;
     for (auto &branch : new_branches)
     {
         branch.previous_segment_to_link = &previous;
-        branch.priority += previous.priority + p++;
+        branch.priority += previous.priority + 1u;
         m_branches.push_back(branch);
         std::cout << "          new branch: " << branch << std::endl;
         m_pendings.push(&m_branches.back());

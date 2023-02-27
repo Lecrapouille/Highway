@@ -85,7 +85,7 @@ public:
                 has_severed(other.has_severed), highway(other.highway), backwards(other.backwards),
                 forwards(other.forwards), previous_segment_to_link(other.previous_segment_to_link)
         {
-            std::cout << "       Copy Constructor: " << *this << std::endl;
+            //std::cout << "       Copy Constructor: " << *this << std::endl;
         }
 
         Road(Road && other)
@@ -93,7 +93,7 @@ public:
               has_severed(other.has_severed), highway(other.highway), backwards(other.backwards),
               forwards(other.forwards), previous_segment_to_link(other.previous_segment_to_link)
         {
-            std::cout << "       Move Constructor: " << *this << std::endl;
+            //std::cout << "       Move Constructor: " << *this << std::endl;
         }
 
         //----------------------------------------------------------------------
@@ -103,7 +103,7 @@ public:
         {
             this->~Road(); // destroy
             new (this) Road(other); // copy construct in place
-            std::cout << "       Copy operator: " << *this << std::endl;
+            //std::cout << "       Copy operator: " << *this << std::endl;
             return *this;
         }
 
@@ -111,7 +111,7 @@ public:
         {
             this->~Road(); // destroy
             new (this) Road(other); // copy construct in place
-            std::cout << "       Move operator: " << *this << std::endl;
+            //std::cout << "       Move operator: " << *this << std::endl;
             return *this;
         }
 
@@ -189,7 +189,7 @@ public:
     {
         //! \brief generate this number of roads: a higher limit produces
         //! larger networks.
-        size_t max_roads = 2000u;
+        size_t max_roads = 8u;
         //! \brief a road branching off at a 90 degree angle from an existing
         //! road can vary its direction by +/- this amount.
         Degree branch_angle_deviation = 3.0_deg;
@@ -363,18 +363,44 @@ private:
     // *************************************************************************
     //! \brief
     // *************************************************************************
-    class Priority
+    class PriorityQueue
     {
     public:
-        bool operator() (Road const* road1, Road const* road2)
+
+        void push(Road* r)
         {
-            return road1->priority > road2->priority;
+            m_queue.push_back(r);
         }
+
+        Road* pop()
+        {
+            // Find the segment with the hightest priority (lower value)
+            auto it = std::min_element(m_queue.begin(), m_queue.end(), [](Road const* lhs, Road const* rhs)
+            {
+                return lhs->priority < rhs->priority;
+            });
+            Road* road = *it;
+            m_queue.erase(it);
+            return road;
+        }
+
+        size_t size() const
+        {
+            return m_queue.size();
+        }
+
+        void clear()
+        {
+            m_queue.clear();
+        }
+
+    private:
+
+        std::list<Road*> m_queue;
     };
 
     //! \brief
-    using PriorityQueue =
-    std::priority_queue<Road*, std::vector<Road*>, Priority>;
+    //using PriorityQueue = std::priority_queue<Road*, std::vector<Road*>, Priority>;
 
     //! \brief Pending roads waiting for their operation.
     PriorityQueue m_pendings;

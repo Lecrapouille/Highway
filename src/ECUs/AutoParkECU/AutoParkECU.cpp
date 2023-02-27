@@ -357,6 +357,7 @@ Antenna::Detection const& AutoParkECU::detect()
 //------------------------------------------------------------------------------
 bool AutoParkECU::park(Parking const& parking, bool const entering)
 {
+    std::cout << "CCCCCCCCCCCCCCCCCCC\n";
     // Parallel, perpendicular, diagonal trajectories.
     m_trajectory = CarTrajectory::create(*this, parking.type);
     return m_trajectory->init(m_ego, parking, entering);
@@ -367,7 +368,7 @@ bool AutoParkECU::updateTrajectory(Second const dt)
 {
     // The vehicle cannot park or is already parked or has lelft.
     if (m_trajectory == nullptr)
-        return true;
+        return false;
 
     // In the case of parallel trajectory.
     // doc/Parallel/ParallelFinalStep.png

@@ -114,7 +114,7 @@ public:
     using Ptr = std::unique_ptr<CarTrajectory>;
     static CarTrajectory::Ptr create(ECU& ecu, Parking::Type const type);
 
-    virtual ~CarTrajectory() = default;
+    virtual ~CarTrajectory() { std::cout << "Destroy Trajectory\n"; };
     virtual bool init(Car& car, Parking const& parking, bool const entering) = 0;
     //! \brief
     //! \return false if no need to update (end of references)
