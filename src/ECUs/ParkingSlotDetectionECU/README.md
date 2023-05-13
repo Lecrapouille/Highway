@@ -33,13 +33,13 @@ A free database of bird's eye view for training the DCNN is given at https://dri
 
 *Note:* the 4 raw pictures from cameras are not given in the database. Only the bird's eye view and the data needed for the training (vertices, segment lines, angle and type of parking) are given.
 
-![doc/pics/Diag0.jpg]
+![diag](doc/pics/Diag0.jpg)
 
 ### Output
 
 The algorithm described in the document will return the type of parking slot, and the 4 vertices. This allows, for example to draw, the estimate slot in the input image. For example:
 
-![doc/pics/Diag1.jpg]
+![diag](doc/pics/Diag1.jpg)
 
 *Note:* This picture does not come from the paper. I added rectangles myself by hand. Colors have no meaning here except to depict there is 2 parking slots.
 
@@ -51,7 +51,7 @@ The entry point of the project is DeepPSMatForPaper/processTestImgs.m
 
 The algorithm's pipeline is the following:
 
-![doc/pics/Diag2.jpg]
+![diag](doc/pics/Diag2.jpg)
 
 #### Supervised data
 
@@ -121,8 +121,8 @@ From the cropped picture, we want to determine the type of parking slot:
 - diagonal form: clockwise or counterclockwise (ie pics (c), (d), (f), (g))
 - invalid (h).
 
-![pics/Diag3.jpg]
-![pics/Diag4.jpg]
+![diag](pics/Diag3.jpg)
+![diag](pics/Diag4.jpg)
 
 The Pattern classification is a second deep convolutional network to make supervised classification and its pipeline is described by the following figure. At the end of the document I give a try to implement this network with Keras (a wrapper on TensorFlow since the API is simple).
 
@@ -133,7 +133,7 @@ The Pattern classification is a second deep convolutional network to make superv
   - invalid.
 - It is made in Cafee and given in DeepPSMatForPaper/deploy.prototxt and called by DeepPSMatForPaper/parkingslot_detector.m
 
-![doc/pics/Diag5.jpg]
+![diag](doc/pics/Diag5.jpg)
 
 #### Parking Slot inference
 

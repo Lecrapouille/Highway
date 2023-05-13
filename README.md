@@ -1,6 +1,13 @@
 # Highway: A light and open-source simulator for autonomous driving research.
 
+*Note: this repo is given 'as it' since I'm currently have no time to work on it. There are lot of things to do before
+having a complete simulator.
+
 ## Why another vehicle simulator ?
+
+[![Auto parking](src/ECUs/AutoParkECU/doc/Parallel/demo.png)](https://www.youtube.com/shorts/ZNt48pTXtO0)
+
+*Fig 1 - A parallel automatic maneuver. Click on the image to run the video.*
 
 This simulator has not the pretention to revolutionize the world of the vehicle simulation but is just a personal challenge for offering an intuitive API for autonomous driving research.
 
@@ -86,7 +93,7 @@ Highway
 
 ## Documentation
 
-- The index of detail design documents: doc/README.md
+- The index of detail design documents: [doc/README.md](doc/README.md).
 
 -  The code source refers to mathematic formulas from the documents
 cited in the bibliography section. For emacs users, when diving inside
