@@ -1,4 +1,6 @@
-# Sensors
+# Vehicle sensors
+
+Add here all code for simulating sensors (radar, lidar ...)
 
 - https://www.renesas.com/cn/en/blogs/radar-transceivers-key-component-adas-autonomous-driving-blog-1-why-do-we-need-radar
 - https://www.race-technology.com/us/industrial/products/radar-distance-sensor

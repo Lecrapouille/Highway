@@ -36,9 +36,9 @@ The code source refers to mathematic formulas from the following documents.
 Note PDF have been compressed to reduce this repo size. You can google them
 to get their original version without loose of quality.
 
-- (fr) `Estimation et contrôle pour le pilotage automatique de véhicule` by Sungwoo Choi
-- (en) `Easy Path Planning and Robust Control for Automatic Parallel Parking` by Sungwoo CHOI, Clément Boussard, Brigitte d'Andréa-Novel.
+- ![fr](https://lecrapouille.github.io/icons/fr.png) `Estimation et contrôle pour le pilotage automatique de véhicule` by Sungwoo Choi
+- ![en](https://lecrapouille.github.io/icons/en.png) `Easy Path Planning and Robust Control for Automatic Parallel Parking` by Sungwoo CHOI, Clément Boussard, Brigitte d'Andréa-Novel.
 Which is a summary of the previous document.
-- (en) `Automatic Parking and Path Following Control for a Heavy-Duty Vehicle` by Joakim Mörhed and Filip Östman
-- (en) `Automatic parking of self-driving car based on LIDAR` by Bijun Lee, Yang Wei, I. Yuan Guo.
-- (en) `Flatness and motion Planning the Car with n-trailer` by Pierre Rouchon.
+- ![en](https://lecrapouille.github.io/icons/en.png) `Automatic Parking and Path Following Control for a Heavy-Duty Vehicle` by Joakim Mörhed and Filip Östman
+- ![en](https://lecrapouille.github.io/icons/en.png) `Automatic parking of self-driving car based on LIDAR` by Bijun Lee, Yang Wei, I. Yuan Guo.
+- (![en](https://lecrapouille.github.io/icons/en.png) `Flatness and motion Planning the Car with n-trailer` by Pierre Rouchon.

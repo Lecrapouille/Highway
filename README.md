@@ -1,6 +1,6 @@
 # Highway: A light and open-source simulator for autonomous driving research.
 
-*Note: this repo is given 'as it' since I'm currently have no time to work on it. There are lot of things to do before
+**Note:** this repo is given 'as it' since I'm currently have no time to work on it. There are lot of things to do before
 having a complete simulator.
 
 ## Why another vehicle simulator ?
@@ -15,7 +15,7 @@ When I tried [Carla simulator](https://github.com/carla-simulator/carla), I did 
 - Hard to install (Unreal Engine, NVidia drivers, patches, need Docker ...) and takes giga bytes of binaries on the hard disk. The application is low to run.
 - Very instable: lot of crashes, lot of issues on GitHub that are never fixed and a robot is auto-closing them after X days without answers.
 - The physical models of cars are not very realist: looks like playing the GTA III game.
-- The most important is the API is not developper friendly and poorly documented. For example, When reading the first lines of the API: `carla.Actor: defines actors as anything that plays a role in the simulation or can be moved around. That includes: pedestrians, vehicles, sensors and traffic signs ...` but when reading their Actor methods: `close_door()` ... We can interrogate if this API has been really tough.
+- The most important is the API is not developper friendly and poorly documented. For example, When reading the first lines of the API: `carla.Actor: defines actors as anything that plays a role in the simulation or can be moved around. That includes: pedestrians, vehicles, sensors and traffic signs ...` but when reading other Actor methods we reach `close_door()` ... We can interrogate if this API has been really thought.
 - The documentation is sometimes hard to understand. I was personnaly stuck searching on the API what methods giving me dimensions of my car (wheel base ...), or how to understand how they have implemented Akermann ...
 
 In my opinion, a simulator has to help the developper by offering the possibility to interact with all objects in the word. For example the simulator has to reply to question such as "give me the list of pedestrians around the car" ... a reference list that can be compared at run time with the list of pedestrians detected by your IA/sensors/ECU of your ego vehicle. This idea can be extended to any mobile/static object in the city: pedestrian, cars, roads, traffic signs, zebras, parking slot, spawning points ... all of them shall interact with the ego vehicle and share their states (ie traffic light: the color of the light, the content of any road signs ie "Nationale 20" ...).
@@ -36,22 +36,33 @@ Here a list of things a simulator can help and that I did not find in Carla:
 
 This code depends on:
 - C++-17 compiler (g++, clang++)
-- lib [SFML]( https://www.sfml-dev.org/) for 2D graphism.
-- SWI Prolog: `sudo apt-get install swi-prolog`.
+- [SFML]( https://www.sfml-dev.org/) for 2D graphism: `sudo apt-get install libsfml-dev`.
+- [SWI Prolog](https://www.swi-prolog.org/) `sudo apt-get install swi-prolog`. Prolog is a logic programming language associated with artificial intelligence and computational linguistics. Currently it is not used.
 - [Backward-cpp](https://github.com/bombela/backward-cpp) for stack tracing on segfaults.
-  This is downloaded (but not installed on your operating system) when compiling in debug
-  mode.
-- Google tests for unit tests.
+  This lib is automatically downloaded (but not installed on your operating system) when compiling in debug mode.
+- Google tests for unit tests: https://github.com/google/googletest.
 
 To compile and install the standalone application:
 
+- Download third part librairies. This has to be call once:
 ```sh
-git clone git@github.com:Lecrapouille/Highway.git --depth=1
-make clean
+git clone git@github.com:Lecrapouille/Highway.git --recursive --depth=1
+make download-external-libs
+make compile-external-libs
+```
+
+Once you can compile the project.
+
+```sh
 make -j8
 ```
 
-Scenario files are automatically compiled. But here what is made:
+If you prefer instead to choose a different compiler, i.e:
+```
+make CXX=clang++-13 -j8
+```
+
+Scenario files are automatically compiled. You have to do nothing. Here what is made (hidden):
 
 ```sh
 for i in `ls Scenarios` do
@@ -63,8 +74,8 @@ cp Scenarios/*/build/*.so data/Scenarios/
 ```
 
 The compiled simulation files are in `Scenarios/xxx/build/xxx.so` but then are copied
-into the [data/Scenarios](data/Scenarios/) folder. There a pure shared library that
-can be opened by the standalone application with (`dlopen`). See next section for more information.
+into the [data/Scenarios](data/Scenarios/) folder to be loaded by the application. There are pure shared libraries that
+can be opened by with `dlopen()` function.
 
 
 To run the standalone application.
@@ -91,14 +102,21 @@ To run the standalone application installed on your system:
 Highway
 ```
 
+To clean the project:
+```sh
+make clean
+```
+
+This will remove the buid/ folder. To deep clean (third parts, docs ...) type `make veryclean`.
+
 ## Documentation
 
 - The index of detail design documents: [doc/README.md](doc/README.md).
 
--  The code source refers to mathematic formulas from the documents
-cited in the bibliography section. For emacs users, when diving inside
-the code source, you can type `M-x turn-on-iimage-mode` to show pictures
-inside C++ comments. This will help you to understand the code bind
+-  The code source refers in comments to mathematic formulas from the documents
+cited inside bibliography sections on each folders. Formulas are pictures. For
+Emacs users, when diving inside the code source, you can type `M-x turn-on-iimage-mode`
+to show pictures inside C++ comments. This will help you to understand the code bind
 to mathematic formulas of these documents.
 
 - To generate Doxygen documentation.
@@ -136,7 +154,7 @@ make -j8
 
 ### Compress your work
 
-To create a tar.gz of the project with management of name conflict concerning the tarball name. Compiled files, generated doc, git files and backup files are not stored in the tarball.
+To create a tar.gz (for a backup) of the project with management of name conflict concerning the tarball name. Compiled files, generated doc, git files and backup files are not stored in the tarball.
 
 ```sh
 make tarball

@@ -5,6 +5,7 @@ This document is used as index.
 
 - [./Planning/README.md](./Planning/README.md)
 - [../Scenarios/README.md](../Scenarios/README.md)
+- [../src/README.md](../src/README.md)
 - [../src/ECUs/README.md](../src/ECUs/README.md)
 - [../src/ECUs/TurningIndicatorECU/README.md](../src/ECUs/TurningIndicatorECU/README.md)
 - [../src/ECUs/AutoParkECU/README.md](../src/ECUs/AutoParkECU/README.md)
@@ -15,7 +16,3 @@ This document is used as index.
 - [../src/City/doc/README.md](../src/City/doc/README.md)
 - [../src/Math/README.md](../src/Math/README.md)
 - [../src/Application/README.md](../src/Application/README.md)
-
-## Classes diagram
-
-![classes](Architecture/classes.png)

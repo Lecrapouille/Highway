@@ -3,7 +3,7 @@
 You can create your own scenarios for [Highway](https://github.com/Lecrapouille/Highway) separatly from
 the standalone application. This document will explain you how to do it.
 
-## Prerequisites
+## Prerequisites
 
 The code source of your simulation file shall be C++ and include "the [API header](../include/Highway/API.hpp)
 and link against the `libhighway.a`.
@@ -38,9 +38,9 @@ The function returns:
 
 ## Examples
 
-You can read the code source of the [demo](src/Simulation/Demo.cpp) or the scenarios given in this folder.
+Examples of scenarios given in this folder. A default demo is given [here](../../src/Simulation/Demo.cpp).
 
-## Steps to create a new scenario
+## Steps for creating a new scenario
 
 - Create a folder holding at least one C++ file and a Makefile:
   - The C++ file shall implements function depicted in the API.hpp.
