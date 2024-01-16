@@ -2,14 +2,14 @@
 
 DCNN: Deep convolutional network
 
-The following code source has been adapted from the document and code that can be downloaded from
-https://cslinzhang.github.io/deepps/ The original code is messy and we redone our own code.
+The following code source has been adapted from the paper and code that can be downloaded from
+https://cslinzhang.github.io/deepps/ The original code is messy and has been redone our own code.
 
 ## Steps
 
 - Download ps2.0.zip and unzip it.
 - `crop.py` will prepare dataset of pictures for the image pattern classifier.
-- The marking-point detection based we YOLO has yet not been implemented. This DCNN will feed the parking slot classifier.
+- The marking-point detection based with YOLO has yet not been implemented. This DCNN will feed the parking slot classifier.
 - `classifier.py` will classify parking spot.
 - The computation of parking slot vertices is not made.
 
@@ -121,8 +121,8 @@ From the cropped picture, we want to determine the type of parking slot:
 - diagonal form: clockwise or counterclockwise (ie pics (c), (d), (f), (g))
 - invalid (h).
 
-![diag](pics/Diag3.jpg)
-![diag](pics/Diag4.jpg)
+![diag](doc/pics/Diag3.png)
+![diag](doc/pics/Diag4.png)
 
 The Pattern classification is a second deep convolutional network to make supervised classification and its pipeline is described by the following figure. At the end of the document I give a try to implement this network with Keras (a wrapper on TensorFlow since the API is simple).
 
@@ -133,7 +133,7 @@ The Pattern classification is a second deep convolutional network to make superv
   - invalid.
 - It is made in Cafee and given in DeepPSMatForPaper/deploy.prototxt and called by DeepPSMatForPaper/parkingslot_detector.m
 
-![diag](doc/pics/Diag5.jpg)
+![diag](doc/pics/Diag5.png)
 
 #### Parking Slot inference
 
@@ -151,7 +151,7 @@ P3 = R * width * length + P2
 P4 = R * width * length + P1
 ```
 
-## My personal and quick implementation of the DCNN#2 for the parking classification
+## My personal and quick implementation of the DCNN2 for the parking classification
 
 Disclaimer: this is my first deep learning code. This a noob code and for the moment I did not add time to add all plots (history, loss, accuracy, confusion matrix, negative results ...) so do not trust this code!
 
@@ -162,7 +162,7 @@ In this git repo I added my home made dataset (800 Ko) and the Python3 code of t
 Notes:
 - Adapt my paths to your system.
 - If needed, remove comments to run the code # crop_all (to be done once) to generate input pictures from the official datasets of the original authors (DeepPS.zip ~2.4 Go).
-- The training is very fast (less than 1 minute)
+- The training is very fast (less than 1 minute).
 
 ## My Personal comments on the paper
 
