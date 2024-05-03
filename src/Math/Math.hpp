@@ -250,7 +250,7 @@ project(sf::Vector2<Meter> const& M, Segment<Meter> const& lineAB,
    const sf::Vector2<Meter> AM = M - A;
    const sf::Vector2<Meter> AB = B - A;
 
-   // Squared mangitude of AB.
+   // Squared magnitude of AB.
    const double l = math::dot(AB, AB).value();
    if (l < 1e-20)
    {
