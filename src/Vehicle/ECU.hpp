@@ -24,6 +24,7 @@
 
 #  include "Sensors/Sensor.hpp"
 #  include "Common/Components.hpp"
+#  include <functional>
 
 // ****************************************************************************
 //! \brief Base class for Electronic Control Units.

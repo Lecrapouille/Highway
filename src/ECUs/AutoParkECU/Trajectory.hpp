@@ -25,6 +25,7 @@
 #  include "City/Parking.hpp"
 #  include <SFML/Graphics.hpp> // FIXME deplacer CarTrajectory::draw
 #  include <vector>
+#  include <memory>
 
 class Car;
 class VehicleControl;

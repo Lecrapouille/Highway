@@ -25,6 +25,7 @@
 #  define DB_PERLIN_IMPL
 #  include "perlin-noise/db_perlin.hpp"
 #  include <SFML/Graphics.hpp>
+#  include <functional>
 
 void perlin(sf::Image& image, sf::Vector2u const& dimension, std::function<sf::Color(const double, const double)> lambda);
 
