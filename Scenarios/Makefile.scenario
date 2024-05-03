@@ -84,7 +84,7 @@ endif
 .PHONY: all
 all: $(SHARED_LIB_TARGET)
 	@$(call print-to,"Installing","$(SHARED_LIB_TARGET)","$(SCENARIO_DIR)","")
-	@-rm $(SCENARIO_DIR)/$(SHARED_LIB_TARGET_NOVERSION)
+	@rm -fr $(SCENARIO_DIR)/$(SHARED_LIB_TARGET_NOVERSION) 2> /dev/null
 	@cp $(BUILD)/$(SHARED_LIB_TARGET) $(SCENARIO_DIR)/$(SHARED_LIB_TARGET_NOVERSION)
 
 ###################################################
