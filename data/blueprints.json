@@ -1,0 +1,84 @@
+{
+  "revision": 1,
+  "type": "blueprints",
+  "vehicles": [
+    {
+        "mark": "Renault.Twingo",
+        "url": "https://www.renault-guyane.fr/cars/TWINGOB07Ph2h/DimensionsEtMotorisations.html",
+        "length_m": 3.615,
+        "width_m": 1.646,
+        "wheelbase_m": 2.492,
+        "back_overhang_m": 0.494,
+        "turning_diameter_m": 10.0,
+        "wheels": {
+            "radius_m": 0.328,
+            "width_m": 0.1
+        }
+    },
+    {
+        "mark": "Citroen.DS3",
+        "url": "https://www.largus.fr/images/images/ds3-crossback-dimensions-redimensionner.png",
+        "length_m": 4.118,
+        "width_m": 1.79,
+        "wheelbase_m": 2.558,
+        "back_overhang_m": 0.7,
+        "turning_diameter_m": 10.4,
+        "wheels": {
+            "radius_m": 0.328,
+            "width_m": 0.1
+        }
+    },
+    {
+        "mark": "Citroen.C3",
+        "url": "https://www.bsegfr.com/images/books/5/8/index.47.jpg",
+        "length_m": 3.941,
+        "width_m": 1.728,
+        "wheelbase_m": 2.466,
+        "back_overhang_m": 0.66,
+        "turning_diameter_m": 10.7,
+        "wheels": {
+            "radius_m": 0.328,
+            "width_m": 0.1
+        }
+    },
+    {
+        "mark": "Nissan.NV200",
+        "url": "",
+        "length_m": 4.321,
+        "width_m": 1.219,
+        "wheelbase_m": 2.725,
+        "back_overhang_m": 0.84,
+        "turning_diameter_m": 10.6,
+        "wheels": {
+            "radius_m": 0.241,
+            "width_m": 0.1
+        }
+    },
+    {
+        "mark": "Audi.A6",
+        "url": "",
+        "length_m": 4.951,
+        "width_m": 1.902,
+        "wheelbase_m": 2.924,
+        "back_overhang_m": 1.105,
+        "turning_diameter_m": 11.7,
+        "wheels": {
+            "radius_m": 0.328,
+            "width_m": 0.1
+        }
+    },
+    {
+        "mark": "Mini.Cooper",
+        "url": "",
+        "length_m": 3.62,
+        "width_m": 1.68,
+        "wheelbase_m": 2.46,
+        "back_overhang_m": 10.58,
+        "turning_diameter_m": 10.7,
+        "wheels": {
+            "radius_m": 0.328,
+            "width_m": 0.1
+        }
+    }
+  ]
+}

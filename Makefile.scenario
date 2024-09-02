@@ -1,0 +1,71 @@
+# -*- mode: makefile -*-
+##=====================================================================
+## https://github.com/Lecrapouille/Highway
+## Highway: Open-source simulator for autonomous driving research.
+## Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
+##
+## This file is part of Highway.
+##
+## Highway is free software: you can redistribute it and/or modify it
+## under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with Highway.  If not, see <http://www.gnu.org/licenses/>.
+##=====================================================================
+
+###################################################
+# Location of the project directory and Makefiles
+#
+P := $(abspath ../..)
+M := $(P)/.makefile
+
+###################################################
+# Project definition
+#
+include $(P)/Makefile.common
+TARGET_NAME := $(SCENARIO_NAME)
+TARGET_DESCRIPTION := $(SCENARIO_DESCRIPTION)
+SCENARIO_DIR = $(P)/data/Scenarios
+include $(M)/project/Makefile
+
+###################################################
+# Inform Makefile where to find header files
+#
+INCLUDES += $(P) $(P)/src $(P)/include
+INCLUDES += $(P)/external/MyLogger/include
+
+###################################################
+# Make the list of compiled files for the library
+#
+LIB_FILES += $(SCENARIO_FILES)
+
+###################################################
+# Set Libraries.
+#
+INTERNAL_LIBS := $(call internal-lib,HighwayScenario)
+INTERNAL_LIBS += $(call internal-lib,HighwayCore)
+INTERNAL_LIBS += $(call internal-lib,HighwayApplication)
+
+#THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
+
+###################################################
+# Generic Makefile rules
+#
+include $(M)/rules/Makefile
+
+###################################################
+# Extra rules
+#
+all:: copy-scenarios
+
+.PHONY: copy-scenarios
+copy-scenarios::
+	@$(call print-to,"Copying scenario","$(TARGET_NAME)","$(SCENARIO_DIR)","")
+	@cp $(BUILD_DIR)/lib$(TARGET_NAME)$(EXT_DYNAMIC_LIB) $(SCENARIO_DIR)/$(TARGET_NAME:lib%=%)$(EXT_DYNAMIC_LIB)
