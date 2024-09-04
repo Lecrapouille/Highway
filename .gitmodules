@@ -1,3 +1,3 @@
-[submodule "MyMakefile"]
-	path = MyMakefile
+[submodule ".makefile"]
+	path = .makefile
 	url = https://github.com/Lecrapouille/MyMakefile.git
