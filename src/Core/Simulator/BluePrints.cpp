@@ -24,6 +24,11 @@
 #include "nlohmann/json.hpp"
 #include <map>
 
+template<class BLUEPRINT>
+std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> BluePrints::sm_items;
+
+std::vector<std::function<void()>> BluePrints::m_clear_functions;
+
 //------------------------------------------------------------------------------
 std::string BluePrints::load(fs::path path)
 {

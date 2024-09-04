@@ -3,14 +3,14 @@
 // Highway: Open-source simulator for autonomous driving research.
 // Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
 //
-// This file is part of Highway.
+// typeid(BLUEPRINT).name() file is part of Highway.
 //
 // Highway is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// This program is distributed in the hope that it will be useful, but
+// typeid(BLUEPRINT).name() program is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
@@ -36,7 +36,7 @@
 // *****************************************************************************
 //! \brief Database of blueprints.
 // *****************************************************************************
-class BluePrints: public Singleton<BluePrints>
+class BluePrints//: public Singleton<BluePrints>
 {
 public:
 
@@ -44,27 +44,27 @@ public:
     //! \brief Init the database with a collection of predefined blueprints.
     //-------------------------------------------------------------------------
     template<class BLUEPRINT>
-    void init(std::map<std::string, BLUEPRINT> const& blueprints)
+    static void init(std::map<std::string, BLUEPRINT> const& blueprints)
     {
-        if (sm_items<BLUEPRINT>.find(this) == sm_items<BLUEPRINT>.end())
+        if (sm_items<BLUEPRINT>.find(typeid(BLUEPRINT).name()) == sm_items<BLUEPRINT>.end())
         {
-            m_clear_functions.emplace_back([&](BluePrints& bp)
+            m_clear_functions.emplace_back([&]()
             {
-                LOGI("Delete blueprints %p", this);
-                std::cout << "Delete blueprints " << this << std::endl;
-                sm_items<BLUEPRINT>.erase(&bp);
+                LOGI("Delete blueprints %p", typeid(BLUEPRINT).name());
+                std::cout << "Delete blueprints " << typeid(BLUEPRINT).name() << std::endl;
+                sm_items<BLUEPRINT>.erase(typeid(BLUEPRINT).name());
             });
         }
-        LOGI("Add blueprints %p", this);
-        std::cout << "Add blueprints " << this << std::endl;
-        sm_items<BLUEPRINT>[this] = blueprints;
+        LOGI("Add blueprints %p", typeid(BLUEPRINT).name());
+        std::cout << "Add blueprints " << typeid(BLUEPRINT).name() << std::endl;
+        sm_items<BLUEPRINT>[typeid(BLUEPRINT).name()] = blueprints;
     }
 
     //-------------------------------------------------------------------------
     //! \brief Init the database from a json file.
     //! \return the error as string (dummy string in case of success).
     //-------------------------------------------------------------------------
-    std::string load(fs::path path);
+    static std::string load(fs::path path);
 
     //-------------------------------------------------------------------------
     //! \brief Add a new iterm in the database.
@@ -73,18 +73,19 @@ public:
     //! \return true if blueprint have been added. Return false if already exits.
     //-------------------------------------------------------------------------
     template<class BLUEPRINT>
-    bool add(const char* name, BLUEPRINT const& blueprint)
+    static bool add(const char* name, BLUEPRINT const& blueprint)
     {
-        std::cout << "ADDDDDD " << this << ": " << name << std::endl;
+        std::cout << "ADDDDDD " << typeid(BLUEPRINT).name() << ": " << name << std::endl;
         assert(name != nullptr);
-        auto it = sm_items<BLUEPRINT>.find(this);
+        auto it = sm_items<BLUEPRINT>.find(typeid(BLUEPRINT).name());
         if (it == sm_items<BLUEPRINT>.end())
         {
             BluePrints::init<BLUEPRINT>({{ name, blueprint }});
         }
-        else if (!sm_items<BLUEPRINT>[this].insert(std::make_pair(name, blueprint)).second)
+        else if (!sm_items<BLUEPRINT>[typeid(BLUEPRINT).name()].insert(std::make_pair(name, blueprint)).second)
         {
-            LOGE("Cannot add %s in BluePrints database because this entry already exists", name);
+            LOGE("Cannot add %s in BluePrints database because %s entry already exists",
+                name, typeid(BLUEPRINT).name());
             return false;
         }
 
@@ -98,18 +99,18 @@ public:
     //! \return Throw exception if the car is unknown.
     //-------------------------------------------------------------------------
     template<class BLUEPRINT>
-    BLUEPRINT const& get(const char* name)
+    static BLUEPRINT const& get(const char* name)
     {
         assert(name != nullptr);
-        std::cout << "GETTTTT " << this << std::endl;
+        std::cout << "GETTTTT " << typeid(BLUEPRINT).name() << std::endl;
 
         try
         {
-            return sm_items<BLUEPRINT>[this].at(name);
+            return sm_items<BLUEPRINT>[typeid(BLUEPRINT).name()].at(name);
         }
         catch (...)
         {
-            if (sm_items<BLUEPRINT>[this].size() != 0u)
+            if (sm_items<BLUEPRINT>[typeid(BLUEPRINT).name()].size() != 0u)
             {
                 std::string e("Fatal: Unkown blueprint '");
                 throw std::runtime_error(e + name + "'");
@@ -125,15 +126,15 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    void clear()
+    static void clear()
     {
         for (auto&& clear_func : m_clear_functions)
         {
-            clear_func(*this);
+            clear_func();
         }
         m_clear_functions.clear();
     }
-
+/*
     BluePrints()
     {
         std::cout << "BluePrints " << this << std::endl;
@@ -144,12 +145,9 @@ public:
         std::cout << "~BluePrints " << this << std::endl;
         clear();
     }
-
+*/
 private:
     template<class BLUEPRINT>
-    static std::unordered_map<const BluePrints*, std::map<std::string, BLUEPRINT>> sm_items;
-    std::vector<std::function<void(BluePrints&)>> m_clear_functions;
+    static std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> sm_items;
+    static std::vector<std::function<void()>> m_clear_functions;
 };
-
-template<class BLUEPRINT>
-std::unordered_map<const BluePrints*, std::map<std::string, BLUEPRINT>> BluePrints::sm_items;

@@ -21,3 +21,11 @@ cp units/include/units.h units/units.hpp
 ### JSON for Modern C++
 ### License: MIT
 cloning nlohmann/json
+
+#### Quick and simple implementation of the Perlin Noise gradient.
+#### License: MIT
+cloning daniilsjb/perlin-noise
+
+#### Random for modern C++ with convenient API
+#### License: MIT
+cloning effolkronium/random

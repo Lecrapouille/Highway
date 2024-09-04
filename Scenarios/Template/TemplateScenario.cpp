@@ -102,15 +102,7 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
 //-----------------------------------------------------------------------------
 Car& scenario_create_city(Simulator& simulator, City& city)
 {
-    BluePrints::instance().init<vehicle::BluePrint>(
-    {
-        { "Renault.Twingo", { 3.615_m, 1.646_m, 2.492_m, 0.494_m, 0.328_m, 10.0_m } },
-        { "Citroen.DS3", { 4.118_m, 1.79_m, 2.558_m, 0.7_m, 0.328_m, 10.4_m } },
-        { "Citroen.C3", { 3.941_m, 1.728_m, 2.466_m, 0.66_m, 0.328_m, 10.7_m } },
-        { "Nissan.NV200", { 4.321_m, 1.219_m, 2.725_m, 0.840_m, 0.241_m, 10.6_m} },
-        { "Audi.A6", { 4.951_m, 1.902_m, 2.924_m, 1.105_m, 0.328_m, 11.7_m } },
-        { "Mini.Cooper", { 3.62_m, 1.68_m, 2.46_m, 0.58_m, 0.328_m, 10.7_m } },
-    });
+//std::cout << BluePrints::/*instance().*/get<vehicle::BluePrint>("Renault.Twingo").length << std::endl;
 
     Car& ego = city.addEgo("Mini.Cooper", { 0.0_m, 0.0_m }, 0.0_deg, 0.0_mps, 0.0_deg);
     return customize_ego(simulator, city, ego);

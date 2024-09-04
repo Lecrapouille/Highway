@@ -53,6 +53,7 @@ LIB_FILES += $(call rwildcard,$(P)/src/Application,*.cpp)
 # Set Libraries.
 #
 PKG_LIBS += sfml-graphics
+THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
 
 ###################################################
 # Generic Makefile rules

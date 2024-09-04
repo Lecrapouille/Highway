@@ -48,6 +48,7 @@ INCLUDES += $(P)/external/MyLogger/include
 # Make the list of compiled files for the library
 #
 LIB_FILES += $(call rwildcard,$(P)/src/Scenario,*.cpp)
+THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
 
 ###################################################
 # Generic Makefile rules

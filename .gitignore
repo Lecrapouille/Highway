@@ -1,3 +1,21 @@
+# Project
+tests/doc
+rapport.info
+foo
+Highway*.tar.gz
+data/Scenarios/*.so*
+data/Scenarios/*.dylib
+data/Scenarios/*.dll
+data/Scenarios/*.lib
+data/Scenarios/*.a
+external/*/
+.vscode
+doc/html
+.DS_Store
+
+# Linux
+*~
+
 # Prerequisites
 *.d
 
@@ -30,3 +48,9 @@
 *.exe
 *.out
 *.app
+build
+
+# LaTeX
+*.dvi
+*.log
+*.aux

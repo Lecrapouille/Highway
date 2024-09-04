@@ -49,11 +49,13 @@ LIB_FILES += $(SCENARIO_FILES)
 ###################################################
 # Set Libraries.
 #
-INTERNAL_LIBS := $(call internal-lib,HighwayScenario)
-INTERNAL_LIBS += $(call internal-lib,HighwayCore)
-INTERNAL_LIBS += $(call internal-lib,HighwayApplication)
+#INTERNAL_LIBS := $(call internal-lib,HighwayScenario)
+#INTERNAL_LIBS += $(call internal-lib,HighwayCore)
+#INTERNAL_LIBS += $(call internal-lib,HighwayApplication)
 
-#THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
+# #THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
+
+#INTERNAL_LIBS := libHighwayCore.so
 
 ###################################################
 # Generic Makefile rules

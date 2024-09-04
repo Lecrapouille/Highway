@@ -44,14 +44,14 @@ VPATH += $(P)/src
 INCLUDES += $(P) $(P)/src $(P)/include
 INCLUDES += $(P)/external/MyLogger/include
 INCLUDES += $(P)/external/json/include
+INCLUDES += $(P)/external
 
 ###################################################
 # Make the list of compiled files for the library
 #
-LIB_FILES += $(call rwildcard,$(P)/src/Core/Common,*.cpp)
-LIB_FILES += $(call rwildcard,$(P)/src/Core/Math,*.cpp)
-LIB_FILES += $(call rwildcard,$(P)/src/Core/Simulator,*.cpp)
+LIB_FILES += $(call rwildcard,$(P)/src/Core,*.cpp)
 
+PKG_LIBS += sfml-graphics
 THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
 
 ###################################################

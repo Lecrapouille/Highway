@@ -1,6 +1,6 @@
-#include "Application/GUIMainMenu.hpp"
-#include "Application/GUILoadSimulMenu.hpp"
-#include "Application/FontManager.hpp"
+#include "Application/GUIs/GUIMainMenu.hpp"
+#include "Application/GUIs/GUILoadSimulMenu.hpp"
+#include "Application/Renderer/FontManager.hpp"
 #include "Core/Simulator/BluePrints.hpp"
 #include "Core/Common/FileSystem.hpp"
 #include "Core/Common/FilePath.hpp"
@@ -64,7 +64,7 @@ static void init_config()
 std::string init_blueprints()
 {
     fs::path path(FilePath::instance().expand("blueprints.json"));
-    return BluePrints::instance().load(path);
+    return BluePrints::/*instance().*/load(path);
 
 #if 0 // Old API
     //-------------------------------------------------------------------------
@@ -92,6 +92,8 @@ static int start_highway(int argc, char* const argv[])
         LOGAS("Failed loading blueprints. Reason '%s'", err.c_str());
         return EXIT_FAILURE;
     }
+
+    std::cout << BluePrints::/*instance().*/get<vehicle::BluePrint>("Renault.Twingo").length << std::endl;
 
     // Load fonts
     if (!FontManager::instance().load("main font", "font.ttf"))

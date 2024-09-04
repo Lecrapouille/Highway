@@ -19,16 +19,13 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#include "Application/FontManager.hpp"
 #include "Core/Simulator/Simulator.hpp"
-#include "Core/Simulator/Renderer.hpp"
 #include "MyLogger/Logger.hpp"
 
 //------------------------------------------------------------------------------
-Simulator::Simulator(sf::RenderWindow& renderer, MessageBar& message_bar)
-    : m_renderer(renderer), m_message_bar(message_bar)
+Simulator::Simulator()//sf::RenderWindow& renderer, MessageBar& message_bar)
+//    : m_renderer(renderer), m_message_bar(message_bar)
 {
-    m_message_bar.font(FontManager::instance().font("main font"));
 }
 
 //------------------------------------------------------------------------------
@@ -40,7 +37,7 @@ bool Simulator::load(fs::path const& libpath)
     if (!m_scenario.load(libpath))
     {
         m_error = "Failed loading the scenario: " + m_scenario.error();
-        m_message_bar.entry(m_error, sf::Color::Red);
+        //m_message_bar.entry(m_error, sf::Color::Red);
         return false;
     }
 
@@ -57,12 +54,12 @@ bool Simulator::autoreload()
         if (!m_scenario.valid())
         {
             m_error = "Failed loading the scenario: " + m_scenario.error();
-            m_message_bar.entry(m_error, sf::Color::Red);
+            //m_message_bar.entry(m_error, sf::Color::Red);
             return false;
         }
         else
         {
-            m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
+            //m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
             return init();
         }
     }
@@ -75,15 +72,12 @@ bool Simulator::init()
     // Missing call Simulator::load() or scenario has failed loaded.
     if (!m_scenario.valid())
     {
-        m_message_bar.entry("No scenario referred", sf::Color::Red);
+        //m_message_bar.entry("No scenario referred", sf::Color::Red);
         return false;
     }
 
-    std::string name(m_scenario.name());
-
     // Set simulation name on the GUI
-    m_message_bar.entry("Starting simulation '" + name + "'", sf::Color::Green);
-    m_renderer.setTitle(name);
+    //m_message_bar.entry("Starting simulation '" + m_scenario.name() + "'", sf::Color::Green);
 
     // Create a new city from "scratch".
     m_city.reset();
@@ -100,7 +94,7 @@ bool Simulator::init()
     // Start recoring simulation states.
     // FIXME do not hardcode the file path.
     // FIXME do not smash old simulation. Add id++ or time
-    //monitor.open("/tmp/monitor.csv", ';');
+    monitor.open("/tmp/monitor.csv", ';');
     return true;
 }
 
@@ -114,11 +108,11 @@ void Simulator::pause(bool const state)
     if (m_pause)
     {
         m_elpased_time += m_clock.getElapsedTime();
-        m_message_bar.entry("Pause the simulation", sf::Color::Yellow);
+        //m_message_bar.entry("Pause the simulation", sf::Color::Yellow);
     }
     else
     {
-        m_message_bar.entry("Running the simulation", sf::Color::Yellow);
+        //m_message_bar.entry("Running the simulation", sf::Color::Yellow);
         m_clock.restart();
     }
 }
@@ -142,7 +136,7 @@ void Simulator::release()
 {
     m_city.reset();
     m_scenario.unload();
-    //monitor.close();
+    monitor.close();
     m_elpased_time = sf::Time::Zero;
 }
 
@@ -198,7 +192,7 @@ void Simulator::update(const Second dt)
     // User has paused the simulation ?
     if (m_pause)
     {
-        m_message_bar.entry("The simulation is in pause", sf::Color::Yellow);
+        //m_message_bar.entry("The simulation is in pause", sf::Color::Yellow);
         return ;
     }
 
@@ -227,62 +221,6 @@ void Simulator::update(const Second dt)
         m_camera = sf::Vector2f(float(p.x.value()), float(p.y.value()));
     }
 
-#if 0
     // Record simulation states
     monitor.record(elapsedTime());
-#endif
-}
-
-//------------------------------------------------------------------------------
-// TBD https://github.com/Lecrapouille/Highway/issues/19
-// TBD https://github.com/Lecrapouille/Highway/issues/18
-// Mauvaise facon de faire:
-// class DrawableCity<City>(City& city) : m_city(city)
-// { City& m_city; draw() { }
-// };
-void Simulator::drawSimulation(sf::View const& view)
-{
-    m_renderer.setView(view);
-
-#if 0
-    // Draw the spatial hash grid
-    //draw(m_city.grid(), m_renderer);
-
-    // Draw the city
-    for (auto const& it: m_city.roads())
-    {
-        draw(*it, m_renderer);
-    }
-
-    for (auto const& it: m_city.parkings())
-    {
-        draw(*it, m_renderer);
-    }
-#endif
-    // Draw vehicle and ego
-    for (auto const& it: m_city.cars())
-    {
-        draw(*it, m_renderer);
-    }
-#if 0
-    // Draw ghost cars
-    for (auto const& it: m_city.ghosts())
-    {
-        draw(*it, m_renderer);
-    }
-
-    // Ego vehicle
-    if (m_city.ego() != nullptr)
-    {
-        draw(*m_city.ego(), m_renderer);
-    }
-#endif
-}
-
-//------------------------------------------------------------------------------
-void Simulator::drawHUD(sf::View const& view)
-{
-    m_renderer.setView(view);
-    m_message_bar.reshape(float(m_renderer.getSize().x));
-    m_renderer.draw(m_message_bar);
 }

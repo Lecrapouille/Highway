@@ -22,11 +22,11 @@
 #pragma once
 
 #  include "Core/Common/FileSystem.hpp"
-//#  include "Common/Monitoring.hpp"
-#  include "Core/Simulator/City.hpp"
+#  include "Core/Simulator/Monitoring.hpp"
+#  include "Core/Simulator/City/City.hpp"
 #  include "Scenario/Scenario.hpp"
 //#  include "Vehicle/ECU.hpp"
-#  include "Application/MessageBar.hpp"
+//#  include "Application/MessageBar.hpp" // Ne pas dependre du renderer !!!!
 
 
 class Renderer;
@@ -49,7 +49,7 @@ public:
     //! \brief Default constructor. Take the SFML renderer, from the Application
     //! instance, needed for drawing the simulation.
     //-------------------------------------------------------------------------
-    Simulator(sf::RenderWindow& renderer, MessageBar& message_bar);
+    Simulator();//sf::RenderWindow& renderer, MessageBar& message_bar);
 
     //-------------------------------------------------------------------------
     //! \brief Load a simulation file: a shared library file holding functions
@@ -107,48 +107,9 @@ public:
     void update(const Second dt);
 
     //-------------------------------------------------------------------------
-    //! \brief Draw the world, city, its entities (cars, parkings ...) and the
-    //! graphical interface.
-    //-------------------------------------------------------------------------
-    void drawSimulation(sf::View const& view); // FIXME const
-
-    //-------------------------------------------------------------------------
-    //! \brief Draw the Head Up Display.
-    //-------------------------------------------------------------------------
-    void drawHUD(sf::View const& view); // FIXME const
-
-    //-------------------------------------------------------------------------
     //! \brief When GUI triggered the onRelease().
     //-------------------------------------------------------------------------
     void release();
-
-    //-------------------------------------------------------------------------
-    //! \brief Convert the screen coordinate [pixel] to world coordinate [meter].
-    //! \note Beware of the current view: be sure to be in the simulation view
-    //! (meter) and not in the HUD view (pixel). The returned value would be
-    //! invalid. Therefore this function is avalaible in \c drawSimulation().
-    //! \param[in] p: position in the windows X-Y position [pixel].
-    //! \return position in the world X-Y position [meter].
-    //-------------------------------------------------------------------------
-    inline sf::Vector2<Meter> pixel2world(sf::Vector2i const& p)
-    {
-        const sf::Vector2f w = m_renderer.mapPixelToCoords(p);
-        return { Meter(w.x), Meter(w.y) };
-    }
-
-    //-------------------------------------------------------------------------
-    //! \brief Convert the screen coordinate [pixel] to world coordinate [meter].
-    //! \note Beware of the current view: be sure to be in the simulation view
-    //! (meter) and not in the HUD view (pixel). The returned value would be
-    //! invalid. Therefore this function is avalaible in \c drawSimulation().
-    //! \param[in] p: position in the windows X-Y position [pixel].
-    //! \return position in the world X-Y position [meter].
-    //-------------------------------------------------------------------------
-    inline sf::Vector2i world2pixel(sf::Vector2<Meter> const& p)
-    {
-        return m_renderer.mapCoordsToPixel(
-            sf::Vector2f(float(p.x.value()), float(p.y.value())));
-    }
 
     //-------------------------------------------------------------------------
     //! \brief Return the city
@@ -204,7 +165,7 @@ public:
     //-------------------------------------------------------------------------
     inline void messagebar(std::string const& txt, sf::Color const& color) const
     {
-        m_message_bar.entry(txt, color);
+        //m_message_bar.entry(txt, color);
     }
 
     //--------------------------------------------------------------------------
@@ -213,6 +174,14 @@ public:
     inline std::string const& error() const
     {
         return m_error;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the scenario name.
+    //--------------------------------------------------------------------------
+    inline std::string scenarioName() const
+    {
+        return m_scenario.name();
     }
 
 private:
@@ -243,14 +212,10 @@ public:
 
     //! \brief Record simulation states.
     //! FIXME allow to have several monitoring systems
-    //Monitor monitor;
+    Monitor monitor;
 
 private:
 
-    //! \brief SFML renderer needed for drawing the simulation.
-    sf::RenderWindow& m_renderer;
-    //! \brief Display info or error messages.
-    MessageBar& m_message_bar;
     //! \brief Simulation scenario loaded from a shared library.
     Scenario m_scenario;
     //! \brief The simulated city (with its roads, parkings, cars,
