@@ -20,6 +20,7 @@
 //=============================================================================
 
 #include "Highway/Scenario.hpp"
+#include "Core/Common/FilePath.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file Show the template for creating a scenario.
@@ -31,7 +32,7 @@
 //-----------------------------------------------------------------------------
 const char* scenario_name()
 {
-    return "Hello template scenario";
+    return "Hello template scenarioppppp";
 }
 
 //-----------------------------------------------------------------------------
@@ -42,10 +43,10 @@ const char* scenario_name()
 //-----------------------------------------------------------------------------
 /*Scenario::Status*/ int scenario_halt_when(Simulator const& simulator)
 {
-    SCENARIO_FAILS_WHEN((simulator.elapsedTime() > 60.0_s),
-        "Time scenario slipped!");
-    SCENARIO_SUCCEEDS_WHEN((simulator.ego().position().x >= 140.0_m),
-        "Ego car left the road with success!");
+    //SCENARIO_FAILS_WHEN((simulator.elapsedTime() > 60.0_s),
+    //    "Time scenario slipped!");
+    //SCENARIO_SUCCEEDS_WHEN((simulator.ego().position().x >= 140.0_m),
+    //    "Ego car left the road with success!");
     //SCENARIO_FAILS_WHEN((simulator.ego().collided()),
     //    "Ego car collided!");
     SCENARIO_CONTINUES;
@@ -102,6 +103,13 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
 //-----------------------------------------------------------------------------
 Car& scenario_create_city(Simulator& simulator, City& city)
 {
+    fs::path path(FilePath::instance().expand("/home/qq/MyGitHub/Highway-v0.2.0/data/blueprints.json"));
+    if (std::string err = BluePrints::load(path); !err.empty())
+    {
+        LOGAS("Failed loading blueprints. Reason '%s'", err.c_str());
+    }
+
+
 //std::cout << BluePrints::/*instance().*/get<vehicle::BluePrint>("Renault.Twingo").length << std::endl;
 
     Car& ego = city.addEgo("Mini.Cooper", { 0.0_m, 0.0_m }, 0.0_deg, 0.0_mps, 0.0_deg);

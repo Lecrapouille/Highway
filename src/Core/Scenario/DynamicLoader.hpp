@@ -23,6 +23,8 @@
 
 #include "Core/Common/FileSystem.hpp"
 
+#include "MyLogger/Logger.hpp" // TEMPORAIRE
+
 #include <dlfcn.h>
 #include <functional>
 #include <string>
@@ -99,7 +101,9 @@ public:
     bool reloadIfChanged(Resolution rt = Resolution::NOW)
     {
         long time = getFileTime();
-        if ((time == 0) || (time != m_prevUpdateTime))
+        if (time == 0) 
+            return false;
+        if (time != m_prevUpdateTime)
         {
             m_prevUpdateTime = time;
             return reload(rt);
@@ -167,6 +171,7 @@ public:
     std::function<T> prototype(const char* symbol)
     {
         void* addr = address(symbol);
+        LOGI("Symbol %s: %p", symbol, addr);
         if (addr == nullptr)
         {
             throw std::logic_error(error());

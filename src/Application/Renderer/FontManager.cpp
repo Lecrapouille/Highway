@@ -19,9 +19,9 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
-#include "MyLogger/Logger.hpp"
 #include "Application/Renderer/FontManager.hpp"
-#include <iostream>
+#include "Core/Common/FilePath.hpp"
+#include "MyLogger/Logger.hpp"
 
 // -----------------------------------------------------------------------------
 bool FontManager::load(const char* name, const char* ttf)

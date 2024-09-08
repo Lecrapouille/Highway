@@ -49,12 +49,13 @@ PKG_LIBS += sfml-graphics
 ###################################################
 # Internal libs to compile
 #
-LIB_HIGHWAY_SCENARIO := $(call internal-lib,HighwayScenario)
+#LIB_HIGHWAY_SCENARIO := $(call internal-lib,HighwayScenario)
 LIB_HIGHWAY_CORE := $(call internal-lib,HighwayCore)
 LIB_HIGHWAY_APPLICATION := $(call internal-lib,HighwayApplication)
-INTERNAL_LIBS := $(LIB_HIGHWAY_APPLICATION) $(LIB_HIGHWAY_CORE) $(LIB_HIGHWAY_SCENARIO)
-DIRS_WITH_MAKEFILE := $(P)/src/Scenario $(P)/src/Core $(P)/src/Application
-#THIRDPART_LIBS := $(P)/external/MyLogger/build/libmylogger.a
+INTERNAL_LIBS := $(LIB_HIGHWAY_APPLICATION) $(LIB_HIGHWAY_CORE)
+#$(LIB_HIGHWAY_SCENARIO)
+DIRS_WITH_MAKEFILE := $(P)/src/Core $(P)/src/Application
+#$(P)/src/Scenario
 
 ###################################################
 # Generic Makefile rules
@@ -67,13 +68,13 @@ include $(M)/rules/Makefile
 
 $(LIB_HIGHWAY_CORE): $(P)/src/Core
 
-$(LIB_HIGHWAY_SCENARIO): $(P)/src/Scenario
+#$(LIB_HIGHWAY_SCENARIO): $(P)/src/Scenario
 
 $(LIB_HIGHWAY_APPLICATION): $(P)/src/Application
 
 $(P)/src/Application: $(P)/src/Core
 
-$(P)/src/Core: $(P)/src/Scenario
+#$(P)/src/Core: $(P)/src/Scenario
 
 ###################################################
 # Extra rules

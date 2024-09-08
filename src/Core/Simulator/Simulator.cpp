@@ -31,13 +31,11 @@ Simulator::Simulator()//sf::RenderWindow& renderer, MessageBar& message_bar)
 //------------------------------------------------------------------------------
 bool Simulator::load(fs::path const& libpath)
 {
-    LOGI("Simulator loads '%s'", libpath.c_str());
-
     // The shared lib has been successfully opened. Now load functions.
     if (!m_scenario.load(libpath))
     {
         m_error = "Failed loading the scenario: " + m_scenario.error();
-        //m_message_bar.entry(m_error, sf::Color::Red);
+        messagebar(m_error, sf::Color::Red);
         return false;
     }
 
@@ -54,12 +52,12 @@ bool Simulator::autoreload()
         if (!m_scenario.valid())
         {
             m_error = "Failed loading the scenario: " + m_scenario.error();
-            //m_message_bar.entry(m_error, sf::Color::Red);
+            messagebar(m_error, sf::Color::Red);
             return false;
         }
         else
         {
-            //m_message_bar.entry("Scenario changed: reloaded", sf::Color::Yellow);
+            messagebar("Scenario changed: reloaded", sf::Color::Yellow);
             return init();
         }
     }
@@ -72,12 +70,12 @@ bool Simulator::init()
     // Missing call Simulator::load() or scenario has failed loaded.
     if (!m_scenario.valid())
     {
-        //m_message_bar.entry("No scenario referred", sf::Color::Red);
+        messagebar("No scenario referred", sf::Color::Red);
         return false;
     }
 
     // Set simulation name on the GUI
-    //m_message_bar.entry("Starting simulation '" + m_scenario.name() + "'", sf::Color::Green);
+    messagebar("Starting simulation '" + m_scenario.name() + "'", sf::Color::Green);
 
     // Create a new city from "scratch".
     m_city.reset();
@@ -108,11 +106,11 @@ void Simulator::pause(bool const state)
     if (m_pause)
     {
         m_elpased_time += m_clock.getElapsedTime();
-        //m_message_bar.entry("Pause the simulation", sf::Color::Yellow);
+        messagebar("Pause the simulation", sf::Color::Yellow);
     }
     else
     {
-        //m_message_bar.entry("Running the simulation", sf::Color::Yellow);
+        messagebar("Running the simulation", sf::Color::Yellow);
         m_clock.restart();
     }
 }
@@ -153,7 +151,7 @@ void Simulator::reacts(size_t key)
 bool Simulator::continuing() const
 {
     return m_scenario.valid()
-        && (m_scenario.haltWhen(*this) != Scenario::Status::Continue);
+        && (m_scenario.haltWhen(*this) == Scenario::Status::Continue);
 }
 
 //------------------------------------------------------------------------------
@@ -192,7 +190,7 @@ void Simulator::update(const Second dt)
     // User has paused the simulation ?
     if (m_pause)
     {
-        //m_message_bar.entry("The simulation is in pause", sf::Color::Yellow);
+        messagebar("The simulation is in pause", sf::Color::Yellow);
         return ;
     }
 

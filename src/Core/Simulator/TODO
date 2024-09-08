@@ -1,0 +1,8 @@
+Simulateur doit implementer un server TCP/UDP/ROS/MQTT.
+
+Le serveur peut être graphique. Comme Carla: vue d'ensemble ou serveur sans fenetre.
+
+Scenario est un client et a 1 seule voiture ego et se connecte au serveur.
+Le simulateur la voit comme une autre voiture => Ca corrige le problème du "1 seul ego" par scenario car il suffit de lancer plusieurs client.
+
+L'application Highway actuelle doit etre recyclée en GUI client (Application) qui se connecte au serveur. Mais elle peut servir aussi de serveur ?

@@ -134,18 +134,7 @@ public:
         }
         m_clear_functions.clear();
     }
-/*
-    BluePrints()
-    {
-        std::cout << "BluePrints " << this << std::endl;
-    }
 
-    ~BluePrints()
-    {
-        std::cout << "~BluePrints " << this << std::endl;
-        clear();
-    }
-*/
 private:
     template<class BLUEPRINT>
     static std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> sm_items;

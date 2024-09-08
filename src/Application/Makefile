@@ -48,11 +48,12 @@ INCLUDES += $(P)/external/MyLogger/include
 # Make the list of compiled files for the library
 #
 LIB_FILES += $(call rwildcard,$(P)/src/Application,*.cpp)
+# Optional but this force to add symbols inside the library
+LIB_FILES += $(call rwildcard,$(P)/src/Core/Common,*.cpp)
 
 ###################################################
 # Set Libraries.
 #
-PKG_LIBS += sfml-graphics
 THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
 
 ###################################################

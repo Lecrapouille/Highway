@@ -24,7 +24,7 @@
 #  include "Core/Common/FileSystem.hpp"
 #  include "Core/Simulator/Monitoring.hpp"
 #  include "Core/Simulator/City/City.hpp"
-#  include "Scenario/Scenario.hpp"
+#  include "Core/Scenario/Scenario.hpp"
 //#  include "Vehicle/ECU.hpp"
 //#  include "Application/MessageBar.hpp" // Ne pas dependre du renderer !!!!
 
@@ -165,6 +165,7 @@ public:
     //-------------------------------------------------------------------------
     inline void messagebar(std::string const& txt, sf::Color const& color) const
     {
+         LOGI("Scenario: %s", txt.c_str());
         //m_message_bar.entry(txt, color);
     }
 
@@ -232,7 +233,7 @@ private:
     //! \brief Total elapsed time of the simulation.
     sf::Time m_elpased_time;
     //! \brief Freeze the simulation.
-    bool m_pause;
+    bool m_pause = false;
     //! \brief Memorize the latest error.
     std::string m_error;
 };

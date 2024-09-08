@@ -38,34 +38,25 @@ void GUILoadSimulMenu::createListScenarios()
     m_scenarios.clear();
 
     auto const& [path, res] = FilePath::instance().find("Scenarios");
-    if (res)
-    {
-        LOGI("Found path scenario: %s", path.c_str());
-    }
-    else
+    if (!res)
     {
         LOGE("Did not find path scenario: %s", path.c_str());
         return ;
     }
+
     for (auto const& entry: fs::directory_iterator(FilePath::instance().expand("Scenarios")))
     {
         auto libpath = entry.path().string();
-        LOGI("lib path %s", libpath.c_str());
         if (libpath.substr(libpath.find_last_of(".") + 1) == SHARED_LIB_EXTENSION)
         {
             Scenario scenario;
             if (scenario.load(libpath))
             {
-                LOGI("Accepted %s", libpath.c_str());
                 ScenarioEntry e;
                 e.libpath = entry.path();
                 e.filename = entry.path().filename();
                 e.brief = std::string(scenario.name());
                 m_scenarios.push_back(std::move(e));
-            }
-            else
-            {
-                LOGI("Not accepted %s", libpath.c_str());
             }
         }
     }

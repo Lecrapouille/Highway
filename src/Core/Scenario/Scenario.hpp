@@ -21,7 +21,7 @@
 
 #pragma once
 
-#  include "Scenario/DynamicLoader.hpp"
+#  include "Core/Scenario/DynamicLoader.hpp"
 
 #  include <functional>
 #  include <optional>

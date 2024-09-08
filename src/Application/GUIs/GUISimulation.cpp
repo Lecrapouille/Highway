@@ -194,10 +194,10 @@ void GUISimulation::onHandleInput()
             }
             break;
         case sf::Event::LostFocus:
-            simulator.pause(true);
+            //simulator.pause(true);
             break;
         case sf::Event::GainedFocus:
-            simulator.pause(false);
+            //simulator.pause(false);
             break;
         default:
             break;

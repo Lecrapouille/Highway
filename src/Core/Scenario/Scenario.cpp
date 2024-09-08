@@ -19,7 +19,7 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
-#include "Scenario/Scenario.hpp"
+#include "Core/Scenario/Scenario.hpp"
 #include "MyLogger/Logger.hpp"
 
 //------------------------------------------------------------------------------
@@ -35,7 +35,6 @@ bool Scenario::load(fs::path const& libpath)
     {
         if (loadSymbols())
         {
-            LOGI("Scenario loaded '%s'", libpath.c_str());
             return true;
         }
         else
@@ -83,6 +82,7 @@ bool Scenario::autoreload()
 //------------------------------------------------------------------------------
 bool Scenario::loadSymbols()
 {
+    LOGI("loadSymbols");
     try
     {
         m_function_scenario_name = m_dynamic_loader.prototype<const char* (void)>("scenario_name");
