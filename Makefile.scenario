@@ -44,6 +44,8 @@ include $(M)/project/Makefile
 #backtraces from within a program.
 LINKER_FLAGS += -rdynamic
 
+USER_CXXFLAGS := -Wno-undef -Wno-switch-enum -Wno-unused-parameter
+
 ###################################################
 # Inform Makefile where to find header files
 #

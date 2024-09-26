@@ -47,7 +47,7 @@ class TricycleKinematic: public PhysicModel
 public:
 
     //--------------------------------------------------------------------------
-    TricycleKinematic(VehicleShape const& shape)
+    explicit TricycleKinematic(VehicleShape const& shape)
         : PhysicModel(shape),
           m_wheelbase(shape.blueprint.wheelbase)
     {}
@@ -76,7 +76,7 @@ public:
     virtual void init(MeterPerSecondSquared const /*acceleration*/, MeterPerSecond const speed,
                      sf::Vector2<Meter> const position, Radian const heading) override
     {
-        // FIXME how to remove acceleration explicitely ?
+        // FIXME how to remove acceleration explicitly ?
         Movable::init(0.0_mps_sq, speed, position, heading);
     }
 

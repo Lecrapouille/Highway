@@ -232,7 +232,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Take a screenshot of the game and save it as PNG to the given path.
     //--------------------------------------------------------------------------
-    bool screenshot(std::string const& screenshot_path);
+    bool screenshot(std::string const& screenshot_path) const;
 
 #if 0
     //--------------------------------------------------------------------------

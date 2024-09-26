@@ -30,7 +30,7 @@ void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& stat
 {
     // Draw the car body
     sf::RectangleShape body = car.obb();
-    body.setFillColor(/*car.collided() ? COLISION_COLOR :*/ car.color);
+    body.setFillColor(/*car.collided() ? COLLISION_COLOR :*/ car.color);
     body.setOutlineThickness(OUTLINE_THICKNESS);
     body.setOutlineColor(sf::Color::Blue);
     target.draw(body, states);

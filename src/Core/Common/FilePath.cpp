@@ -198,9 +198,13 @@ void FilePath::split(fs::path const& path)
             continue ;
 
         if ((*directory.rbegin() == '\\') || (*directory.rbegin() == '/'))
-            m_search_paths.push_back(directory);
+        {
+            m_search_paths.emplace_back(directory);
+        }
         else
-            m_search_paths.push_back(directory + "/");
+        {
+            m_search_paths.emplace_back(directory + "/");
+        }
     }
     update();
 }

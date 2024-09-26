@@ -43,9 +43,9 @@ public:
 
     //--------------------------------------------------------------------------
     //! \brief Default constructor with the vehicle dimension (ie CarBluePrint,
-    //! TrailerBluePrint ... see Vehiclem_blueprint.hpp).
+    //! TrailerBluePrint ... see Vehicle_blueprint.hpp).
     //--------------------------------------------------------------------------
-    VehicleShape(vehicle::BluePrint const& p_blueprint);
+    explicit VehicleShape(vehicle::BluePrint const& p_blueprint);
 
     //--------------------------------------------------------------------------
     //! \brief Refresh the position and heading of shape and child shapes (ie
@@ -64,7 +64,7 @@ public:
     //--------------------------------------------------------------------------
     inline sf::Vector2<Meter> position() const
     {
-        const auto p = m_obb.getPosition();
+        auto const& p = m_obb.getPosition();
         return sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
     }
 

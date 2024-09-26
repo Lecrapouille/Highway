@@ -46,7 +46,7 @@ Application::~Application()
 // -----------------------------------------------------------------------------
 void Application::halt()
 {
-    // Clear the satck of GUIs
+    // Clear the stack of GUIs
     std::stack<Application::GUI*>().swap(m_stack);
     // Stop the SFML renderer
     m_renderer.close();
@@ -144,7 +144,7 @@ void Application::loop(uint8_t const rate)
 }
 
 // -----------------------------------------------------------------------------
-bool Application::screenshot(std::string const& screenshot_path)
+bool Application::screenshot(std::string const& screenshot_path) const
 {
     sf::Texture t;
     t.create(m_renderer.getSize().x, m_renderer.getSize().y);

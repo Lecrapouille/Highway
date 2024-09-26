@@ -54,7 +54,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    enum class Visibilty {
+    enum class Visiblity {
         None = 0,
         Global = RTLD_GLOBAL,
         Local = RTLD_LOCAL,
@@ -110,9 +110,9 @@ public:
     //! \brief Load the given shared library (.so, .dylib, .dll file).
     //! \param[in] libpath: the path of the shared library (.so, .dll, .dylib)
     //! to open.
-    //! \param[in] rt load symbols immediatly or in lazy way.
+    //! \param[in] rt load symbols immediately or in lazy way.
     //--------------------------------------------------------------------------
-    bool load(fs::path const& libpath, ResolveTime rt, Visibilty visibility)
+    bool load(fs::path const& libpath, ResolveTime rt, Visiblity visibility)
     {
         m_libpath = libpath;
 
@@ -246,7 +246,7 @@ private:
     static std::function<Ret(Args...)> fptr_cast(void* fptr)
     {
         using function_type = Ret (*)(Args...);
-        using ptr_size_type = std::conditional<sizeof(fptr) == 4, long, long long>::type;
+        using ptr_size_type = std::conditional_t<sizeof(fptr) == 4, long, long long>;
 
         return reinterpret_cast<function_type>(reinterpret_cast<ptr_size_type>(fptr));
     }
@@ -288,12 +288,12 @@ private:
 private:
 
     //! \brief The handle on the opened shared library.
-    void *m_handle = nullptr;
+    void* m_handle = nullptr;
     //! \brief Memorize the path of the shared library.
     fs::path m_libpath;
     //! Memorize flags.
     ResolveTime m_resolve_time = ResolveTime::Now;
-    Visibilty m_visibility_flags = Visibilty::None;
+    Visiblity m_visibility_flags = Visiblity::None;
     //! \brief The updated time of the shared lib
     long m_time = -1;
     //! \brief Memorize the latest error.
@@ -303,7 +303,7 @@ private:
 //--------------------------------------------------------------------------
 //! \briefAllow ORing two options together.
 //--------------------------------------------------------------------------
-inline DynamicLoader::Visibilty operator|(DynamicLoader::Visibilty lhs, DynamicLoader::Visibilty rhs)
+inline DynamicLoader::Visiblity operator|(DynamicLoader::Visiblity lhs, DynamicLoader::Visiblity rhs)
 {
-    return static_cast<DynamicLoader::Visibilty>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return static_cast<DynamicLoader::Visiblity>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }

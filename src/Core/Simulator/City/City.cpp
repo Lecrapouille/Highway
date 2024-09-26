@@ -25,7 +25,7 @@
 
 #include "Core/Simulator/Vehicle/PhysicModels/TricycleKinematic.hpp"
 
-#  define COLISION_COLOR sf::Color(255, 0, 0)
+#  define COLLISION_COLOR sf::Color(255, 0, 0)
 #  define DEFAULT_CAR_COLOR sf::Color(25, 130, 118)
 #  define DEFAULT_EGO_COLOR sf::Color(124, 99, 197)
 

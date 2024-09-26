@@ -92,9 +92,9 @@ private:
 
 private:
 
-    //! \brief C fonction returning the name of the simulation.
+    //! \brief C function returning the name of the simulation.
     std::function<const char* (void)> m_function_scenario_name = nullptr;
-    //! \brief C fonction taking a City as input and allows to create the
+    //! \brief C function taking a City as input and allows to create the
     //! desired city (roads, parking, vehicles ...). This function returns the
     //! ego car.
     std::function<Car&(Simulator&, City&)> m_function_create_city = nullptr;
@@ -102,7 +102,7 @@ private:
     //! the simulation shall halt (simulation duration, collision, reach a given
     //! position ...).
     std::function<int(Simulator const&)> m_function_halt_when = nullptr;
-    //! \brief C function Reacting to external events (refered by their ID for
+    //! \brief C function Reacting to external events (referred by their ID for
     //! example keyboard keys).
     std::function<void(Simulator&, size_t const)> m_function_react_to = nullptr;
     

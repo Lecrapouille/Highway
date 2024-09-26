@@ -55,7 +55,7 @@ public:
     //! \brief Load a simulation file: a shared library file holding functions
     //! needed for defining a scenario. Call this method as create or init
     //! entry point.
-    //! \param[in] libpath the path to the shared libray compiled against this
+    //! \param[in] libpath the path to the shared library compiled against this
     //!   code, holding functions needed for defining a scenario (see
     //!   Drive/Simulations/SimpleParking/SimpleParking.cpp for example).
     //! \return Return true if the shared library has been loaded with success
@@ -84,7 +84,7 @@ public:
     void activate();
 
     //-------------------------------------------------------------------------
-    //! \brief When GUI triggered the onDectivate().
+    //! \brief When GUI triggered the onDeactivate().
     //-------------------------------------------------------------------------
     void deactivate();
 
@@ -101,7 +101,7 @@ public:
     bool continuing() const;
 
     //-------------------------------------------------------------------------
-    //! \brief Update the simuation states.
+    //! \brief Update the simulation states.
     //! \param[in] dt: delta time in seconds from the previous call.
     //-------------------------------------------------------------------------
     void update(const Second dt);
@@ -156,7 +156,7 @@ public:
     //-------------------------------------------------------------------------
     inline Second elapsedTime() const
     {
-        return Second((m_elpased_time + m_clock.getElapsedTime()).asSeconds());
+        return Second((m_elapsed_time + m_clock.getElapsedTime()).asSeconds());
     }
 
     //-------------------------------------------------------------------------
@@ -231,7 +231,7 @@ private:
     //! \brief Current elapsed time of the simulation.
     sf::Clock m_clock;
     //! \brief Total elapsed time of the simulation.
-    sf::Time m_elpased_time;
+    sf::Time m_elapsed_time;
     //! \brief Freeze the simulation.
     bool m_pause = false;
     //! \brief Memorize the latest error.

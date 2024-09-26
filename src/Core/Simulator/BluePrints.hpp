@@ -75,7 +75,6 @@ public:
     template<class BLUEPRINT>
     static bool add(const char* name, BLUEPRINT const& blueprint)
     {
-        std::cout << "ADDDDDD " << typeid(BLUEPRINT).name() << ": " << name << std::endl;
         assert(name != nullptr);
         auto it = sm_items<BLUEPRINT>.find(typeid(BLUEPRINT).name());
         if (it == sm_items<BLUEPRINT>.end())
@@ -102,7 +101,6 @@ public:
     static BLUEPRINT const& get(const char* name)
     {
         assert(name != nullptr);
-        std::cout << "GETTTTT " << typeid(BLUEPRINT).name() << std::endl;
 
         try
         {
@@ -128,7 +126,7 @@ public:
     //-------------------------------------------------------------------------
     static void clear()
     {
-        for (auto&& clear_func : m_clear_functions)
+        for (auto const&& clear_func : m_clear_functions)
         {
             clear_func();
         }

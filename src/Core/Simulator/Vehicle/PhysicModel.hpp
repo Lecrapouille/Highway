@@ -29,7 +29,7 @@ namespace vehicle {
 class Shape;
 
 // *****************************************************************************
-//! \brief Base class for computing the vhecile physic (kinematic, dynamics ...)
+//! \brief Base class for computing the vehicle physic (kinematic, dynamics ...)
 //! need to implement void Movable::update(float const dt)
 // *****************************************************************************
 class PhysicModel : public Movable
@@ -40,11 +40,11 @@ public:
     //! \brief Default constructor: aggregation of the vehicle shape and its
     //! control.
     //--------------------------------------------------------------------------
-    PhysicModel(VehicleShape const& /*shape*/)
+    explicit PhysicModel(VehicleShape const& /*shape*/)
     {}
 
     //--------------------------------------------------------------------------
-    //! \brief Needed beause of virtual methods.
+    //! \brief Needed because of virtual methods.
     //--------------------------------------------------------------------------
     virtual ~PhysicModel() = default;
 

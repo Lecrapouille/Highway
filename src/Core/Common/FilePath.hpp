@@ -39,7 +39,7 @@ public:
     //! by ':'.
     //! Example: "/foo/bar:/usr/lib/".
     //--------------------------------------------------------------------------
-    FilePath(fs::path const& path = "");
+    explicit FilePath(fs::path const& path = "");
 
     //--------------------------------------------------------------------------
     //! \brief Destructor.
@@ -135,17 +135,17 @@ protected:
 
 protected:
 
-    //! \brief Path separator when several pathes are given as a single string.
+    //! \brief Path separator when several paths are given as a single string.
     const char m_delimiter = ':';
-    //! \brief the list of pathes.
+    //! \brief the list of paths.
     std::list<fs::path> m_search_paths;
-    //! \brief the list of pathes converted as a string. Pathes are separated by
+    //! \brief the list of paths converted as a string. Paths are separated by
     //! the m_delimiter char.
     fs::path m_string_path;
-    //! \brief Stack of temporary pathes. A temporary path is pushed when
+    //! \brief Stack of temporary paths. A temporary path is pushed when
     //! loading a MyLogger file: this allows to traverse its resources (a
     //! MyLogger file is a zip file containing directories and files). A stack
-    //! is usefull when loading a MyLogger file that loads another MyLogger
+    //! is useful when loading a MyLogger file that loads another MyLogger
     //! file.)
     std::vector<fs::path> m_stack_path;
 };

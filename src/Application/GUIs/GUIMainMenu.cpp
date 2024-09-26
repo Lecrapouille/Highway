@@ -20,7 +20,7 @@
 //==============================================================================
 
 #include "Application/GUIs/GUIMainMenu.hpp"
-#include "Application/GUIs/GUILoadSimulMenu.hpp"
+#include "Application/GUIs/GUILoadSimuMenu.hpp"
 #include "Application/Renderer/FontManager.hpp"
 //#include "Simulation/Demo.hpp"
 
@@ -56,7 +56,7 @@ void GUIMainMenu::onRelease()
 {}
 
 //------------------------------------------------------------------------------
-// FIXME can be factorized with GUILoadSimulMenu.cpp by adding a class Selection:
+// FIXME can be factorized with GUILoadSimuMenu.cpp by adding a class Selection:
 // See https://github.com/Lecrapouille/Highway/issues/5
 void GUIMainMenu::onHandleInput()
 {
@@ -86,7 +86,7 @@ void GUIMainMenu::onHandleInput()
                 {
                     // Load the GUI shwing all scenarios installed on the
                     // system.
-                    m_application.push<GUILoadSimulMenu>("GUILoadSimulMenu");
+                    m_application.push<GUILoadSimuMenu>("GUILoadSimuMenu");
                 }
             }
             else if (event.key.code == sf::Keyboard::Down)

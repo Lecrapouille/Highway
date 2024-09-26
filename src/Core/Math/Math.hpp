@@ -138,8 +138,8 @@ inline float distance(sf::Vector2f const& a, sf::Vector2f const& b)
 //------------------------------------------------------------------------------
 inline Radian orientation(sf::Vector2<Meter> const& a, sf::Vector2<Meter> const& b)
 {
-   const auto teta = (b.y - a.y) / (b.x - a.x);
-   Radian angle(units::math::atan(teta));
+   const auto theta = (b.y - a.y) / (b.x - a.x);
+   Radian angle(units::math::atan(theta));
    if (b.x < a.x)
       angle += 180.0_deg;
    else if (b.y < a.y)

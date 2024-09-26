@@ -34,7 +34,7 @@
 
 // *****************************************************************************
 //! \brief Class logging states from several instances. This allows to generate
-//! CSV files of the simulation and i.e. to be used in sofware such as Scilab,
+//! CSV files of the simulation and i.e. to be used in software such as Scilab,
 //! Simulink, Julia, Gnuplot. For example you can monitor the position and the
 //! the speed of several vehicles. Observations will packed as rows.
 //! \fixme this class is not thread safe and does not check if tracked states
@@ -56,7 +56,7 @@ public:
     //! \param[in] path the path to the monitoring file we want to create.
     //! \param[in] separator the CSV field separator. Default is ';'
     //! \note Return true if the file has been created successfully, else, no
-    //! data will be recored if the file has not been opened correctly.
+    //! data will be recorded if the file has not been opened correctly.
     //! \note the close() function is automatically called.
     //--------------------------------------------------------------------------
     bool open(fs::path const& path, const char separator = ';')
@@ -70,7 +70,7 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Close the monitoring file. No data will be recoreded.
+    //! \brief Close the monitoring file. No data will be recorded.
     //--------------------------------------------------------------------------
     void close()
     {
@@ -106,7 +106,7 @@ public:
     template<typename... Args>
     Monitor& header(Args&... args)
     {
-        m_headers.push_back([&](Monitor& m) { m.write(args...); });
+        m_headers.push_back([&args...](Monitor& m) { m.write(args...); });
         return *this;
     }
 

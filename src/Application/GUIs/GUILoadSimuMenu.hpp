@@ -22,12 +22,11 @@
 #pragma once
 
 #  include "Application/GUIs/GUISimulation.hpp"
-#  include <atomic>
 
 // ****************************************************************************
 //! \brief Main menu of the simulator. Offer the possibility to load a scenario.
 // ****************************************************************************
-class GUILoadSimulMenu: public Application::GUI
+class GUILoadSimuMenu: public Application::GUI
 {
 public:
 
@@ -35,7 +34,7 @@ public:
     //! \brief Default Constructor.
     //! \param[inout] application: the main class managing the stack of GUI.
     //-------------------------------------------------------------------------
-    GUILoadSimulMenu(Application& application, std::string const& name);
+    GUILoadSimuMenu(Application& application, std::string const& name);
 
 private: // Derived from Application::GUI
 

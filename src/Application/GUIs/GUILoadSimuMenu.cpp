@@ -19,13 +19,12 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //==============================================================================
 
-#include "Application/GUIs/GUILoadSimulMenu.hpp"
+#include "Application/GUIs/GUILoadSimuMenu.hpp"
 #include "Application/Renderer/FontManager.hpp"
-#include "Core/Common/FileSystem.hpp"
 #include "Core/Common/FilePath.hpp"
 
 //------------------------------------------------------------------------------
-GUILoadSimulMenu::GUILoadSimulMenu(Application& application, std::string const& name)
+GUILoadSimuMenu::GUILoadSimuMenu(Application& application, std::string const& name)
     : Application::GUI(application, name, sf::Color::White)
 {
     m_view = m_renderer.getDefaultView();
@@ -33,7 +32,7 @@ GUILoadSimulMenu::GUILoadSimulMenu(Application& application, std::string const& 
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::createListScenarios()
+void GUILoadSimuMenu::createListScenarios()
 {
     m_scenarios.clear();
 
@@ -63,30 +62,30 @@ void GUILoadSimulMenu::createListScenarios()
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onActivate()
+void GUILoadSimuMenu::onActivate()
 {
     m_renderer.setView(m_view);
     createListScenarios();
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onDeactivate()
+void GUILoadSimuMenu::onDeactivate()
 {}
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onCreate()
+void GUILoadSimuMenu::onCreate()
 {
     createListScenarios();
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onRelease()
+void GUILoadSimuMenu::onRelease()
 {}
 
 //------------------------------------------------------------------------------
-// FIXME can be factorized with GUILoadSimulMenu.cpp by adding a class Selection:
+// FIXME can be factorized with GUILoadSimuMenu.cpp by adding a class Selection:
 // See https://github.com/Lecrapouille/Highway/issues/5
-void GUILoadSimulMenu::onHandleInput()
+void GUILoadSimuMenu::onHandleInput()
 {
     sf::Event event;
 
@@ -145,11 +144,11 @@ void GUILoadSimulMenu::onHandleInput()
 }
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onUpdate(const Second dt)
+void GUILoadSimuMenu::onUpdate(const Second dt)
 {}
 
 //------------------------------------------------------------------------------
-void GUILoadSimulMenu::onDraw()
+void GUILoadSimuMenu::onDraw()
 {
     // Move camera
     m_view.setCenter(sf::Vector2f(m_view.getCenter().x,

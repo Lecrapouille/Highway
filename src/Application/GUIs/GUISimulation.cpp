@@ -87,7 +87,7 @@ void GUISimulation::onDeactivate()
 //------------------------------------------------------------------------------
 void GUISimulation::onCreate()
 {
-    bool res;
+    bool res = false;
 
     if (!m_scenario_path.empty())
     {
@@ -222,7 +222,7 @@ void GUISimulation::onUpdate(const Second dt) // FIXME to be threaded
     }
     else // Wait some seconds before closing the window
     {
-        if (m_message_bar.fadded())
+        if (m_message_bar.faded())
         {
             m_state = GUISimulation::State::Running;
             close();

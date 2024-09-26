@@ -32,7 +32,7 @@ Scenario::~Scenario()
 bool Scenario::load(fs::path const& libpath)
 {
     if (m_dynamic_loader.load(libpath, DynamicLoader::ResolveTime::Now,
-        DynamicLoader::Visibilty::Local))
+        DynamicLoader::Visiblity::Local))
     {
         if (loadSymbols())
         {

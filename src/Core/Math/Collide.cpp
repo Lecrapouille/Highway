@@ -167,8 +167,7 @@ bool collide(const sf::RectangleShape& obb1, const sf::RectangleShape& obb2, sf:
 
     // Need to reverse MTV if center offset and overlap are not pointing in the
     // same direction
-    bool notPointingInTheSameDirection = dotProduct(getCenter(obb1) - getCenter(obb2), mtv) < 0;
-    if (notPointingInTheSameDirection)
+    if (dotProduct(getCenter(obb1) - getCenter(obb2), mtv) < 0)
     {
         mtv = -mtv;
     }

@@ -37,13 +37,13 @@ public:
     //-------------------------------------------------------------------------
     //! \brief
     //-------------------------------------------------------------------------
-    typedef std::function<void()> Callback;
+    using Callback = std::function<void ()>;
 
     //-------------------------------------------------------------------------
     //! \brief
     //! \warning After this constructor, your instance will still be partially
-    //! initialized. You have to set, in this oerder: a physic model with
-    //! setPhysicModel(), a controler with setController() and initialize speed,
+    //! initialized. You have to set, in this order: a physic model with
+    //! setPhysicModel(), a controller with setController() and initialize speed,
     //! acceleration and wih init().
     //-------------------------------------------------------------------------
     Vehicle(vehicle::BluePrint const& p_blueprint, const char* p_name, sf::Color const& p_color)
@@ -52,6 +52,11 @@ public:
     {
         //m_control = std::make_unique<VehicleControl>();
     }
+
+    //-------------------------------------------------------------------------
+    //! \brief Because of virtual methods.
+    //-------------------------------------------------------------------------
+    virtual ~Vehicle() = default;
 
     //-------------------------------------------------------------------------
     //! \brief 
@@ -75,7 +80,7 @@ public:
                       Radian const steering = 0.0_deg);
 
     //-------------------------------------------------------------------------
-    // External or internal: collides with city and sensor detecs city ???
+    // External or internal: collides with city and sensors detect city ???
     //-------------------------------------------------------------------------
     virtual void update(Second const dt);
 
@@ -84,7 +89,7 @@ public:
     //-------------------------------------------------------------------------
     inline void addCallback(size_t const key, Callback&& cb)
     {
-        m_callbacks[key] = cb;
+        m_callbacks[key] = std::move(cb);
     }
 
     //-------------------------------------------------------------------------
@@ -111,7 +116,7 @@ public:
 
     vehicle::PhysicModel const& physic() const
     {
-        assert((m_physics != nullptr) && "You did not calle setPhysicModel()");
+        assert((m_physics != nullptr) && "You did not call setPhysicModel()");
         return *m_physics;
     }
 
@@ -166,7 +171,7 @@ protected:
     std::unique_ptr<vehicle::PhysicModel> m_physics = nullptr;
     //! \brief The cruse control
     //std::unique_ptr<VehicleControl> m_control = nullptr;
-    //! \brief List of reactions to do when events occured
+    //! \brief List of reactions to do when events occurred
     std::map<size_t, Callback> m_callbacks;
 
     //! \brief Save initial color

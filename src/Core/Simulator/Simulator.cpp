@@ -86,10 +86,10 @@ bool Simulator::init()
 
     // Clear simulation time
     m_pause = false;
-    m_elpased_time = sf::Time::Zero;
+    m_elapsed_time = sf::Time::Zero;
     m_clock.restart();
 
-    // Start recoring simulation states.
+    // Start recording simulation states.
     // FIXME do not hardcode the file path.
     // FIXME do not smash old simulation. Add id++ or time
     monitor.open("/tmp/monitor.csv", ';');
@@ -105,7 +105,7 @@ void Simulator::pause(bool const state)
     m_pause = state;
     if (m_pause)
     {
-        m_elpased_time += m_clock.getElapsedTime();
+        m_elapsed_time += m_clock.getElapsedTime();
         messagebar("Pause the simulation", sf::Color::Yellow);
     }
     else
@@ -136,7 +136,7 @@ void Simulator::release()
     m_city.reset();
     m_scenario.unload();
     monitor.close();
-    m_elpased_time = sf::Time::Zero;
+    m_elapsed_time = sf::Time::Zero;
 }
 
 //------------------------------------------------------------------------------

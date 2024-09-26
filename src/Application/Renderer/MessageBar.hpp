@@ -27,18 +27,18 @@
 #  include <chrono>
 
 // *****************************************************************************
-//! \brief Display a mesage inside a colored rectangle. The message is fadded
+//! \brief Display a message inside a colored rectangle. The message is faded
 //! out after X seconds.
 // *****************************************************************************
 struct MessageBar : public sf::Drawable
 {
     //--------------------------------------------------------------------------
-    //! \brief Default constructor with a predefined fadding duration [seconds].
+    //! \brief Default constructor with a predefined fading duration [seconds].
     //! \note No message can be displayed until a font has been set with the \c
     // font() method.
     //--------------------------------------------------------------------------
-    MessageBar(Second const fadding_duration = 2.5_s)
-        : FADDING_DURATION(fadding_duration)
+    explicit MessageBar(Second const fading_duration = 2.5_s)
+        : FADING_DURATION(fading_duration)
     {
         m_shape.setFillColor(sf::Color(100, 100, 100));
         m_shape.setOutlineThickness(-1);
@@ -97,7 +97,7 @@ struct MessageBar : public sf::Drawable
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Return the lasted displayed message (even if fadded away).
+    //! \brief Return the lasted displayed message (even if faded away).
     //--------------------------------------------------------------------------
     std::string const& entry() const { return m_message; }
 
@@ -111,11 +111,11 @@ struct MessageBar : public sf::Drawable
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Return if the message has fadded out.
+    //! \brief Return if the message has faded out.
     //--------------------------------------------------------------------------
-    inline bool fadded() const
+    inline bool faded() const
     {
-        return double(m_timer.getElapsedTime().asSeconds()) >= FADDING_DURATION.value();
+        return double(m_timer.getElapsedTime().asSeconds()) >= FADING_DURATION.value();
     }
 
 private: // Inherit from sf::Drawable
@@ -123,9 +123,9 @@ private: // Inherit from sf::Drawable
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    void draw(sf::RenderTarget& target, sf::RenderStates /*states*/) const override final
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates /*states*/) const override final
     {
-        if (!fadded())
+        if (!faded())
         {
             target.draw(m_shape);
             target.draw(m_text);
@@ -134,8 +134,8 @@ private: // Inherit from sf::Drawable
 
 private:
 
-    //! \brief Duration of the fadding
-    Second const FADDING_DURATION;
+    //! \brief Duration of the fading
+    Second const FADING_DURATION;
     //! \brief Timer for removing the text
     sf::Clock m_timer;
     //! \brief Text displayed on the entry

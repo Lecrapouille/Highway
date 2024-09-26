@@ -98,7 +98,7 @@ int scenario_halt_when(Simulator const& simulator);
    SCENARIO_FAILS_WHEN(false,"Scenario aborted by user decision")
 
 //-----------------------------------------------------------------------------
-//! \brief C++ fonction taking a city as input-output (given by the application)
+//! \brief C++ function taking a city as input-output (given by the application)
 //! to allow your to creating your desired city (ie roads, parkings, cars,
 //! pedestrians ...). You shall create your ego vehicle with city.addEgo(...)
 //! and ie attach to it some sensors. This function shall return the ego car.
@@ -111,7 +111,7 @@ int scenario_halt_when(Simulator const& simulator);
 Car& scenario_create_city(Simulator& simulator, City& city);
 
 //-----------------------------------------------------------------------------
-//! \brief C++ fonction allows the simulator to react to keyboard events.
+//! \brief C++function allows the simulator to react to keyboard events.
 //!
 //! \param[inout] simulator class passed by the application.
 //! \param[in] unique identifier of the event to react to.
