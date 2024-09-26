@@ -3,5 +3,5 @@
 #
 PROJECT_NAME := Highway
 PROJECT_VERSION := 0.2.0
-COMPILATION_MODE := debug
+COMPILATION_MODE := release
 CXX_STANDARD := --std=c++17

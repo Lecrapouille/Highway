@@ -34,6 +34,15 @@ TARGET_DESCRIPTION := Library Highway simulation
 include $(M)/project/Makefile
 
 ###################################################
+# Pass the flag -export-dynamic to the ELF linker,
+# on targets that support it. This instructs the
+# linker to add all symbols, not only used ones,
+# to the dynamic symbol table. This option is needed
+# for some uses of dlopen or to allow obtaining
+#backtraces from within a program.
+LINKER_FLAGS += -rdynamic
+
+###################################################
 # Inform Makefile where to find *.cpp files
 #
 VPATH += $(P)/src
@@ -50,7 +59,7 @@ INCLUDES += $(P)/external
 # Make the list of compiled files for the library
 #
 LIB_FILES += $(call rwildcard,$(P)/src/Core,*.cpp)
-THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
+#THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
 # FIXME: SFML does not give static lib ;( ideally link against it
 # to remove all sfml symbols (not because we need the graphical part
 # but we use SFML for the maths).

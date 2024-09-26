@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------
 bool Vehicle::reactTo(size_t const key)
 {
-    LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
+    //LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
     auto it = m_callbacks.find(key);
     if (it != m_callbacks.end())
     {

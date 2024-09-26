@@ -76,7 +76,7 @@ int scenario_halt_when(Simulator const& simulator);
 //-----------------------------------------------------------------------------
 #define SCENARIO_FAILS_WHEN(condition, txt)                                   \
    if (condition) {                                                           \
-      simulator.messagebox(txt, sf::Color::Red);                              \
+      simulator.messagebar(txt, sf::Color::Red);                              \
       return -1; /*Scenario::Status::Failed;*/                                \
    }
 
@@ -87,7 +87,7 @@ int scenario_halt_when(Simulator const& simulator);
 //-----------------------------------------------------------------------------
 #define SCENARIO_SUCCEEDS_WHEN(condition, txt)                                \
    if (condition) {                                                           \
-      simulator.messagebox(txt, sf::Color::Green);                            \
+      simulator.messagebar(txt, sf::Color::Green);                            \
       return 1; /*Scenario::Status::Succeeded;*/                              \
    }
 

@@ -22,12 +22,6 @@
 #pragma once
 
 #  include "Core/Simulator/Vehicle/Car.hpp"
-#  include "Core/Math/Units.hpp"
-
-#  include <SFML/Graphics/Color.hpp>
-
-#  include <vector>
-#  include <memory>
 
 // ****************************************************************************
 //! \brief Class managing a collection of static actors (roads, parkings), and

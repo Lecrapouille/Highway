@@ -132,6 +132,7 @@ void Simulator::deactivate()
 //------------------------------------------------------------------------------
 void Simulator::release()
 {
+    std::cout << "m_city.reset()\n";
     m_city.reset();
     m_scenario.unload();
     monitor.close();
@@ -150,8 +151,7 @@ void Simulator::reacts(size_t key)
 //------------------------------------------------------------------------------
 bool Simulator::continuing() const
 {
-    return m_scenario.valid()
-        && (m_scenario.haltWhen(*this) == Scenario::Status::Continue);
+    return m_scenario.valid() && (m_scenario.haltWhen(*this) == Scenario::Status::Continue);
 }
 
 //------------------------------------------------------------------------------

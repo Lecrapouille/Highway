@@ -34,6 +34,15 @@ TARGET_DESCRIPTION := Library Highway Application
 include $(M)/project/Makefile
 
 ###################################################
+# Pass the flag -export-dynamic to the ELF linker,
+# on targets that support it. This instructs the
+# linker to add all symbols, not only used ones,
+# to the dynamic symbol table. This option is needed
+# for some uses of dlopen or to allow obtaining
+#backtraces from within a program.
+LINKER_FLAGS += -rdynamic
+
+###################################################
 # Inform Makefile where to find *.cpp files
 #
 VPATH += $(P)/src

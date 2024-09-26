@@ -23,9 +23,6 @@
 
 #  include "Core/Scenario/DynamicLoader.hpp"
 
-#  include <functional>
-#  include <optional>
-
 #  if defined(_WIN32)
 #    define SHARED_LIB_EXTENSION "dll"
 #  elif defined(__linux__)

@@ -32,11 +32,7 @@
 #include <stdexcept>
 
 
-
 #include <iostream> // TEMP
-#include <chrono>
-#include <thread>
-using namespace std::chrono_literals;
 
 // *****************************************************************************
 //! \brief Class allowing to load C functions from a given shared library. This
@@ -59,8 +55,8 @@ public:
         Global = RTLD_GLOBAL,
         Local = RTLD_LOCAL,
         NoDelete = RTLD_NODELETE,
-        NoLoad = RTLD_NOLOAD,
-        DeepBind = RTLD_DEEPBIND
+	    NoLoad = RTLD_NOLOAD,
+	    DeepBind = RTLD_DEEPBIND
     };
 
     //--------------------------------------------------------------------------
@@ -78,21 +74,26 @@ public:
     //--------------------------------------------------------------------------
     void close()
     {
+std::cerr<< "begin ------- close\n";
         // Reference counting is done automatically by dlclose(), but the fact
         // that this call is the last one and does unload the library is not
         // indicated.
         if (m_handle == nullptr)
         {
+std::cerr<< "  close m_handle == nullptr\n";
+
             // Used to test if the library is already resident (dlopen() returns
             // NULL if it is not, or the library's handle if it is resident).
-            void* h = ::dlopen(m_libpath.c_str(), RTLD_NOW | RTLD_NOLOAD);
+            void* h = ::dlopen(m_libpath.c_str(), RTLD_NOLOAD);
             if (h != nullptr)
             {
+std::cerr<< "  close dlopen RTLD_NOLOAD != nullptr => close again\n";
                 ::dlclose(h);
             }
         }
         else
         {
+std::cerr<< "  close m_handle != nullptr => close\n";
             // Close the previous call of load(...)
             ::dlclose(m_handle);
         }
@@ -114,6 +115,7 @@ public:
     //--------------------------------------------------------------------------
     bool load(fs::path const& libpath, ResolveTime rt, Visibilty visibility)
     {
+std::cerr<< "begin =========================== load "<< libpath << "\n";
         m_libpath = libpath;
 
         // Be sure reference counting is 0 and have unload symbols.
@@ -124,14 +126,19 @@ public:
         m_handle = ::dlopen(libpath.c_str(), flags);
         if (m_handle == nullptr)
         {
+std::cerr<< "FAILED loading " << libpath << "\n";
             saveError(::dlerror());
+std::cerr<< "ERR: " << m_error << "\n";
+std::cerr<< "end =========================== load "<< libpath << "\n";
             return false;
         }
         else
         {
+std::cerr<< "SUCCESS loading\n";
             m_resolve_time = rt;
             m_visibility_flags = visibility;
             updateFileTime();
+std::cerr<< "end =========================== load "<< libpath << "\n";
             return true;
         }
     }
@@ -143,24 +150,25 @@ public:
     {
         bool rc;
 
+std::cerr<< "begin =========================== reload "<< m_libpath << "\n";
         if (updateFileTime())
         {
-                    std::this_thread::sleep_for(1000ms);
             rc = load(m_libpath.c_str(), m_resolve_time, m_visibility_flags);
         }
         else
         {
             rc = false;
         }
+std::cerr<< "end =========================== reload "<< m_libpath << ": " << rc << "\n";
         return rc;
     }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    template <typename Prototype>
-    inline std::function<Prototype> lookup(char const* fname) // const
-    {
+	template <typename Prototype>
+	inline std::function<Prototype> lookup(char const* fname) // const
+	{
         return SymbolLookupWrapper<Prototype>::lookup(*this, fname);
     }
 
@@ -190,51 +198,50 @@ public:
 
 private:
 
-    // Helper class to allow for function pointer syntax in template parameter.
-    // To allow a call such as lib.lookup<int(int)>("name"), a class template
-    // with partial specialization must be used since function templates
-    // cannot be partially specialized.
-    template <typename Prototype>
-    struct SymbolLookupWrapper;
+	// Helper class to allow for function pointer syntax in template parameter.
+	// To allow a call such as lib.lookup<int(int)>("name"), a class template
+	// with partial specialization must be used since function templates
+	// cannot be partially specialized.
+	template <typename Prototype>
+	struct SymbolLookupWrapper;
 
-    template <typename Ret, typename... Args>
-    struct SymbolLookupWrapper<Ret(Args...)>
-    {
-        static inline std::function<Ret(Args...)> lookup(DynamicLoader& dylib, char const* fname)
-        {
-            return dylib.private_lookup<Ret, Args...>(fname);
-        }
-    };
+	template <typename Ret, typename... Args>
+	struct SymbolLookupWrapper<Ret(Args...)>
+	{
+		static inline std::function<Ret(Args...)> lookup(DynamicLoader& dylib, char const* fname)
+		{
+			return dylib.private_lookup<Ret, Args...>(fname);
+		}
+	};
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    template <typename Ret, typename... Args>
-    inline std::function<Ret(Args...)> private_lookup(char const* fname)
-    {
-        // If the handle is invalid, return an uninitialized optional object.
-        if (m_handle == nullptr)
-        {
+	template <typename Ret, typename... Args>
+	inline std::function<Ret(Args...)> private_lookup(char const* fname)
+	{
+		// If the handle is invalid, return an uninitialized optional object.
+		if (m_handle == nullptr)
+		{
             throw std::logic_error("Handle not open.");
-        }
+		}
 
-        // Clear previous errors.
-        ::dlerror();
+		// Clear previous errors.
+		::dlerror();
 
-        // Lookup the symbol from the dynamic library.
-        auto p = ::dlsym(m_handle, fname);
-        auto fptr = DynamicLoader::fptr_cast<Ret, Args...>(p);
+		// Lookup the symbol from the dynamic library.
+		auto fptr = DynamicLoader::fptr_cast<Ret, Args...>(::dlsym(m_handle, fname));
 
-        // If there was an error, return an uninitialized optional.
-        char const* error_message = ::dlerror();
-        if (error_message != nullptr)
-        {
-            saveError(error_message);
-            
-        }
+		// If there was an error, return an uninitialized optional.
+		char const* error_message = ::dlerror();
+		if (error_message != nullptr)
+		{
+			saveError(error_message);
+			
+		}
 
-        return fptr;
-    }
+		return fptr;
+	}
 
     //--------------------------------------------------------------------------
     //! \brief Vonvert a void* to a std::function.
@@ -270,19 +277,33 @@ private:
     //--------------------------------------------------------------------------
     bool updateFileTime()
     {
-        struct stat fileStat;
-        if (stat(m_libpath.c_str(), &fileStat) >= 0)
-        {
-            bool reloaded = (m_time != fileStat.st_mtime);
-            m_time = fileStat.st_mtime;
-            return reloaded;
-        }
-        else
-        {
-            // Keep the previous time
-            saveError(strerror(errno));
-            return false;
-        }
+std::cerr<< "begin ------- updateFileTime " << m_libpath << ": " << m_time << std::endl;
+        //if (m_handle != nullptr)
+        //{
+//std::cerr<< "updateFileTime m_handle != nullptr " << std::endl;
+            struct stat fileStat;
+            if (stat(m_libpath.c_str(), &fileStat) >= 0)
+            {
+                bool reloaded = (m_time != fileStat.st_mtime);
+                m_time = fileStat.st_mtime;
+std::cerr<< "    updateFileTime stat OK => new time " << m_time << ", reloaded: " << reloaded << std::endl;
+                return reloaded;
+            }
+            else
+            {
+                saveError(strerror(errno));
+std::cerr<< "    updateFileTime stat KO " << m_error << " => new time " << m_time << ", reloaded: " << false << std::endl;
+                // Keep the previous time
+                return false;
+            }
+        //}
+        //else
+        //{
+//std::cerr<< "updateFileTime m_handle == nullptr ==> initial time " << m_time << ", reloaded: " << false << std::endl;
+            // Set to initial time
+        //    m_time = -1;
+        //    return false;
+        //}
     }
 
 private:

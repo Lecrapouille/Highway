@@ -21,13 +21,13 @@
 
 #pragma once
 
-#  include "Core/Common/FileSystem.hpp"
 #  include "Core/Simulator/Monitoring.hpp"
 #  include "Core/Simulator/City/City.hpp"
 #  include "Core/Scenario/Scenario.hpp"
 //#  include "Vehicle/ECU.hpp"
 //#  include "Application/MessageBar.hpp" // Ne pas dependre du renderer !!!!
 
+#  include <SFML/Graphics/Color.hpp>
 
 class Renderer;
 

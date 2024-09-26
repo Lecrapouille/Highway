@@ -21,7 +21,7 @@
 
 #pragma once
 
-#  include "Core/Simulator/BluePrints.hpp"
+//#  include "Core/Simulator/BluePrints.hpp"
 #  include "Core/Simulator/Vehicle/Vehicle.hpp"
 
 #  include <SFML/Graphics.hpp>
@@ -35,7 +35,7 @@ public:
 
     //------------------------------------------------------------------------------
     Car(const char* p_model, const char* p_name, sf::Color const& p_color)
-        : Vehicle(BluePrints::/*instance().*/get<vehicle::BluePrint>(p_model), p_name, p_color)
+        : Vehicle(/*BluePrints::get<vehicle::BluePrint>(p_model)*/{}, p_name, p_color)
     {}
 
     virtual std::string isValid() const

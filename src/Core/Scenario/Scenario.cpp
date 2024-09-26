@@ -31,7 +31,8 @@ Scenario::~Scenario()
 //------------------------------------------------------------------------------
 bool Scenario::load(fs::path const& libpath)
 {
-    if (m_dynamic_loader.load(libpath))
+    if (m_dynamic_loader.load(libpath, DynamicLoader::ResolveTime::Now,
+        DynamicLoader::Visibilty::Local))
     {
         if (loadSymbols())
         {
@@ -71,9 +72,10 @@ void Scenario::unload()
 //------------------------------------------------------------------------------
 bool Scenario::autoreload()
 {
-    if (m_dynamic_loader.reloadIfChanged())
+    if (m_dynamic_loader.reload())
     {
         loadSymbols();
+        std::cout << "NEW SYMBOLS " << name() << std::endl;
         return true;
     }
     return false;
@@ -85,10 +87,11 @@ bool Scenario::loadSymbols()
     LOGI("loadSymbols");
     try
     {
-        m_function_scenario_name = m_dynamic_loader.prototype<const char* (void)>("scenario_name");
-        m_function_create_city = m_dynamic_loader.prototype<Car& (Simulator&, City&)>("scenario_create_city");
-        m_function_halt_when = m_dynamic_loader.prototype<int(Simulator const&)>("scenario_halt_when");
-        m_function_react_to = m_dynamic_loader.prototype<void(Simulator&, size_t)>("scenario_react_to");
+        m_function_scenario_name = m_dynamic_loader.lookup<const char* (void)>("scenario_name");
+        m_function_create_city = m_dynamic_loader.lookup<Car& (Simulator&, City&)>("scenario_create_city");
+        m_function_halt_when = m_dynamic_loader.lookup<int(Simulator const&)>("scenario_halt_when");
+        m_function_react_to = m_dynamic_loader.lookup<void(Simulator&, size_t)>("scenario_react_to");
+
         return valid();
     }
     catch (...)
@@ -124,11 +127,11 @@ std::string Scenario::name() const
 //------------------------------------------------------------------------------
 Car& Scenario::createCity(Simulator& simulator, City& city) const
 {
-    //static Car car;
-
-    //if (m_function_create_city != nullptr)
-        return m_function_create_city(simulator, city);
-    //return car;
+    if (m_function_create_city == nullptr)
+    {
+        throw std::logic_error("createCity dummy symbol from scenario file");
+    }
+    return m_function_create_city(simulator, city);
 }
 
 //------------------------------------------------------------------------------
@@ -143,6 +146,6 @@ Scenario::Status Scenario::haltWhen(Simulator const& simulator) const
 {
     if (m_function_halt_when != nullptr)
         return static_cast<Scenario::Status>(m_function_halt_when(simulator));
-    //simulator.messagebox("Failed loading scenario file", sf::Color::Red);
+    //simulator.messagebar("Failed loading scenario file", sf::Color::Red);
     return Scenario::Status::Failed;
 }

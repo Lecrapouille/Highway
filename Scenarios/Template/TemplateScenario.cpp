@@ -103,15 +103,6 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
 //-----------------------------------------------------------------------------
 Car& scenario_create_city(Simulator& simulator, City& city)
 {
-    fs::path path(FilePath::instance().expand("/home/qq/MyGitHub/Highway-v0.2.0/data/blueprints.json"));
-    if (std::string err = BluePrints::load(path); !err.empty())
-    {
-        LOGAS("Failed loading blueprints. Reason '%s'", err.c_str());
-    }
-
-
-//std::cout << BluePrints::/*instance().*/get<vehicle::BluePrint>("Renault.Twingo").length << std::endl;
-
     Car& ego = city.addEgo("Mini.Cooper", { 0.0_m, 0.0_m }, 0.0_deg, 0.0_mps, 0.0_deg);
     return customize_ego(simulator, city, ego);
 
