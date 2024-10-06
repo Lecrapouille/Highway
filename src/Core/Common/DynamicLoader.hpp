@@ -21,22 +21,23 @@
 
 #pragma once
 
-#include "Core/Common/FileSystem.hpp"
+#  include "Core/Common/FileSystem.hpp"
 
-#include <dlfcn.h>
-#include <sys/stat.h>
-#include <string.h>
+#  include <dlfcn.h>
+#  include <sys/stat.h>
+#  include <string.h>
 
-#include <functional>
-#include <string>
-#include <stdexcept>
+#  include <functional>
+#  include <string>
+#  include <stdexcept>
 
-
-
-#include <iostream> // TEMP
-#include <chrono>
-#include <thread>
-using namespace std::chrono_literals;
+#  if defined(_WIN32)
+#    define SHARED_LIB_EXTENSION "dll"
+#  elif defined(__linux__)
+#    define SHARED_LIB_EXTENSION "so"
+#  elif defined(__APPLE__)
+#    define SHARED_LIB_EXTENSION "dylib"
+#  endif
 
 // *****************************************************************************
 //! \brief Class allowing to load C functions from a given shared library. This
@@ -145,7 +146,6 @@ public:
 
         if (updateFileTime())
         {
-                    std::this_thread::sleep_for(1000ms);
             rc = load(m_libpath.c_str(), m_resolve_time, m_visibility_flags);
         }
         else
@@ -237,7 +237,7 @@ private:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief Vonvert a void* to a std::function.
+    //! \brief Convert a void* to a std::function.
     //! Since casting from a void* to a function pointer is undefined,
     //! we have to do a workaround. I am not positive if this is completely
     //! portable or not.

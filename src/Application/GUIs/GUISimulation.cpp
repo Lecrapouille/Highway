@@ -23,8 +23,8 @@
 #include "Application/GUIs/GUIMainMenu.hpp"
 #include "Application/FileDialogs.hpp"
 #include "Application/Renderer/FontManager.hpp"
+#include "Application/Demo/Demo.hpp"
 #include "Core/Math/Math.hpp"
-#include "Core/Demo/Demo.hpp"
 
 #include <iostream>
 
@@ -105,7 +105,7 @@ void GUISimulation::onCreate()
     else
     {
         // Nothing to do: let inside this GUI until the user close it.
-        m_renderer.setTitle("No scenario loaded!");
+        m_renderer.setTitle("Failed loading scenario!");
     }
 }
 

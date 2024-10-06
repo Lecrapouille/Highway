@@ -23,36 +23,41 @@
 #include "MyLogger/Logger.hpp"
 
 //------------------------------------------------------------------------------
-Simulator::Simulator()//sf::RenderWindow& renderer, MessageBar& message_bar)
-//    : m_renderer(renderer), m_message_bar(message_bar)
-{
-}
-
-//------------------------------------------------------------------------------
 bool Simulator::load(fs::path const& libpath)
 {
     LOGI("Simulator loads scenario '%s'", libpath);
 
-    // The shared lib has been successfully opened. Now load functions.
-    if (!m_scenario.load(libpath))
+    if (m_dynamic_loader.load(libpath, DynamicLoader::ResolveTime::Now,
+        DynamicLoader::Visiblity::Local))
     {
-        m_error = "Failed loading the scenario: " + m_scenario.error();
-        messagebar(m_error, sf::Color::Red);
+        if (loadSymbols())
+        {
+            return init();
+        }
+        else
+        {
+            messagebar(mylogger::Severity::Error, "Scenario has dummy symbols ", libpath);
+            return false;
+        }
+    }
+    else
+    {
+        messagebar(mylogger::Severity::Error, "Scenario failed loading '", libpath,
+            "'. Reason was '", error());
+        m_scenario.reset();
         return false;
     }
-
-    return init();
 }
 
 //------------------------------------------------------------------------------
 bool Simulator::load(Scenario const& scenario)
 {
-    LOGI("Simulator loads scenario '%s'", scenario.name());
+    LOGI("Simulator loads embedded scenario");
 
     m_scenario = scenario;
-    if (!m_scenario.valid())
+    if (!m_scenario.isValid())
     {
-        messagebar("Failed loading the scenario", sf::Color::Red);
+        messagebar(mylogger::Severity::Error, "Failed loading the embedded scenario");
         return false;
     }
 
@@ -63,18 +68,17 @@ bool Simulator::load(Scenario const& scenario)
 bool Simulator::autoreload()
 {
     // Auto reload the scenario file if it has changed.
-    if (m_scenario.autoreload())
+    if (m_dynamic_loader.reload())
     {
-        // Check if it all functions are not nullptr
-        if (!m_scenario.valid())
+        if (!loadSymbols())
         {
-            m_error = "Failed loading the scenario: " + m_scenario.error();
-            messagebar(m_error, sf::Color::Red);
+            messagebar(mylogger::Severity::Error, "Failed loading the scenario: ",
+                m_dynamic_loader.error());
             return false;
         }
         else
         {
-            messagebar("Scenario changed: reloaded", sf::Color::Yellow);
+            messagebar(mylogger::Severity::Info, "Scenario changed: reloaded");
             return init();
         }
     }
@@ -82,21 +86,69 @@ bool Simulator::autoreload()
 }
 
 //------------------------------------------------------------------------------
+bool Simulator::loadSymbols()
+{
+    try
+    {
+        return m_scenario.lookup(m_dynamic_loader);
+    }
+    catch (...)
+    {
+        m_scenario.reset();
+        return false;
+    }
+}
+
+//------------------------------------------------------------------------------
+std::string Simulator::scenarioName() const
+{
+    if (m_scenario.function_scenario_name != nullptr)
+        return m_scenario.function_scenario_name();
+    return {};
+}
+
+//------------------------------------------------------------------------------
+Car& Simulator::createCity(Simulator& simulator, City& city) const
+{
+    if (m_scenario.function_create_city == nullptr)
+    {
+        throw std::logic_error("createCity dummy symbol from scenario file");
+    }
+    return m_scenario.function_create_city(simulator, city);
+}
+
+//------------------------------------------------------------------------------
+void Simulator::reactTo(Simulator& simulator, size_t event) const
+{
+    if (m_scenario.function_react_to != nullptr)
+        m_scenario.function_react_to(simulator, event);
+}
+
+//------------------------------------------------------------------------------
+Scenario::Status Simulator::haltWhen(Simulator const& simulator) const
+{
+    if (m_scenario.function_halt_when != nullptr)
+        return static_cast<Scenario::Status>(m_scenario.function_halt_when(simulator));
+    // messagebar("Failed loading scenario file", sf::Color::Red);
+    return Scenario::Status::Failed;
+}
+
+//------------------------------------------------------------------------------
 bool Simulator::init()
 {
     // Missing call Simulator::load() or scenario has failed loaded.
-    if (!m_scenario.valid())
+    if (!m_scenario.isValid())
     {
-        messagebar("No scenario referred", sf::Color::Red);
+        messagebar(mylogger::Severity::Error, "No scenario referred");
         return false;
     }
 
     // Set simulation name on the GUI
-    messagebar("Starting simulation '" + m_scenario.name() + "'", sf::Color::Green);
+    messagebar(mylogger::Severity::None, "Starting simulation '", scenarioName(), "'");
 
     // Create a new city from "scratch".
     m_city.reset();
-    m_ego = &m_scenario.createCity(*this, m_city);
+    m_ego = &createCity(*this, m_city);
 
     // Make by default, the camera follows the ego car.
     follow(*m_ego);
@@ -123,11 +175,11 @@ void Simulator::pause(bool const state)
     if (m_pause)
     {
         m_elapsed_time += m_clock.getElapsedTime();
-        messagebar("Pause the simulation", sf::Color::Yellow);
+        messagebar(mylogger::Severity::Info, "Pause the simulation");
     }
     else
     {
-        messagebar("Running the simulation", sf::Color::Yellow);
+        messagebar(mylogger::Severity::Info, "Running the simulation");
         m_clock.restart();
     }
 }
@@ -149,9 +201,8 @@ void Simulator::deactivate()
 //------------------------------------------------------------------------------
 void Simulator::release()
 {
-    std::cout << "m_city.reset()\n";
     m_city.reset();
-    m_scenario.unload();
+    m_dynamic_loader.close();
     monitor.close();
     m_elapsed_time = sf::Time::Zero;
 }
@@ -159,16 +210,16 @@ void Simulator::release()
 //------------------------------------------------------------------------------
 void Simulator::reacts(size_t key)
 {
-    if ((!m_scenario.valid()) || (m_pause))
+    if ((!m_scenario.isValid()) || (m_pause))
         return ;
 
-    m_scenario.reactTo(*this, key);
+    reactTo(*this, key);
 }
 
 //------------------------------------------------------------------------------
 bool Simulator::continuing() const
 {
-    return m_scenario.valid() && (m_scenario.haltWhen(*this) == Scenario::Status::Continue);
+    return /*m_scenario.valid() &&*/ (haltWhen(*this) == Scenario::Status::Continue);
 }
 
 //------------------------------------------------------------------------------
@@ -207,7 +258,7 @@ void Simulator::update(const Second dt)
     // User has paused the simulation ?
     if (m_pause)
     {
-        messagebar("The simulation is in pause", sf::Color::Yellow);
+        messagebar(mylogger::Severity::Info, "The simulation is in pause");
         return ;
     }
 

@@ -88,8 +88,6 @@ static int start_highway(int argc, char* const argv[])
         return EXIT_FAILURE;
     }
 
-    std::cout << BluePrints::/*instance().*/get<vehicle::BluePrint>("Renault.Twingo").length << std::endl;
-
     // Load fonts
     if (!FontManager::instance().load("main font", "font.ttf"))
     {

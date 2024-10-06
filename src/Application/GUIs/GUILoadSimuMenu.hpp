@@ -81,6 +81,11 @@ private:
 
     struct ScenarioEntry
     {
+        ScenarioEntry() = default;
+        ScenarioEntry(const fs::path& lib, const fs::path& file, const std::string& b)
+            : libpath(lib), filename(file), brief(b)
+        {}
+
         fs::path libpath;
         fs::path filename;
         std::string brief;

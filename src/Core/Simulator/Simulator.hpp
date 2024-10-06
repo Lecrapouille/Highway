@@ -21,15 +21,12 @@
 
 #pragma once
 
+#  include "Core/Common/DynamicLoader.hpp"
 #  include "Core/Simulator/Monitoring.hpp"
 #  include "Core/Simulator/City/City.hpp"
-#  include "Core/Scenario/Scenario.hpp"
-//#  include "Vehicle/ECU.hpp"
-//#  include "Application/MessageBar.hpp" // Ne pas dependre du renderer !!!!
-
+#  include "Core/Simulator/Scenario.hpp"
 #  include <SFML/Graphics/Color.hpp>
-
-class Renderer;
+#  include <sstream>
 
 // ****************************************************************************
 //! \brief Class managing a simulation. This class is owned by the Application
@@ -44,12 +41,6 @@ class Renderer;
 class Simulator
 {
 public:
-
-    //-------------------------------------------------------------------------
-    //! \brief Default constructor. Take the SFML renderer, from the Application
-    //! instance, needed for drawing the simulation.
-    //-------------------------------------------------------------------------
-    Simulator();//sf::RenderWindow& renderer, MessageBar& message_bar);
 
     //-------------------------------------------------------------------------
     //! \brief Load a simulation file: a shared library file holding functions
@@ -124,7 +115,7 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Return the city
     //-------------------------------------------------------------------------
-    inline City const& city()
+    inline City const& city() const
     {
         return m_city;
     }
@@ -170,12 +161,15 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    //! \brief Pass a text to the simulator to display it inside the messagebox
+    //! \brief Pass a text to the simulator to display it inside the messagebar
     //! widget.
     //-------------------------------------------------------------------------
-    inline void messagebar(std::string const& txt, sf::Color const& color) const
+    template<typename... Args>
+    inline void messagebar(mylogger::Severity severity, Args&&... args) const
     {
-        LOGI("Scenario: %s", txt.c_str());
+        std::stringstream ss;
+        (ss << ... << args);
+        CPP_LOG(severity, "") << ss.str();
         // m_message_bar.entry(txt, color);
     }
 
@@ -190,12 +184,24 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Return the scenario name.
     //--------------------------------------------------------------------------
-    inline std::string scenarioName() const
-    {
-        return m_scenario.name();
-    }
+    std::string scenarioName() const;
 
 private:
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    Car& createCity(Simulator& simulator, City& city) const;
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    void reactTo(Simulator& simulator, size_t event) const;
+
+    //-------------------------------------------------------------------------
+    //! \brief
+    //-------------------------------------------------------------------------
+    Scenario::Status haltWhen(Simulator const& simulator) const;
 
     //--------------------------------------------------------------------------
     //! \brief
@@ -210,14 +216,12 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    void collisions(Car& ego);
+    bool loadSymbols();
 
-//private: // Inheritance from ECU::Listener
-//
-//    virtual void onMessageToLog(std::string const& message) const override
-//    {
-//        messagebar(message, sf::Color::Yellow);
-//    }
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void collisions(Car& ego);
 
 public:
 
@@ -229,6 +233,7 @@ private:
 
     //! \brief Simulation scenario loaded from a shared library.
     Scenario m_scenario;
+    DynamicLoader m_dynamic_loader;
     //! \brief The simulated city (with its roads, parkings, cars,
     //! pedestrians ...)
     City m_city;

@@ -48,14 +48,12 @@ void GUILoadSimuMenu::createListScenarios()
         auto libpath = entry.path().string();
         if (libpath.substr(libpath.find_last_of(".") + 1) == SHARED_LIB_EXTENSION)
         {
+            DynamicLoader dynamic_loader;
             Scenario scenario;
-            if (scenario.load(libpath))
+            if (dynamic_loader.load(entry.path(), DynamicLoader::ResolveTime::Now, DynamicLoader::Visiblity::Local) && scenario.lookup(dynamic_loader))
             {
-                ScenarioEntry e;
-                e.libpath = entry.path();
-                e.filename = entry.path().filename();
-                e.brief = std::string(scenario.name());
-                m_scenarios.push_back(std::move(e));
+                m_scenarios.emplace_back(entry.path(), entry.path().filename(),
+                scenario.function_scenario_name());
             }
         }
     }
