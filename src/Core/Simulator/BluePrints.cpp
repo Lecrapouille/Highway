@@ -30,7 +30,7 @@ std::unordered_map<std::string, std::map<std::string, BLUEPRINT>> BluePrints::sm
 std::vector<std::function<void()>> BluePrints::m_clear_functions;
 
 //------------------------------------------------------------------------------
-std::string BluePrints::load(fs::path path)
+std::string BluePrints::load(fs::path const& path)
 {
     std::stringstream error;
 
@@ -86,6 +86,7 @@ std::string BluePrints::load(fs::path path)
                 Meter(it["wheelbase_m"]),
                 Meter(it["back_overhang_m"]),
                 Meter(it["wheels"]["radius_m"]),
+                Meter(it["wheels"]["thickness_m"]),
                 Meter(it["turning_diameter_m"])
             });
     }

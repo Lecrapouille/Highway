@@ -20,7 +20,6 @@
 //=============================================================================
 
 #include "Highway/Scenario.hpp"
-#include "Core/Common/FilePath.hpp"
 
 //-----------------------------------------------------------------------------
 //! \file Show the template for creating a scenario.
@@ -32,7 +31,7 @@
 //-----------------------------------------------------------------------------
 const char* scenario_name()
 {
-    return "Hello template scenarioppppp";
+    return "Hello template scenario";
 }
 
 //-----------------------------------------------------------------------------

@@ -65,7 +65,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         target.draw(m_shape, states);
     }
@@ -118,7 +118,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         target.draw(m_shape, states);
     }
@@ -156,7 +156,7 @@ private:
         //! .. getPointCount() - 1]
         //! \return index-th point of the shape.
         //----------------------------------------------------------------------
-        virtual sf::Vector2f getPoint(std::size_t index) const override final;
+        virtual sf::Vector2f getPoint(std::size_t index) const override;
 
     private:
 
@@ -218,7 +218,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override final
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         target.draw(m_tail, states);
         target.draw(m_head, states);

@@ -31,7 +31,7 @@
 #  include "Core/Math/Units.hpp"
 #  include <SFML/Graphics.hpp>
 #  include <SFML/System.hpp>
-#  include <stack>
+#  include <deque>
 #  include <map>
 #  include <cassert>
 #  include <memory>
@@ -303,7 +303,7 @@ public:
     //--------------------------------------------------------------------------
     inline Application::GUI* peek()
     {
-        return m_stack.empty() ? nullptr : m_stack.top();
+        return m_stack.empty() ? nullptr : m_stack.front();
     }
 
     //--------------------------------------------------------------------------
@@ -328,9 +328,14 @@ public:
     }
 
     //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void printStack() const;
+
+    //--------------------------------------------------------------------------
     //! \brief Show the stack of GUIs.
     //--------------------------------------------------------------------------
-    inline void printStack();
+    inline size_t FSP() const { return m_statistics.fps; }
 
 private:
 
@@ -340,16 +345,23 @@ private:
     void halt();
 
     //--------------------------------------------------------------------------
-    //! \brief Helper method to show the stack of GUIs.
+    //! \brief
     //--------------------------------------------------------------------------
-    void printStack(std::stack<Application::GUI*>& stack);
+    void updateStatistics(sf::Time dt);
 
 private:
 
     //! \brief List of created GUIs.
     std::map<std::string, std::unique_ptr<Application::GUI>> m_guis;
     //! \brief Stack of GUIs.
-    std::stack<Application::GUI*> m_stack;
+    std::deque<Application::GUI*> m_stack;
     //! \brief SFML renderer.
     sf::RenderWindow m_renderer;
+    //! \brief Compute FPS
+    struct Statistics
+    {
+        sf::Time update_time;
+        size_t num_frames;
+        size_t fps;
+    } m_statistics;
 };

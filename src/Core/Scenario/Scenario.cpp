@@ -75,7 +75,6 @@ bool Scenario::autoreload()
     if (m_dynamic_loader.reload())
     {
         loadSymbols();
-        std::cout << "NEW SYMBOLS " << name() << std::endl;
         return true;
     }
     return false;

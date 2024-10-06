@@ -21,13 +21,13 @@
 
 #include "Core/Simulator/Vehicle/Vehicle.hpp"
 #include "MyLogger/Logger.hpp"
+#include "Core/Math/Math.hpp"
 
 //------------------------------------------------------------------------------
 bool Vehicle::reactTo(size_t const key)
 {
     //LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
-    auto it = m_callbacks.find(key);
-    if (it != m_callbacks.end())
+    if (auto it = m_callbacks.find(key); it != m_callbacks.end())
     {
         it->second();
         return true;
@@ -71,13 +71,25 @@ void Vehicle::update(Second const dt)
     // Vehicle control and references
     m_control->update(dt);
 #endif
+
     // vehicle momentum
     m_physics->update(dt);
-#if 0
+
+    // Update wheel positions
+    size_t i = m_wheels.size();
+    while (i--)
+    {
+        m_wheels[i].position = position()
+            + math::heading(blueprint.wheels[i].offset, heading());
+    }
+
     // Wheel momentum
-    update_wheels(m_physics->speed(), m_control->get_steering());
+    //update_wheels(m_physics->speed(), m_control->get_steering());
+
     // Update orientation of the vehicle shape
-    m_shape->update(m_physics->position(), m_physics->heading());
+    m_shape.update(position(),heading());
+
+#if 0
     // Update the tracked trailer if attached
     if (m_trailer != nullptr)
     {

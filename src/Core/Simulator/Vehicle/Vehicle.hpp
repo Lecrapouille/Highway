@@ -21,6 +21,7 @@
 
 #pragma once
 
+#  include "Core/Simulator/Vehicle/Wheel.hpp"
 #  include "Core/Simulator/Vehicle/PhysicModel.hpp"
 #  include <SFML/Graphics/Color.hpp>
 
@@ -169,8 +170,12 @@ protected:
     VehicleShape m_shape;
     //! \brief Kinematic, Dynamic model of the vehicle
     std::unique_ptr<vehicle::PhysicModel> m_physics = nullptr;
-    //! \brief The cruse control
+    //! \brief The cruise control
     //std::unique_ptr<VehicleControl> m_control = nullptr;
+    //! \brief Vehicle's wheels
+    std::vector<Wheel> m_wheels;
+
+
     //! \brief List of reactions to do when events occurred
     std::map<size_t, Callback> m_callbacks;
 

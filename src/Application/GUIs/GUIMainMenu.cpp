@@ -22,7 +22,6 @@
 #include "Application/GUIs/GUIMainMenu.hpp"
 #include "Application/GUIs/GUILoadSimuMenu.hpp"
 #include "Application/Renderer/FontManager.hpp"
-//#include "Simulation/Demo.hpp"
 
 //------------------------------------------------------------------------------
 GUIMainMenu::GUIMainMenu(Application& application, std::string const& name)
@@ -127,8 +126,10 @@ void GUIMainMenu::onUpdate(const Second /*dt*/)
 //------------------------------------------------------------------------------
 void GUIMainMenu::onDraw()
 {
-    const float y_positions[2] = {24.0f + 4.0f,
-                                  24.0f + 4.0f + 18.0f + 4.0f };
+    const std::array<float, 2u> y_positions = {
+        24.0f + 4.0f,
+        24.0f + 4.0f + 18.0f + 4.0f
+    };
 
     // Title
     m_text.setString("Highway: Car simulator");

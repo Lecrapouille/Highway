@@ -21,10 +21,18 @@
 
 #pragma once
 
-#  include <SFML/Graphics.hpp>
+#  include "Core/Math/Units.hpp"
 
-class Car;
-class Simulator;
-
-void draw(Car const& car, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
-void draw(Simulator const& simulator, sf::RenderTarget& target, sf::RenderStates const& states = sf::RenderStates::Default);
+// *****************************************************************************
+//! \brief Vehicle's wheel. Note that the shape is defined by WheelBluePrint in
+//! VehicleBluePrint.hpp
+// *****************************************************************************
+struct Wheel
+{
+    //! \brief current position and altitude inside the world coordinate.
+    sf::Vector2<Meter> position; // TODO sf::Vector3<Meter>
+    //! \brief Yaw angle [rad].
+    Radian steering;
+    //! \brief Angular speed [meter / second]
+    MeterPerSecond speed;
+};

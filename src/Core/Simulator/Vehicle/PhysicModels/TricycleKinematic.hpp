@@ -39,8 +39,8 @@ namespace vehicle {
 // *****************************************************************************
 //! \brief Simple car kinematic using the tricycle kinematic equations.
 //! The position (x, y) of the car is the middle of the rear axle.
-//! ../../doc/pics/TricycleVehicle.png
-//! ../../doc/pics/TricycleKinematicEq.png
+//! [../doc/pics/TricycleVehicle.png]
+//! [../doc/pics/TricycleKinematicEq.png]
 // *****************************************************************************
 class TricycleKinematic: public PhysicModel
 {

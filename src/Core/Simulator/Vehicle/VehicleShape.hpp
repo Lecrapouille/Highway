@@ -21,14 +21,13 @@
 
 #pragma once
 
+#  include "Core/Common/SceneGraph.hpp"
 #  include "Core/Simulator/Vehicle/BluePrint.hpp"
 #  include <SFML/Graphics/RectangleShape.hpp>
 
 #  include <vector>
 #  include <cassert>
 #  include <memory>
-
-// FIXME better to use scene graph for turning wheels and sensors (while easy to manage manually)
 
 // *****************************************************************************
 //! \brief A vehicle shape is an oriented bounding box of the body (rectangle knowing its
@@ -37,7 +36,7 @@
 //! \tparam BLUEPRINT struct holding dimension of the shape (ie CarBluePrint,
 //! TrailerBluePrint ... see VehicleBlueprint.hpp).
 // *****************************************************************************
-class VehicleShape
+class VehicleShape: public SceneNode
 {
 public:
 
@@ -68,6 +67,10 @@ public:
         return sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
     }
 
+private:
+
+    virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override;
+
 public:
 
     //! \brief Dimension of the vehicle.
@@ -77,6 +80,10 @@ private:
 
     //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_obb;
-
-    // FIXME other shapes: sensors ...
+    //! \brief Wheel shapes
+    //SceneNode m_wheels_shapes;
+    //! \brief Turning indicator shapes
+    //SceneNode m_turning_indicator_shapes;
+    //! \brief Lights shapes
+    //SceneNode m_light_shapes;
 };

@@ -47,7 +47,7 @@ Application::~Application()
 void Application::halt()
 {
     // Clear the stack of GUIs
-    std::stack<Application::GUI*>().swap(m_stack);
+    m_stack.clear();
     // Stop the SFML renderer
     m_renderer.close();
 }
@@ -57,14 +57,13 @@ void Application::halt()
 void Application::push(Application::GUI& gui)
 {
     LOGI("Push GUI %s", gui.name().c_str());
-    GUI* current_gui = peek();
-    if ((current_gui != nullptr) && (current_gui != &gui))
+    if (GUI* current_gui = peek(); (current_gui != nullptr) && (current_gui != &gui))
     {
         current_gui->onDeactivate();
     }
-    m_stack.push(&gui);
+    m_stack.push_front(&gui);
     gui.onCreate();
-    // Uncomment for debuging
+    // Uncomment for debugging
     // printStack();
 }
 
@@ -76,7 +75,7 @@ bool Application::pop()
         return false;
 
     LOGI("Pop GUI %s", gui->name().c_str());
-    m_stack.pop();
+    m_stack.pop_front();
     gui->onRelease();
 
     gui = peek();
@@ -87,7 +86,7 @@ bool Application::pop()
         gui->onActivate();
     }
 
-    // Uncomment for debuging
+    // Uncomment for debugging
     // printStack();
     return true;
 }
@@ -113,13 +112,17 @@ void Application::loop(uint8_t const rate)
             return ;
 
         // Process events at fixed time steps
-        timeSinceLastUpdate += clock.restart();
+        sf::Time dt = clock.restart();
+        timeSinceLastUpdate += dt;
         while (timeSinceLastUpdate > time_per_frame)
         {
             timeSinceLastUpdate -= time_per_frame;
             gui->onHandleInput();
             gui->onUpdate(Second(time_per_frame.asSeconds()));
         }
+
+        // FPS
+        updateStatistics(dt);
 
         // Rendering
         m_renderer.clear(gui->background_color);
@@ -155,20 +158,25 @@ bool Application::screenshot(std::string const& screenshot_path) const
 }
 
 // -----------------------------------------------------------------------------
-void Application::printStack()
+void Application::updateStatistics(sf::Time dt)
 {
-    std::cout << "Application stack of GUIs:" << std::endl;
-    printStack(m_stack);
+	m_statistics.update_time += dt;
+	m_statistics.num_frames += 1;
+	if (m_statistics.update_time >= sf::seconds(1.0f))
+	{
+		m_statistics.fps = m_statistics.num_frames;
+
+		m_statistics.update_time -= sf::seconds(1.0f);
+		m_statistics.num_frames = 0;
+	}
 }
 
 // -----------------------------------------------------------------------------
-void Application::printStack(std::stack<Application::GUI*>& stack)
+void Application::printStack() const
 {
-    if (stack.empty())
-        return;
-    Application::GUI* gui = stack.top();
-    stack.pop();
-    std::cout << "  " << gui->m_name << std::endl;
-    printStack(stack);
-    stack.push(gui);
+    std::cout << "Application stack of GUIs:" << std::endl;
+    for (auto const& gui: m_stack)
+    {
+        std::cout << "  " << gui->m_name << std::endl;
+    }
 }

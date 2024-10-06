@@ -24,12 +24,11 @@
 
 namespace vehicle {
 
-constexpr Meter WHEEL_WIDTH = 0.1_m;
-
 //------------------------------------------------------------------------------
 BluePrint::BluePrint(const Meter l, const Meter w, const Meter wb,
-                     const Meter bo, const Meter wr, const Meter td)
-    : length(l), width(w), track(width - WHEEL_WIDTH), wheelbase(wb),
+                     const Meter bo, const Meter wr, const Meter wt,
+                     const Meter td)
+    : length(l), width(w), track(width - wt), wheelbase(wb),
       back_overhang(bo), front_overhang(length - wheelbase - back_overhang)
 {
     max_steering_angle = units::math::asin(wheelbase / (0.5f * td));
@@ -38,33 +37,33 @@ BluePrint::BluePrint(const Meter l, const Meter w, const Meter wb,
 
     // Wheels
     const Meter K = track / 2.0f;
+    wheels.resize(BluePrint::Where::MAX);
     wheels[BluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase, K);
     wheels[BluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase, -K);
     wheels[BluePrint::Where::RL].offset = sf::Vector2<Meter>(0.0_m, K);
     wheels[BluePrint::Where::RR].offset = sf::Vector2<Meter>(0.0_m, -K);
 
+    // Wheels
+    for (auto& wheel: wheels)
+    {
+        wheel.radius = wr;
+        wheel.thickness = wt;
+    }
+
     // Turning indicators
-    //turning_indicators[BluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase + front_overhang, K);
-    //turning_indicators[BluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase + front_overhang, -K);
-    //turning_indicators[BluePrint::Where::RL].offset = sf::Vector2<Meter>(-back_overhang, K);
-    //turning_indicators[BluePrint::Where::RR].offset = sf::Vector2<Meter>(-back_overhang, -K);
+    turning_indicators.resize(BluePrint::Where::MAX);
+    turning_indicators[BluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase + front_overhang, K);
+    turning_indicators[BluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase + front_overhang, -K);
+    turning_indicators[BluePrint::Where::RL].offset = sf::Vector2<Meter>(-back_overhang, K);
+    turning_indicators[BluePrint::Where::RR].offset = sf::Vector2<Meter>(-back_overhang, -K);
 
     // Lights
-    //const Meter K1 = K - 0.1_m; // 0.1: Turning indicators size
-    //lights[BluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase + front_overhang, K1);
-    //lights[BluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase + front_overhang, -K1);
-    //lights[BluePrint::Where::RL].offset = sf::Vector2<Meter>(-back_overhang, K1);
-    //lights[BluePrint::Where::RR].offset = sf::Vector2<Meter>(-back_overhang, -K1);
-
-    size_t i = size_t(BluePrint::Where::MAX);
-    while (i--)
-    {
-        //turning_indicators[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
-        //lights[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
-        wheels[i].position = sf::Vector2<Meter>(Meter(NAN), Meter(NAN));
-        wheels[i].radius = wr;
-        wheels[i].width = WHEEL_WIDTH;
-    }
+    const Meter K1 = K - 0.1_m; // 0.1: Turning indicators size
+    lights.resize(BluePrint::Where::MAX);
+    lights[BluePrint::Where::FL].offset = sf::Vector2<Meter>(wheelbase + front_overhang, K1);
+    lights[BluePrint::Where::FR].offset = sf::Vector2<Meter>(wheelbase + front_overhang, -K1);
+    lights[BluePrint::Where::RL].offset = sf::Vector2<Meter>(-back_overhang, K1);
+    lights[BluePrint::Where::RR].offset = sf::Vector2<Meter>(-back_overhang, -K1);
 }
 
 } // namespace vehicle

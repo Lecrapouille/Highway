@@ -36,7 +36,7 @@
 // *****************************************************************************
 //! \brief Database of blueprints.
 // *****************************************************************************
-class BluePrints//: public Singleton<BluePrints>
+class BluePrints
 {
 public:
 
@@ -64,7 +64,7 @@ public:
     //! \brief Init the database from a json file.
     //! \return the error as string (dummy string in case of success).
     //-------------------------------------------------------------------------
-    static std::string load(fs::path path);
+    static std::string load(fs::path const& path);
 
     //-------------------------------------------------------------------------
     //! \brief Add a new iterm in the database.
@@ -126,7 +126,7 @@ public:
     //-------------------------------------------------------------------------
     static void clear()
     {
-        for (auto const&& clear_func : m_clear_functions)
+        for (auto const& clear_func : m_clear_functions)
         {
             clear_func();
         }

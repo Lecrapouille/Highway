@@ -31,11 +31,28 @@ Simulator::Simulator()//sf::RenderWindow& renderer, MessageBar& message_bar)
 //------------------------------------------------------------------------------
 bool Simulator::load(fs::path const& libpath)
 {
+    LOGI("Simulator loads scenario '%s'", libpath);
+
     // The shared lib has been successfully opened. Now load functions.
     if (!m_scenario.load(libpath))
     {
         m_error = "Failed loading the scenario: " + m_scenario.error();
         messagebar(m_error, sf::Color::Red);
+        return false;
+    }
+
+    return init();
+}
+
+//------------------------------------------------------------------------------
+bool Simulator::load(Scenario const& scenario)
+{
+    LOGI("Simulator loads scenario '%s'", scenario.name());
+
+    m_scenario = scenario;
+    if (!m_scenario.valid())
+    {
+        messagebar("Failed loading the scenario", sf::Color::Red);
         return false;
     }
 

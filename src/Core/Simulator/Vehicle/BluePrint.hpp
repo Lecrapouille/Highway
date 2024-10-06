@@ -22,10 +22,8 @@
 #pragma once
 
 #  include "Core/Math/Units.hpp"
-//#  include <SFML/Graphics.hpp>
-#  include <array>
+#  include <vector>
 
-namespace vehicle {
 namespace wheel {
 
 // *************************************************************************
@@ -33,42 +31,73 @@ namespace wheel {
 // *************************************************************************
 struct BluePrint
 {
-    //! \brief Relative position from the car shape position (middle rear axle)
+    //! \brief Relative position from the car shape position (middle rear axle).
     sf::Vector2<Meter> offset;
-    //! \brief current position and altitude inside the world coordinate.
-    sf::Vector2<Meter> position; // FIXME to be moved outside + 3D
-    //! \brief Rayon roue [meter]
+    //! \brief Rayon roue [meter].
     Meter radius;
-    //! \brief Epaisseur roue [meter] (only used for the rendering)
-    Meter width;
+    //! \brief Thickness [meter] (only used for the rendering).
+    Meter thickness;
 };
 
 } // namespace wheel
+namespace lights {
 
 // *************************************************************************
-//! \brief Car blueprint. See picture ../../doc/pics/CarDefinition.png
+//! \brief Turning indicator and light blueprint.
 // *************************************************************************
 struct BluePrint
 {
-    //--------------------------------------------------------------------------
-    //! \brief Wheel's names: FL: front left, FR: front rigeht, RR: rear right,
-    //! RL: rear left.
-    //--------------------------------------------------------------------------
-    enum Where { RR, RL, FL, FR, MAX };
-    BluePrint() = default;
+    //! \brief Relative position from the car shape position (middle rear axle)
+    sf::Vector2<Meter> offset;
+};
+
+} // namespace lights
+
+namespace sensor {
+
+// *************************************************************************
+//! \brief Turning indicator and light blueprint.
+// *************************************************************************
+struct BluePrint
+{
+    //! \brief Relative position from the car shape position (middle rear axle)
+    sf::Vector2<Meter> offset;
+    //! \brief Relative relative orientation [degree].
+    Degree orientation;
+};
+
+} // namespace sensor
+
+namespace vehicle {
+
+// *************************************************************************
+//! \brief Car blueprint. See picture [doc/pics/VehicleBlueprint.jpg]
+// *************************************************************************
+struct BluePrint
+{
     //----------------------------------------------------------------------
-    //! \brief Define vehicle constants:
-    //! See ../../doc/pics/CarDefinition.png
+    //! \brief Wheel's names: FL: front left, FR: front right, RR: rear right,
+    //! RL: rear left.
+    //----------------------------------------------------------------------
+    enum Where { RR, RL, FL, FR, MAX };
+
+    BluePrint() = default;
+
+    //----------------------------------------------------------------------
+    //! \brief Define vehicle constants.
+    //! See [doc/pics/CarDefinition.png]
     //! \param[in] l: car length [meter]
     //! \param[in] w: car width [meter]
     //! \param[in] wb: wheelbase length [meter]
     //! \param[in] bo: back overhang [meter]
     //! \param[in] wr: wheel radius [meter]
+    //! \param[in] wt: wheel thickness [meter]
     //! \param[in] tc: turning diameter [meter]
     //----------------------------------------------------------------------
     BluePrint(const Meter l, const Meter w, const Meter wb, const Meter bo,
-              const Meter wr, const Meter td);
+              const Meter wr, const Meter wt, const Meter td);
 
+    //----------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, BluePrint const& bp)
     {
         os << "BluePrint{ length: " << bp.length << ", width: " << bp.width
@@ -79,26 +108,26 @@ struct BluePrint
         return os;
     }
 
-    //! \brief Vehicle length [meter]
+    //! \brief Vehicle length [meter].
     Meter length;
-    //! \brief Vehicle width [meter]
+    //! \brief Vehicle width [meter].
     Meter width;
-    //! \brief Wheel to wheel distance along width [meter]
+    //! \brief Wheel to wheel distance along width [meter].
     Meter track;
-    //! \brief Wheel to wheel distance along the length [meter]
+    //! \brief Wheel to wheel distance along the length [meter].
     Meter wheelbase;
-    //! \brief Porte a faux arriere [meter]
+    //! \brief Rear overhand [meter] (fr: Porte à faux arrière).
     Meter back_overhang;
-    //! \brief Porte a faux avant [meter]
+    //! \brief Front overhang [meter] (fr: Porte à faux avant).
     Meter front_overhang;
-    //! \brief Limit of control.outputs.steering angle absolute angle [rad]
+    //! \brief Limit of control.outputs.steering angle absolute angle [rad].
     Radian max_steering_angle;
-    //! \brief Blue prints for the wheels
-    std::array<wheel::BluePrint, BluePrint::Where::MAX> wheels;
-    //! \brief Blue prints for the turning indicators
-    //std::array<LightsBluePrint, CarBluePrint::Where::MAX> turning_indicators;
-    //! \brief Blue prints for the vehicle lights
-    //std::array<LightsBluePrint, CarBluePrint::Where::MAX> lights;
+    //! \brief Blue prints for the wheels.
+    std::vector<wheel::BluePrint> wheels;
+    //! \brief Blue prints for the turning indicators.
+    std::vector<lights::BluePrint> turning_indicators;
+    //! \brief Blue prints for the vehicle lights.
+    std::vector<lights::BluePrint> lights;
 };
 
 } // namespace vehicle

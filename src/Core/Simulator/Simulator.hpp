@@ -64,6 +64,16 @@ public:
     bool load(fs::path const& libpath);
 
     //-------------------------------------------------------------------------
+    //! \brief Load a scenario (the structure holding functions loaded from a
+    //! shared library or from local functions). Call this method as create or
+    //! init entry point.
+    //! \param[in] the scenario structure with non-nullptr function pointers.
+    //! \return Return true if the scernario has been loaded with success
+    //!   else return false and use \c error() to get the reason.
+    //-------------------------------------------------------------------------
+    bool load(Scenario const& scenario);
+
+    //-------------------------------------------------------------------------
     //! \brief Restart the simulation. Shall be called after \c load().
     //-------------------------------------------------------------------------
     inline bool restart() { return init(); }
@@ -165,8 +175,8 @@ public:
     //-------------------------------------------------------------------------
     inline void messagebar(std::string const& txt, sf::Color const& color) const
     {
-         LOGI("Scenario: %s", txt.c_str());
-        //m_message_bar.entry(txt, color);
+        LOGI("Scenario: %s", txt.c_str());
+        // m_message_bar.entry(txt, color);
     }
 
     //--------------------------------------------------------------------------

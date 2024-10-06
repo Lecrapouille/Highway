@@ -23,11 +23,9 @@
 #include "Application/GUIs/GUIMainMenu.hpp"
 #include "Application/FileDialogs.hpp"
 #include "Application/Renderer/FontManager.hpp"
-#include "Application/Renderer/Renderer.hpp"
-
 #include "Core/Math/Math.hpp"
+#include "Core/Demo/Demo.hpp"
 
-//#include "Simulation/Demo.hpp"
 #include <iostream>
 
 //------------------------------------------------------------------------------
@@ -97,7 +95,7 @@ void GUISimulation::onCreate()
     else
     {
         // Hello-world simulation.
-        // res = simulator.load(simple_simulation_demo());
+        res = simulator.load(simple_simulation_demo());
     }
 
     if (res)
@@ -265,7 +263,7 @@ void GUISimulation::drawSimulation()
     // Draw vehicles
     for (auto const& it: city.cars())
     {
-        draw(*it, m_renderer);
+        m_renderer.draw(it->shape());
     }
 
 #if 0
@@ -277,7 +275,7 @@ void GUISimulation::drawSimulation()
 #endif
 
     // Ego vehicle
-    draw(city.ego(), m_renderer);
+    m_renderer.draw(city.ego().shape());
 }
 
 //------------------------------------------------------------------------------
