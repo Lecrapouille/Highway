@@ -21,10 +21,9 @@
 
 #pragma once
 
-#  include "MyLogger/Logger.hpp"
-
+#  include <SFML/System/Clock.hpp>
 #  include <SFML/Graphics.hpp>
-#  include <chrono>
+#  include <Core/Math/Units.hpp>
 
 // *****************************************************************************
 //! \brief Display a message inside a colored rectangle. The message is faded
@@ -65,7 +64,6 @@ struct MessageBar : public sf::Drawable
     {
         if (message != m_message)
         {
-            LOGI("%s", message.c_str());
             m_message = message;
             m_text.setString(m_message);
             m_count_lines = 1u + size_t(std::count(message.begin(), message.end(), '\n'));
@@ -81,7 +79,6 @@ struct MessageBar : public sf::Drawable
     //--------------------------------------------------------------------------
     MessageBar& append(std::string const& message)
     {
-        LOGI("%s", message.c_str());
         if (m_text.getString().isEmpty())
         {
             m_text.setString(message);
@@ -123,7 +120,7 @@ private: // Inherit from sf::Drawable
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates /*states*/) const override final
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates /*states*/) const override
     {
         if (!faded())
         {

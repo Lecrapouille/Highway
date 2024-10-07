@@ -21,6 +21,7 @@
 
 #pragma once
 
+#  include "Application/Renderer/MessageBar.hpp"
 #  include "Core/Common/DynamicLoader.hpp"
 #  include "Core/Simulator/Monitoring.hpp"
 #  include "Core/Simulator/City/City.hpp"
@@ -41,6 +42,10 @@
 class Simulator
 {
 public:
+
+    explicit Simulator(MessageBar& message_bar)
+        : m_message_bar(message_bar)
+    {}
 
     //-------------------------------------------------------------------------
     //! \brief Load a simulation file: a shared library file holding functions
@@ -167,10 +172,22 @@ public:
     template<typename... Args>
     inline void messagebar(mylogger::Severity severity, Args&&... args) const
     {
+        static std::map<mylogger::Severity, sf::Color> s_colors = {
+            { mylogger::Severity::None, sf::Color::Green},
+            { mylogger::Severity::Info, sf::Color::Green},
+            { mylogger::Severity::Debug, sf::Color::Green },
+            { mylogger::Severity::Warning, sf::Color::Yellow },
+            { mylogger::Severity::Failed, sf::Color::Red },
+            { mylogger::Severity::Error, sf::Color::Red },
+            { mylogger::Severity::Signal, sf::Color::Magenta },
+            { mylogger::Severity::Exception, sf::Color::Magenta },
+            { mylogger::Severity::Catch, sf::Color::Magenta },
+            { mylogger::Severity::Fatal, sf::Color::Red }
+        };
+
         std::stringstream ss;
         (ss << ... << args);
-        CPP_LOG(severity, "") << ss.str();
-        // m_message_bar.entry(txt, color);
+        m_message_bar.entry(ss.str(), s_colors[severity]);
     }
 
     //--------------------------------------------------------------------------
@@ -231,6 +248,7 @@ public:
 
 private:
 
+    MessageBar& m_message_bar;
     //! \brief Simulation scenario loaded from a shared library.
     Scenario m_scenario;
     DynamicLoader m_dynamic_loader;

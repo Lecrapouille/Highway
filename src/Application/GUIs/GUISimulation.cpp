@@ -32,8 +32,8 @@
 GUISimulation::GUISimulation(Application& application, std::string const& name,
                              std::string const& scenario_path)
     : Application::GUI(application, name, sf::Color::White),
-      m_scenario_path(scenario_path)//,
-      //simulator(application.renderer(), m_message_bar)
+      m_scenario_path(scenario_path),
+      simulator(m_message_bar)
 {
     m_message_bar.font(FontManager::instance().font("main font"));
 
@@ -44,8 +44,7 @@ GUISimulation::GUISimulation(Application& application, std::string const& name,
     // than the doc "Estimation et controle pour le pilotage automatique de
     // vehicule" by Sungwoo Choi.
     m_simulation_view = m_renderer.getDefaultView();
-    m_simulation_view.setSize(float(application.width()),
-                              -float(application.height()));
+    m_simulation_view.setSize(float(application.width()), -float(application.height()));
     m_simulation_view.zoom(0.01f);
     m_renderer.setView(m_simulation_view);
 }

@@ -268,9 +268,10 @@ void Simulator::update(const Second dt)
         it->update(dt);
     }
 
-#if 0
     // Update physics, ECU, sensors of the Ego vehicle
     m_ego->update(dt);
+
+#if 0
     collisions(*m_ego);
 
     // Update parkings

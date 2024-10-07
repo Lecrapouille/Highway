@@ -87,7 +87,7 @@ void Vehicle::update(Second const dt)
     //update_wheels(m_physics->speed(), m_control->get_steering());
 
     // Update orientation of the vehicle shape
-    m_shape.update(position(),heading());
+    m_shape.update(position(), heading());
 
 #if 0
     // Update the tracked trailer if attached
