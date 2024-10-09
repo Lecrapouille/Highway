@@ -73,7 +73,7 @@
         "length_m": 3.62,
         "width_m": 1.68,
         "wheelbase_m": 2.46,
-        "back_overhang_m": 10.58,
+        "back_overhang_m": 0.58,
         "turning_diameter_m": 10.7,
         "wheels": {
             "radius_m": 0.328,
