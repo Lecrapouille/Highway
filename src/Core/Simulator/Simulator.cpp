@@ -175,11 +175,11 @@ void Simulator::pause(bool const state)
     if (m_pause)
     {
         m_elapsed_time += m_clock.getElapsedTime();
-        messagebar(mylogger::Severity::Info, "Pause the simulation");
+        messagebar(mylogger::Severity::Warning, "Pause the simulation");
     }
     else
     {
-        messagebar(mylogger::Severity::Info, "Running the simulation");
+        messagebar(mylogger::Severity::Warning, "Running the simulation");
         m_clock.restart();
     }
 }

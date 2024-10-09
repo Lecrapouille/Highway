@@ -248,9 +248,11 @@ public:
 
 private:
 
+    //! \brief Display info or error messages.
     MessageBar& m_message_bar;
-    //! \brief Simulation scenario loaded from a shared library.
+    //! \brief Hold simulation scenario functions from shared library.
     Scenario m_scenario;
+    //! \brief Load a simulation scenario from a shared library.
     DynamicLoader m_dynamic_loader;
     //! \brief The simulated city (with its roads, parkings, cars,
     //! pedestrians ...)
