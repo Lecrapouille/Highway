@@ -28,8 +28,6 @@
 #  include "Core/Math/Units.hpp"
 #  include <SFML/Graphics.hpp>
 
-#  define OUTLINE_THICKNESS 0.01f
-
 // *****************************************************************************
 //! \brief Non-filled circle used to draw turning radius.
 // *****************************************************************************

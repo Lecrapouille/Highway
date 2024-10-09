@@ -81,7 +81,7 @@ private:
     //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_obb;
     //! \brief Wheel shapes
-    //SceneNode m_wheels_shapes;
+    SceneNode& m_wheels_shapes;
     //! \brief Turning indicator shapes
     //SceneNode m_turning_indicator_shapes;
     //! \brief Lights shapes

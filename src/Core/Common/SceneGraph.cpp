@@ -49,10 +49,10 @@ SceneNode* SceneNode::findChild(std::string const& name)
 }
 
 //------------------------------------------------------------------------------
-void SceneNode::update() const
+void SceneNode::update()
 {
     onUpdate();
-    for (auto const& child: m_children)
+    for (auto& child: m_children)
     {
         child->update();
     }

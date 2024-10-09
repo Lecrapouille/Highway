@@ -26,6 +26,9 @@
 #  include <memory>
 #  include <string>
 
+// FIXME
+#  define OUTLINE_THICKNESS 0.01f
+
 // *****************************************************************************
 //! \brief
 // *****************************************************************************
@@ -65,12 +68,12 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     template<typename T, typename... Args>
-    T& createChild(Args&&... args)
+    T& createChild(std::string const& name, Args&&... args)
     {
         static_assert(std::is_base_of<SceneNode, T>::value,
             "T shall inherit from SceneNode");
 
-        auto child = std::make_unique<T>(std::forward<Args>(args)...);
+        auto child = std::make_unique<T>(name, std::forward<Args>(args)...);
         child->m_parent = this;
 
         T& ref = *child;
@@ -86,7 +89,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	void update() const;
+	void update();
 
     //--------------------------------------------------------------------------
     //! \brief
@@ -110,7 +113,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	virtual void onUpdate() const
+	virtual void onUpdate()
     {
         // Do nothing by default
     }

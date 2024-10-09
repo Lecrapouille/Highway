@@ -20,32 +20,38 @@
 //=====================================================================
 
 #include "Core/Simulator/Vehicle/VehicleShape.hpp"
+#include "Core/Simulator/Vehicle/WheelShape.hpp"
 #include "Application/Renderer/Drawable.hpp"
 #include "Core/Math/Collide.hpp"
 #include "Core/Math/Math.hpp"
+#include <array>
 
 //------------------------------------------------------------------------------
 VehicleShape::VehicleShape(vehicle::BluePrint const& p_blueprint)
     : SceneNode("shape"),
-      blueprint(p_blueprint)//,
-      //m_wheels_shapes(createChild<WheelShape>("wheels")),
+      blueprint(p_blueprint),
+      m_wheels_shapes(createChild<SceneNode>("wheels"))
       //m_turning_indicator_shapes(createChild<RectShape>("turning indicators")),
       //m_light_shapes(createChild<RectShape>("lights"))
 {
+    static const std::array<std::string, vehicle::BluePrint::Where::MAX> s_names = {
+        "RR", "RL", "FL", "FR"
+    };
+
     // Origin on the middle of the rear wheel axle
     m_obb.setSize(sf::Vector2f(float(blueprint.length.value()),
                                float(blueprint.width.value())));
     m_obb.setOrigin(sf::Vector2f(float(blueprint.back_overhang.value()),
                                  m_obb.getSize().y / 2.0f));
 
-#if 0
     // Create wheel shapes as scene graph from the blueprint
-    auto& wheels_node = createChild<WheelShape>("wheels");
-    for (auto const& it: p_blueprint.wheels)
+    size_t i = p_blueprint.wheels.size();
+    while (i--)
     {
-        wheels_node.createChild<>("wheels"); // FR FL ...
+        m_wheels_shapes.createChild<WheelShape>(s_names.at(i), p_blueprint.wheels[i]);
     }
 
+#if 0
     // Create turning indicator shapes as scene graph from the blueprint
     auto& turning_indicator_node = createChild<RectShape>("turning indicators");
     for (auto const& it: p_blueprint.turning_indicators)
@@ -84,7 +90,7 @@ void VehicleShape::onDraw(sf::RenderTarget& target, sf::RenderStates const& stat
     target.draw(body, states);
 
     // Draw the position of the car
-    //target.draw(Circle(position(), 0.01_m, sf::Color::Black, 8u));
+    target.draw(Circle(position(), 0.01_m, sf::Color::Black, 8u));
 }
 #if 0
     // Draw the car wheels

@@ -27,6 +27,8 @@
 #include <iomanip>
 #include <cassert>
 
+#  define OUTLINE_THICKNESS 0.01f
+
 //------------------------------------------------------------------------------
 Circle::Circle(Meter const x, Meter const y, Meter const radius, sf::Color const& color,
                std::size_t const points)

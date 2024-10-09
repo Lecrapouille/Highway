@@ -61,6 +61,9 @@ INCLUDES += $(P)/external
 # Make the list of compiled files for the library
 #
 LIB_FILES += $(call rwildcard,$(P)/src/Core,*.cpp)
+# FIXME
+LIB_FILES += $(P)/src/Application/Renderer/Drawable.cpp
+
 #THIRDPART_LIBS := $(abspath $(P)/external/MyLogger/build/libmylogger.a)
 # FIXME: SFML does not give static lib ;( ideally link against it
 # to remove all sfml symbols (not because we need the graphical part
