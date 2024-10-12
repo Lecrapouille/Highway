@@ -21,34 +21,35 @@
 
 #include "Core/Simulator/Vehicle/VehicleShape.hpp"
 #include "Core/Simulator/Vehicle/WheelShape.hpp"
+#include "Core/Simulator/Vehicle/Vehicle.hpp"
 #include "Application/Renderer/Drawable.hpp"
 #include "Core/Math/Collide.hpp"
 #include "Core/Math/Math.hpp"
 #include <array>
 
 //------------------------------------------------------------------------------
-VehicleShape::VehicleShape(vehicle::BluePrint const& p_blueprint)
-    : SceneNode("shape"),
-      blueprint(p_blueprint),
-      m_wheels_shapes(createChild<SceneNode>("wheels"))
-      //m_turning_indicator_shapes(createChild<RectShape>("turning indicators")),
-      //m_light_shapes(createChild<RectShape>("lights"))
+VehicleShape::VehicleShape(Vehicle const& vehicle)
+    : SceneNode("shape"), blueprint(vehicle.blueprint), m_vehicle(vehicle),
+      m_wheels_shapes(createChild<SceneNode>("wheels")),
+      m_turning_indicator_shapes(createChild<SceneNode>("turning indicators")),
+      m_light_shapes(createChild<SceneNode>("lights"))
 {
     static const std::array<std::string, vehicle::BluePrint::Where::MAX> s_names = {
         "RR", "RL", "FL", "FR"
     };
 
     // Origin on the middle of the rear wheel axle
-    m_obb.setSize(sf::Vector2f(float(blueprint.length.value()),
-                               float(blueprint.width.value())));
-    m_obb.setOrigin(sf::Vector2f(float(blueprint.back_overhang.value()),
+    m_obb.setSize(sf::Vector2f(float(m_vehicle.blueprint.length.value()),
+                               float(m_vehicle.blueprint.width.value())));
+    m_obb.setOrigin(sf::Vector2f(float(m_vehicle.blueprint.back_overhang.value()),
                                  m_obb.getSize().y / 2.0f));
 
     // Create wheel shapes as scene graph from the blueprint
-    size_t i = p_blueprint.wheels.size();
+    size_t i = m_vehicle.blueprint.wheels.size();
     while (i--)
     {
-        m_wheels_shapes.createChild<WheelShape>(s_names.at(i), p_blueprint.wheels[i]);
+        m_wheels_shapes.createChild<WheelShape>(
+            s_names.at(i), m_vehicle.wheels()[i], m_vehicle.blueprint.wheels[i]);
     }
 
 #if 0
@@ -69,14 +70,11 @@ VehicleShape::VehicleShape(vehicle::BluePrint const& p_blueprint)
 }
 
 //------------------------------------------------------------------------------
-void VehicleShape::update(sf::Vector2<Meter> const& position, Radian const heading)
+void VehicleShape::onUpdate()
 {
-    // Update body shape
-    m_obb.setPosition(float(position.x.value()), float(position.y.value()));
-    m_obb.setRotation(float(Degree(heading).value()));
-
-    // Update other shapes
-    SceneNode::update();
+    m_obb.setPosition(float(m_vehicle.position().x.value()),
+                      float(m_vehicle.position().y.value()));
+    m_obb.setRotation(float(Degree(m_vehicle.heading()).value()));
 }
 
 //------------------------------------------------------------------------------
@@ -90,8 +88,8 @@ void VehicleShape::onDraw(sf::RenderTarget& target, sf::RenderStates const& stat
     target.draw(body, states);
 
     // Draw the position of the car
-    target.draw(Circle(position(), 0.01_m, sf::Color::Black, 8u));
-}
+    target.draw(Circle(m_vehicle.position(), 0.01_m, sf::Color::Black, 8u));
+
 #if 0
     // Draw the car wheels
     size_t i = car.wheels().size();
@@ -179,5 +177,5 @@ void VehicleShape::onDraw(sf::RenderTarget& target, sf::RenderStates const& stat
             ecu.trajectory().draw(target, states);
         }
     }
-}
 #endif
+}

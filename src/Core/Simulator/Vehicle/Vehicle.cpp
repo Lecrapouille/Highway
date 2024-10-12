@@ -20,19 +20,14 @@
 //=====================================================================
 
 #include "Core/Simulator/Vehicle/Vehicle.hpp"
+//#include "Core/Simulator/Vehicle/BluePrint.hpp"
 #include "MyLogger/Logger.hpp"
-#include "Core/Math/Math.hpp"
 
 //------------------------------------------------------------------------------
-bool Vehicle::reactTo(size_t const key)
+Vehicle::Vehicle(vehicle::BluePrint const& p_blueprint, const char* p_name, sf::Color const& p_color)
+    : blueprint(p_blueprint), name(p_name), color(p_color), m_steering_wheel(blueprint), m_shape(*this)
 {
-    //LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
-    if (auto it = m_callbacks.find(key); it != m_callbacks.end())
-    {
-        it->second();
-        return true;
-    }
-    return false;
+    //m_control = std::make_unique<VehicleControl>();
 }
 
 //------------------------------------------------------------------------------
@@ -44,6 +39,35 @@ void Vehicle::init(MeterPerSecondSquared const acceleration, MeterPerSecond cons
     m_physics->init(acceleration, speed, position, heading);
     // TODO m_control->init(0.0f, speed, position, heading);
     //this->update_wheels(speed, steering);
+}
+
+//------------------------------------------------------------------------------
+bool Vehicle::reactTo(size_t const key)
+{
+    LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
+    if (auto it = m_callbacks.find(key); it != m_callbacks.end())
+    {
+        it->second();
+        return true;
+    }
+    return false;
+}
+
+//------------------------------------------------------------------------------
+void Vehicle::turnSteeringWheel(Radian const delta_angle)
+{
+    m_steering_wheel.turn(delta_angle);
+    Radian wheel_angle = m_steering_wheel.getWheelAngle();
+
+    // Calculate Ackermann angles
+    auto inner_radius = blueprint.wheelbase / units::math::tan(wheel_angle);
+    auto outer_radius = inner_radius + blueprint.width;
+    m_wheels[vehicle::BluePrint::FL].steering =
+        Radian(units::math::atan(blueprint.wheelbase / inner_radius));
+    m_wheels[vehicle::BluePrint::FR].steering =
+        Radian(units::math::atan(blueprint.wheelbase / outer_radius));
+    m_wheels[vehicle::BluePrint::RL].steering = 0.0_rad;
+    m_wheels[vehicle::BluePrint::RR].steering = 0.0_rad;
 }
 
 //------------------------------------------------------------------------------
@@ -76,18 +100,18 @@ void Vehicle::update(Second const dt)
     m_physics->update(dt);
 
     // Update wheel positions
-    size_t i = m_wheels.size();
-    while (i--)
-    {
-        m_wheels[i].position = position()
-            + math::heading(blueprint.wheels[i].offset, heading());
-    }
+    //size_t i = m_wheels.size();
+    //while (i--)
+    //{
+    //    m_wheels[i].position = position()
+    //        + math::heading(blueprint.wheels[i].offset, heading());
+    //}
 
     // Wheel momentum
     //update_wheels(m_physics->speed(), m_control->get_steering());
 
     // Update orientation of the vehicle shape
-    m_shape.update(position(), heading());
+    m_shape.update(/*position(), heading()*/);
 
 #if 0
     // Update the tracked trailer if attached

@@ -29,6 +29,8 @@
 #  include <cassert>
 #  include <memory>
 
+class Vehicle;
+
 // *****************************************************************************
 //! \brief A vehicle shape is an oriented bounding box of the body (rectangle knowing its
 //! position and orientation (here in a 2D world: the heading aka yaw). The shape
@@ -44,13 +46,7 @@ public:
     //! \brief Default constructor with the vehicle dimension (ie CarBluePrint,
     //! TrailerBluePrint ... see Vehicle_blueprint.hpp).
     //--------------------------------------------------------------------------
-    explicit VehicleShape(vehicle::BluePrint const& p_blueprint);
-
-    //--------------------------------------------------------------------------
-    //! \brief Refresh the position and heading of shape and child shapes (ie
-    //! sensor shapes).
-    //--------------------------------------------------------------------------
-    void update(sf::Vector2<Meter> const& position, Radian const heading);
+    explicit VehicleShape(Vehicle const& vehicle);
 
     //--------------------------------------------------------------------------
     //! \brief const getter: return the oriented bounding box (OBB) of the body.
@@ -61,13 +57,20 @@ public:
     //! \brief Const getter: return the position of the middle of the rear axle
     //! inside the world coordinates [meter].
     //--------------------------------------------------------------------------
-    inline sf::Vector2<Meter> position() const
-    {
-        auto const& p = m_obb.getPosition();
-        return sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
-    }
+    //inline sf::Vector2<Meter> position() const
+    //{
+    //    auto const& p = m_obb.getPosition();
+    //    return sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
+    //}
 
-private:
+private: // Inheritance from SceneNode
+
+    //--------------------------------------------------------------------------
+    //! \brief Refresh the position and heading of shape and child shapes (ie
+    //! sensor shapes).
+    //--------------------------------------------------------------------------
+    virtual void onUpdate() override;
+    //void update(sf::Vector2<Meter> const& position, Radian const heading);
 
     virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override;
 
@@ -78,12 +81,14 @@ public:
 
 private:
 
+    //! \brief Const reference to the owner.
+    Vehicle const& m_vehicle;
     //! \brief Oriented bounding box for attitude and collision
     sf::RectangleShape m_obb;
     //! \brief Wheel shapes
     SceneNode& m_wheels_shapes;
     //! \brief Turning indicator shapes
-    //SceneNode m_turning_indicator_shapes;
+    SceneNode& m_turning_indicator_shapes;
     //! \brief Lights shapes
-    //SceneNode m_light_shapes;
+    SceneNode& m_light_shapes;
 };

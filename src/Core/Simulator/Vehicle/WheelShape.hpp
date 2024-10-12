@@ -22,6 +22,7 @@
 #pragma once
 
 #  include "Core/Common/SceneGraph.hpp"
+#  include "Core/Simulator/Vehicle/Wheel.hpp"
 #  include "Core/Simulator/Vehicle/BluePrint.hpp"
 
 // *****************************************************************************
@@ -30,12 +31,14 @@
 class WheelShape: public SceneNode
 {
 public:
+
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    explicit WheelShape(std::string const& name, wheel::BluePrint const& blueprint);
+    WheelShape(std::string const& name, Wheel const& wheel, wheel::BluePrint const& blueprint);
 
-private:
+private: // Inheritance from SceneNode
+
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
@@ -47,5 +50,7 @@ private:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
+
+    Wheel const& m_wheel;
     sf::RectangleShape m_shape;
 };

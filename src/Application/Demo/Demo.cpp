@@ -84,13 +84,13 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
     // Make the ego reacts from the keyboard: make the ego turns (kinematic).
     ego.addCallback(sf::Keyboard::Right, [&ego]()
     {
-        //ego.refSteering(ego.refSteering() - 1.0_deg);
+        ego.turnSteeringWheel(-10.0_deg);
     });
 
     // Make the ego reacts from the keyboard: make the ego turns (kinematic).
     ego.addCallback(sf::Keyboard::Left, [&ego]()
     {
-        //ego.refSteering(ego.refSteering() + 1.0_deg);
+        ego.turnSteeringWheel(10.0_deg);
     });
 
     return ego;

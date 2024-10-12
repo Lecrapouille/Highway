@@ -86,16 +86,19 @@ struct BluePrint
     //----------------------------------------------------------------------
     //! \brief Define vehicle constants.
     //! See [doc/pics/CarDefinition.png]
-    //! \param[in] l: car length [meter]
-    //! \param[in] w: car width [meter]
-    //! \param[in] wb: wheelbase length [meter]
-    //! \param[in] bo: back overhang [meter]
-    //! \param[in] wr: wheel radius [meter]
-    //! \param[in] wt: wheel thickness [meter]
-    //! \param[in] tc: turning diameter [meter]
+    //! \param[in] p_length: car length [meter]
+    //! \param[in] p_width: car width [meter]
+    //! \param[in] p_wheelbase: wheelbase length [meter]
+    //! \param[in] p_back_overhang: back overhang [meter]
+    //! \param[in] p_wheel_radius: wheel radius [meter]
+    //! \param[in] p_wheel_thickness: wheel thickness [meter]
+    //! \param[in] p_turning_diameter: turning diameter [meter]
+    //! \param[in] p_steering_ratio: Ratio for the steering wheel [no unit]
     //----------------------------------------------------------------------
-    BluePrint(const Meter l, const Meter w, const Meter wb, const Meter bo,
-              const Meter wr, const Meter wt, const Meter td);
+    BluePrint(const Meter p_length, const Meter p_width,
+              const Meter p_wheelbase, const Meter p_back_overhang,
+              const Meter p_wheel_radius, const Meter p_wheel_thickness,
+              const Meter p_turning_diameter, const double p_steering_ratio);
 
     //----------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream& os, BluePrint const& bp)
@@ -122,6 +125,8 @@ struct BluePrint
     Meter front_overhang;
     //! \brief Limit of control.outputs.steering angle absolute angle [rad].
     Radian max_steering_angle;
+    //! \brief Ratio of the angle of the steering wheel to the angle of the wheels.
+    double steering_ratio;
     //! \brief Blue prints for the wheels.
     std::vector<wheel::BluePrint> wheels;
     //! \brief Blue prints for the turning indicators.

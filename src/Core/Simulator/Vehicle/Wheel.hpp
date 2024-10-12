@@ -30,9 +30,9 @@
 struct Wheel
 {
     //! \brief current position and altitude inside the world coordinate.
-    sf::Vector2<Meter> position; // TODO sf::Vector3<Meter>
+    sf::Vector2<Meter> position{0.0_m, 0.0_m}; // TODO sf::Vector3<Meter>
     //! \brief Yaw angle [rad].
-    Radian steering;
+    Radian steering = 0.0_rad;
     //! \brief Angular speed [meter / second]
-    MeterPerSecond speed;
+    MeterPerSecond speed = 0.0_mps;
 };

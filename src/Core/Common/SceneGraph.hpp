@@ -89,31 +89,36 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	void update();
+    void update();
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	sf::Vector2f getWorldPosition() const;
+    sf::Vector2f getWorldPosition() const;
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	sf::Transform getWorldTransform() const;
+    sf::Transform getWorldTransform() const;
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    std::string const& name() const { return m_name; }
 
 private: // Inheritance from sf::Drawable
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	virtual void onUpdate()
+    virtual void onUpdate()
     {
         // Do nothing by default
     }
@@ -121,7 +126,7 @@ private:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-	virtual void onDraw(sf::RenderTarget&, sf::RenderStates const&) const
+    virtual void onDraw(sf::RenderTarget&, sf::RenderStates const&) const
     {
         // Do nothing by default
     }

@@ -87,7 +87,8 @@ std::string BluePrints::load(fs::path const& path)
                 Meter(it["back_overhang_m"]),
                 Meter(it["wheels"]["radius_m"]),
                 Meter(it["wheels"]["thickness_m"]),
-                Meter(it["turning_diameter_m"])
+                Meter(it["turning_diameter_m"]),
+                it["steering_ratio"],
             });
     }
 

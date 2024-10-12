@@ -22,6 +22,7 @@
 #pragma once
 
 #  include "Core/Simulator/Vehicle/Wheel.hpp"
+#  include "Core/Simulator/Vehicle/SteeringWheel.hpp"
 #  include "Core/Simulator/Vehicle/PhysicModel.hpp"
 #  include <SFML/Graphics/Color.hpp>
 
@@ -47,12 +48,7 @@ public:
     //! setPhysicModel(), a controller with setController() and initialize speed,
     //! acceleration and wih init().
     //-------------------------------------------------------------------------
-    Vehicle(vehicle::BluePrint const& p_blueprint, const char* p_name, sf::Color const& p_color)
-        : blueprint(p_blueprint), name(p_name), color(p_color), //, initial_color(p_color),
-          m_shape(p_blueprint)
-    {
-        //m_control = std::make_unique<VehicleControl>();
-    }
+    Vehicle(vehicle::BluePrint const& p_blueprint, const char* p_name, sf::Color const& p_color);
 
     //-------------------------------------------------------------------------
     //! \brief Because of virtual methods.
@@ -115,11 +111,19 @@ public:
         return m_shape.obb();
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     vehicle::PhysicModel const& physic() const
     {
         assert((m_physics != nullptr) && "You did not call setPhysicModel()");
         return *m_physics;
     }
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void turnSteeringWheel(Radian const delta_angle);
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return longitudinal acceleration [meter/second^2].
@@ -154,6 +158,14 @@ public:
         return m_physics->heading();
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    inline std::array<Wheel, vehicle::BluePrint::MAX> const& wheels() const
+    {
+        return m_wheels;
+    }
+
 public:
 
     //! \brief Dimension of the vehicle
@@ -166,19 +178,16 @@ public:
 
 protected:
 
-    //! \brief The shape of the vehicle, dimension, wheel positions.
-    VehicleShape m_shape;
     //! \brief Kinematic, Dynamic model of the vehicle
     std::unique_ptr<vehicle::PhysicModel> m_physics = nullptr;
     //! \brief The cruise control
     //std::unique_ptr<VehicleControl> m_control = nullptr;
+    //! \brief steering wheel controlling angle of wheels.
+    SteeringWheel m_steering_wheel;
     //! \brief Vehicle's wheels
-    std::vector<Wheel> m_wheels;
-
-
+    std::array<Wheel, vehicle::BluePrint::MAX> m_wheels;
     //! \brief List of reactions to do when events occurred
     std::map<size_t, Callback> m_callbacks;
-
-    //! \brief Save initial color
-    // sf::Color initial_color;
+    //! \brief The shape of the vehicle, dimension, wheel positions.
+    VehicleShape m_shape;
 };

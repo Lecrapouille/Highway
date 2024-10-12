@@ -10,6 +10,7 @@
         "wheelbase_m": 2.492,
         "back_overhang_m": 0.494,
         "turning_diameter_m": 10.0,
+        "steering_ratio": 16.0,
         "wheels": {
             "radius_m": 0.328,
             "thickness_m": 0.1
@@ -23,6 +24,7 @@
         "wheelbase_m": 2.558,
         "back_overhang_m": 0.7,
         "turning_diameter_m": 10.4,
+        "steering_ratio": 16.0,
         "wheels": {
             "radius_m": 0.328,
             "thickness_m": 0.1
@@ -36,6 +38,7 @@
         "wheelbase_m": 2.466,
         "back_overhang_m": 0.66,
         "turning_diameter_m": 10.7,
+        "steering_ratio": 16.0,
         "wheels": {
             "radius_m": 0.328,
             "thickness_m": 0.1
@@ -49,6 +52,7 @@
         "wheelbase_m": 2.725,
         "back_overhang_m": 0.84,
         "turning_diameter_m": 10.6,
+        "steering_ratio": 16.0,
         "wheels": {
             "radius_m": 0.241,
             "thickness_m": 0.1
@@ -62,6 +66,7 @@
         "wheelbase_m": 2.924,
         "back_overhang_m": 1.105,
         "turning_diameter_m": 11.7,
+        "steering_ratio": 16.0,
         "wheels": {
             "radius_m": 0.328,
             "thickness_m": 0.1
@@ -75,6 +80,7 @@
         "wheelbase_m": 2.46,
         "back_overhang_m": 0.58,
         "turning_diameter_m": 10.7,
+        "steering_ratio": 16.0,
         "wheels": {
             "radius_m": 0.328,
             "thickness_m": 0.1

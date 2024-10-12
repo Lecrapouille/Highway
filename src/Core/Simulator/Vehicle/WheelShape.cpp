@@ -22,8 +22,8 @@
 #include "Core/Simulator/Vehicle/WheelShape.hpp"
 
 //------------------------------------------------------------------------------
-WheelShape::WheelShape(std::string const& name, wheel::BluePrint const& blueprint) // &car::steering
-    : SceneNode(name),
+WheelShape::WheelShape(std::string const& name, Wheel const& wheel, wheel::BluePrint const& blueprint)
+    : SceneNode(name), m_wheel(wheel),
       m_shape(sf::Vector2f(float(blueprint.radius.value() * 2.0),
                            float(blueprint.thickness.value())))
 {
@@ -38,7 +38,7 @@ WheelShape::WheelShape(std::string const& name, wheel::BluePrint const& blueprin
 //------------------------------------------------------------------------------
 void WheelShape::onUpdate()
 {
-    //m_shape.setRotation(float(Degree(m_heading + steering)));
+    m_shape.setRotation(float(Degree(m_wheel.steering)));
 }
 
 //------------------------------------------------------------------------------

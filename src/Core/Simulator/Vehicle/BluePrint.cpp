@@ -25,13 +25,16 @@
 namespace vehicle {
 
 //------------------------------------------------------------------------------
-BluePrint::BluePrint(const Meter l, const Meter w, const Meter wb,
-                     const Meter bo, const Meter wr, const Meter wt,
-                     const Meter td)
-    : length(l), width(w), track(width - wt), wheelbase(wb),
-      back_overhang(bo), front_overhang(length - wheelbase - back_overhang)
+BluePrint::BluePrint(const Meter p_length, const Meter p_width,
+                     const Meter p_wheelbase, const Meter p_back_overhang,
+                     const Meter p_wheel_radius, const Meter p_wheel_thickness,
+                     const Meter p_turning_diameter, const double p_steering_ratio)
+    : length(p_length), width(p_width), track(p_width - p_wheel_thickness),
+      wheelbase(p_wheelbase), back_overhang(p_back_overhang),
+      front_overhang(p_length - p_wheelbase - p_back_overhang),
+      steering_ratio(p_steering_ratio)
 {
-    max_steering_angle = units::math::asin(wheelbase / (0.5f * td));
+    max_steering_angle = units::math::asin(wheelbase / (0.5f * p_turning_diameter));
     assert(max_steering_angle > 0.0_deg);
     assert(max_steering_angle < 90.0_deg);
 
@@ -46,8 +49,8 @@ BluePrint::BluePrint(const Meter l, const Meter w, const Meter wb,
     // Wheels
     for (auto& wheel: wheels)
     {
-        wheel.radius = wr;
-        wheel.thickness = wt;
+        wheel.radius = p_wheel_radius;
+        wheel.thickness = p_wheel_thickness;
     }
 
     // Turning indicators
