@@ -23,11 +23,19 @@
 
 #  include "Core/Math/Units.hpp"
 
+struct Tire
+{
+    double stiffness_factor;
+    double shape_factor;
+    double peak_factor;
+    double slip_ratio;
+};
+
 // *****************************************************************************
 //! \brief Vehicle's wheel. Note that the shape is defined by WheelBluePrint in
 //! VehicleBluePrint.hpp
 // *****************************************************************************
-struct Wheel
+struct Wheel: public Tire
 {
     //! \brief current position and altitude inside the world coordinate.
     sf::Vector2<Meter> position{0.0_m, 0.0_m}; // TODO sf::Vector3<Meter>

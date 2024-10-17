@@ -23,6 +23,7 @@
 
 #  include "Core/Common/SceneGraph.hpp"
 #  include "Core/Simulator/Vehicle/BluePrint.hpp"
+#  include "Core/Simulator/Sensors/SensorShape.hpp"
 #  include <SFML/Graphics/RectangleShape.hpp>
 
 #  include <vector>
@@ -54,14 +55,9 @@ public:
     inline sf::RectangleShape const& obb() const { return m_obb; }
 
     //--------------------------------------------------------------------------
-    //! \brief Const getter: return the position of the middle of the rear axle
-    //! inside the world coordinates [meter].
+    //! \brief
     //--------------------------------------------------------------------------
-    //inline sf::Vector2<Meter> position() const
-    //{
-    //    auto const& p = m_obb.getPosition();
-    //    return sf::Vector2<Meter>(Meter(p.x), Meter(p.y));
-    //}
+    void addSensorShape(SensorShape::Ptr shape);
 
 private: // Inheritance from SceneNode
 
@@ -70,8 +66,10 @@ private: // Inheritance from SceneNode
     //! sensor shapes).
     //--------------------------------------------------------------------------
     virtual void onUpdate() override;
-    //void update(sf::Vector2<Meter> const& position, Radian const heading);
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
     virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override;
 
 public:
@@ -89,6 +87,8 @@ private:
     SceneNode& m_wheels_shapes;
     //! \brief Turning indicator shapes
     SceneNode& m_turning_indicator_shapes;
-    //! \brief Lights shapes
+    //! \brief Light shapes
     SceneNode& m_light_shapes;
+    //! \brief Sensor shapes
+    SceneNode& m_sensor_shapes;
 };

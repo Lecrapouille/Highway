@@ -20,12 +20,12 @@
 //=====================================================================
 
 #include "Core/Simulator/Vehicle/Vehicle.hpp"
-//#include "Core/Simulator/Vehicle/BluePrint.hpp"
 #include "MyLogger/Logger.hpp"
 
 //------------------------------------------------------------------------------
 Vehicle::Vehicle(vehicle::BluePrint const& p_blueprint, const char* p_name, sf::Color const& p_color)
-    : blueprint(p_blueprint), name(p_name), color(p_color), m_steering_wheel(blueprint), m_shape(*this)
+    : blueprint(p_blueprint), name(p_name), color(p_color), m_steering_wheel(blueprint),
+    m_shape(*this)
 {
     //m_control = std::make_unique<VehicleControl>();
 }
@@ -69,6 +69,73 @@ void Vehicle::turnSteeringWheel(Radian const delta_angle)
     m_wheels[vehicle::BluePrint::RL].steering = 0.0_rad;
     m_wheels[vehicle::BluePrint::RR].steering = 0.0_rad;
 }
+
+//------------------------------------------------------------------------------
+void Vehicle::applyPedals(double const pedal_throttle, double const pedal_brake)
+{
+    // TODO assert percentage Saturation ? Strong type ?
+    m_pedal_throttle = pedal_throttle;
+    m_pedal_brake = pedal_brake;
+}
+
+#if 0
+//------------------------------------------------------------------------------
+// Method to calculate the longitudinal force based on the Magic Formula
+Newton Vehicle::calculateLongitudinalForce(Tire const& tire) const
+{
+    return tire.peak_factor * units::math::sin(tire.shape_factor *
+        units::math::atan(tire.stiffness_factor * tire.slip_ratio)) * 1.0_N;
+}
+
+//------------------------------------------------------------------------------
+Newton Vehicle::calculateAeroDrag() const
+{
+    return 0.5 * C_d * surface_area * rho_air * speed() * speed() * 1.0_N;
+}
+
+//------------------------------------------------------------------------------
+Newton Vehicle::calculateInclineForce(Radian const road_angle) const
+{
+    return C_r * m_mass * GRAVITY * units::math::sin(road_angle) * 1.0_N;
+}
+
+//------------------------------------------------------------------------------
+Newton Vehicle::calculateBrakeForce() const
+{
+    return m_pedal_brake * 5000_N;
+}
+
+//------------------------------------------------------------------------------
+Newton Vehicle::calculatePowertrainForce()
+{
+    const auto wheel_radius = blueprint.wheels[0].radius;
+    const double gear_ratio = m_gearbox.getCurrentGearRatio();
+
+    // Convert vehicle speed (m/s) to wheel angular velocity (rad/s)
+    const auto wheel_angular_velocity = speed() / wheel_radius;
+
+    // Convert wheel angular velocity to engine RPM using the gear ratio
+    const auto engine_rpm = (wheel_angular_velocity * 60.0f / (2.0f * M_PI)) * gear_ratio;
+
+    // Get engine torque from the lookup table using the engine RPM
+    NewtonMeter engine_torque = m_engine.calculateTorque(m_pedal_throttle, engine_rpm);
+
+    // Convert engine torque to wheel torque via the gearbox
+    NewtonMeter wheel_torque = engine_torque * gear_ratio * transmission_efficiency;
+
+    // Calculate driving force on the wheels (force = torque / wheel radius)
+    return wheel_torque / wheel_radius;
+}
+
+//------------------------------------------------------------------------------
+void Vehicle::vehicleDynamics(Second const dt)
+{
+    Newton total_force = calculateTireForces() - calculateAeroDrag() - 
+        calculateRollingResistance() - calculateInclineForce();
+    MeterPerSecondSquared acceleration = total_force / m_mass;
+    velocity += acceleration * dt;
+}
+#endif
 
 //------------------------------------------------------------------------------
 void Vehicle::update(Second const dt)

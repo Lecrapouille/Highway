@@ -32,7 +32,8 @@ VehicleShape::VehicleShape(Vehicle const& vehicle)
     : SceneNode("shape"), blueprint(vehicle.blueprint), m_vehicle(vehicle),
       m_wheels_shapes(createChild<SceneNode>("wheels")),
       m_turning_indicator_shapes(createChild<SceneNode>("turning indicators")),
-      m_light_shapes(createChild<SceneNode>("lights"))
+      m_light_shapes(createChild<SceneNode>("lights")),
+      m_sensor_shapes(createChild<SceneNode>("sensors"))
 {
     static const std::array<std::string, vehicle::BluePrint::Where::MAX> s_names = {
         "RR", "RL", "FL", "FR"
@@ -67,6 +68,12 @@ VehicleShape::VehicleShape(Vehicle const& vehicle)
         lights.createChild<>(""); // FR FL ...
     }
 #endif
+}
+
+//------------------------------------------------------------------------------
+void VehicleShape::addSensorShape(SensorShape::Ptr shape)
+{
+    m_sensor_shapes.attachChild(std::move(shape));
 }
 
 //------------------------------------------------------------------------------

@@ -22,8 +22,10 @@
 #pragma once
 
 #  include "Core/Simulator/Vehicle/Wheel.hpp"
+//#  include "Core/Simulator/Vehicle/PowerTrain.hpp"
 #  include "Core/Simulator/Vehicle/SteeringWheel.hpp"
 #  include "Core/Simulator/Vehicle/PhysicModel.hpp"
+#  include "Core/Simulator/Sensors/Sensor.hpp"
 #  include <SFML/Graphics/Color.hpp>
 
 #  include <functional>
@@ -56,7 +58,8 @@ public:
     virtual ~Vehicle() = default;
 
     //-------------------------------------------------------------------------
-    //! \brief 
+    //! \brief Set or replace the physical model of the vehicle (kinematic,
+    //! dynamic ...).
     //-------------------------------------------------------------------------
     template<class Model, typename ...Args>
     void setPhysicModel(Args&&... args)
@@ -80,6 +83,22 @@ public:
     // External or internal: collides with city and sensors detect city ???
     //-------------------------------------------------------------------------
     virtual void update(Second const dt);
+
+    //-------------------------------------------------------------------------
+    //! \brief Add a sensor to the vehicle given its position and orientation
+    //! on the vehicle.
+    //-------------------------------------------------------------------------
+    template<class SENSOR, typename... Args>
+    SENSOR& addSensor(sensor::BluePrint const& p_blueprint, std::string const& p_name, Args&&... args)
+    {
+        //LOGI("Attaching sensor '%s' to vehicle '%s'", p_name.c_str(), name.c_str());
+
+        m_sensors.push_back(std::make_unique<SENSOR>(p_blueprint, p_name,
+            std::forward<Args>(args)...));
+        SENSOR& sensor = *m_sensors.back();
+        m_shape.addSensorShape(name, sensor.shape());
+        return sensor;
+    }
 
     //-------------------------------------------------------------------------
     //! \brief Register a callback for reacting to SFML press events.
@@ -124,6 +143,11 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     void turnSteeringWheel(Radian const delta_angle);
+
+    //--------------------------------------------------------------------------
+    //! Method to apply forces from the pedals (acceleration and brake).
+    //--------------------------------------------------------------------------
+    void applyPedals(double pedalAcc, double pedalBrake);
 
     //--------------------------------------------------------------------------
     //! \brief Const getter: return longitudinal acceleration [meter/second^2].
@@ -182,10 +206,20 @@ protected:
     std::unique_ptr<vehicle::PhysicModel> m_physics = nullptr;
     //! \brief The cruise control
     //std::unique_ptr<VehicleControl> m_control = nullptr;
+    //! \brief List of vehicle sensors
+    std::vector<std::shared_ptr<Sensor>> m_sensors;
     //! \brief steering wheel controlling angle of wheels.
     SteeringWheel m_steering_wheel;
     //! \brief Vehicle's wheels
     std::array<Wheel, vehicle::BluePrint::MAX> m_wheels;
+    //! \brief
+    //Engine m_engine;
+    //Gearbox m_gearbox;
+    //TorqueConverter m_torque_converter;
+    //! \brief Acceleration pedal (0 to 1).
+    double m_pedal_throttle = 0.0;
+    //! \brief Brake pedal (0 to 1).
+    double m_pedal_brake = 0.0;
     //! \brief List of reactions to do when events occurred
     std::map<size_t, Callback> m_callbacks;
     //! \brief The shape of the vehicle, dimension, wheel positions.

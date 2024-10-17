@@ -6,3 +6,31 @@ Scenario est un client et a 1 seule voiture ego et se connecte au serveur.
 Le simulateur la voit comme une autre voiture => Ca corrige le problème du "1 seul ego" par scenario car il suffit de lancer plusieurs client.
 
 L'application Highway actuelle doit etre recyclée en GUI client (Application) qui se connecte au serveur. Mais elle peut servir aussi de serveur ?
+
+Traffic:
+https://github.com/movsim/traffic-simulation-de
+
+parking lot:
+https://www.mathworks.com/help/driving/ref/drivingscenario.parkinglot.html
+
+https://github.com/mattbradley/dash
+
+https://codepen.io/rlandim/pen/Egyvey
+
+https://asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
+
+
+Inertial frame (x,y horizontal, z anti-directional to the gravitation)
+ ^ Y
+ |
+(+)----> X
+ Z
+
+ Vehicle frame Xv vers l'avant, Yv vers la gauche, Zv vers le haut
+
+PhysicModels
+
+Mettre BicicleKinematic avec slide angle \beta en passant lr, lf en param
+Faire heriter RearBicicleKinematic en mettant lr = 0 et lf = L => slide angle \beta = 0
+Faire heriter FrontBicicleKinematic en mettant lr = L et lf = 0 => slide angle \beta = wheel angle
+https://www.youtube.com/watch?v=HqNdBiej23I&list=PLW3FM5Kyc2_4PGkumkAHNXzWtgHhaYe1d&index=4

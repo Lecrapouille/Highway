@@ -22,47 +22,24 @@
 #pragma once
 
 #  include "Core/Simulator/Vehicle/PhysicModel.hpp"
-//#  include "Vehicle/VehicleBluePrint.hpp"
-
-#if 0
-struct CarBluePrint
-{
-    Meter wheelbase = ;
-};
-
-Meter& wheelbase(CarBluePrint& bp) { return bp.wheelbase; }
-
-#endif
 
 namespace vehicle {
 
 // *****************************************************************************
-//! \brief Simple car kinematic using the tricycle kinematic equations.
+//! \brief Simple car kinematic using the rear axle bicycle kinematic equations.
 //! The position (x, y) of the car is the middle of the rear axle.
 //! [../doc/pics/TricycleVehicle.png]
-//! [../doc/pics/TricycleKinematicEq.png]
+//! [doc/pics/RearAxleBicycleKinematicEq.png]
 // *****************************************************************************
-class TricycleKinematic: public PhysicModel
+class RearAxleBicycleKinematic: public PhysicModel
 {
 public:
 
     //--------------------------------------------------------------------------
-    explicit TricycleKinematic(VehicleShape const& shape)
+    explicit RearAxleBicycleKinematic(VehicleShape const& shape)
         : PhysicModel(shape),
           m_wheelbase(shape.blueprint.wheelbase)
     {}
-
-    //--------------------------------------------------------------------------
-    TricycleKinematic(VehicleShape const& shape,
-                      MeterPerSecondSquared const acceleration, // Comment supprimmer ?
-                      MeterPerSecond const speed,
-                      sf::Vector2<Meter> const position,
-                      Radian const heading)
-        : PhysicModel(shape),
-          m_wheelbase(shape.blueprint.wheelbase)
-    {
-        init(acceleration, speed, position, heading);
-    }
 
     //--------------------------------------------------------------------------
     //! \brief Set initial state values needed by physical equations.
@@ -83,20 +60,18 @@ public:
     //--------------------------------------------------------------------------
     //! \brief Update discrete time equations from continuous time equations
     //! described in these pictures:
-    //! ../../doc/pics/TricycleVehicle.png
-    //! ../../doc/pics/TricycleKinematicEq.png
-    // in where:
-    //  - L is the vehicle wheelbase [meter]
-    //  - v is the vehicle longitudinal speed [meter / second]
-    //  - theta is the car heading (yaw) [radian]
-    //  - delta is the steering angle [radian]
+    //! [../doc/pics/TricycleVehicle.png]
+    //! [../doc/pics/RearAxleBicycleKinematicEq.png]
+    //! in where:
+    //!  - L is the vehicle wheelbase [meter]
+    //!  - v is the vehicle longitudinal speed [meter / second]
+    //!  - theta is the car heading (yaw) [radian]
+    //!  - delta is the steering angle [radian]
     //--------------------------------------------------------------------------
     virtual void update(Second const dt) override
     {
-        constexpr Radian u = 1_rad; // For converting radian to no unit.
-
         //FIXME m_speed = m_control.outputs.speed;
-        //FIXME m_heading += dt * m_speed * u * units::math::tan(m_control.outputs.steering) / m_wheelbase;
+        //m_heading += dt * m_speed * 1.0_rad * units::math::tan(m_control.outputs.steering) / m_wheelbase;
         m_position.x += dt * m_speed * units::math::cos(m_heading);
         m_position.y += dt * m_speed * units::math::sin(m_heading);
     }

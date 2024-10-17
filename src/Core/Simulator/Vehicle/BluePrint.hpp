@@ -60,6 +60,8 @@ namespace sensor {
 // *************************************************************************
 struct BluePrint
 {
+    //! \brief
+    sf::Vector2<Meter> dimension;
     //! \brief Relative position from the car shape position (middle rear axle)
     sf::Vector2<Meter> offset;
     //! \brief Relative relative orientation [degree].

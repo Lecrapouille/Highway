@@ -98,8 +98,8 @@ protected:
                                    Radian const steering)
     {
         std::cout << "City createCar " << this << std::endl;
-        std::unique_ptr<Car> car = std::make_unique<Car>(model, name, color);
-        car->setPhysicModel<PhysicModel>(acceleration, speed, position, heading);
+        auto car = std::make_unique<Car>(model, name, color);
+        car->setPhysicModel<PhysicModel>();
         car->init(acceleration, speed, position, heading, steering);
         return car;
     }

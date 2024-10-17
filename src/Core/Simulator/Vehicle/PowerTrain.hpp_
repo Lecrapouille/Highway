@@ -1,0 +1,169 @@
+//=====================================================================
+// https://github.com/Lecrapouille/Highway
+// Highway: Open-source simulator for autonomous driving research.
+// Copyright 2021 -- 2023 Quentin Quadrat <lecrapouille@gmail.com>
+//
+// This file is part of Highway.
+//
+// Highway is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Highway.  If not, see <http://www.gnu.org/licenses/>.
+//=====================================================================
+
+#pragma once
+
+#  include "Core/Math/Units.hpp"
+#  include "Core/Math/Math.hpp"
+
+// *****************************************************************************
+//! \brief Class to represent the engine.
+// *****************************************************************************
+class Engine
+{
+public:
+    Engine(Watt const max_power, Rpm const max_angular_speed)
+        : m_max_power(power),
+          m_max_angular_speed(max_angular_speed)
+    {}
+
+    // Calculate engine torque based on throttle and RPM
+    NewtonMeter calculateTorque(double const throttle, Rpm const engine_rpm) const
+    {
+        // Simple model: torque decreases linearly with RPM
+        double normalized_speed = engine_rpm / m_max_speed;
+        Watt power_output = throttle * m_max_power * (1.0 - normalized_speed);
+        if (power_output <= 0_W)
+            return 0_Nm;
+        return (power_output / (rpm * 2.0 * M_PI / 60.0_s)) * 1.0_Nm;
+    }
+
+private:
+    //! \brief Max power [watts]
+    Watt m_max_power;
+    //! \brief Max speed [RPM]
+    Rpm m_max_speed;
+};
+
+// *****************************************************************************
+//! \brief Class to represent the gearbox.
+// *****************************************************************************
+class Gearbox
+{
+public:
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //! \param[in] gear_ratios The list of ratio for each gears.
+    //--------------------------------------------------------------------------
+    explicit Gearbox(std::initialize_list<double> gear_ratios)
+        : m_gear_ratios(gear_ratios)
+    {}
+
+    //--------------------------------------------------------------------------
+    //! \brief Return the number of gears.
+    //--------------------------------------------------------------------------
+    inline size_t gearCount() const
+    {
+        return m_gear_ratios.size();
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Set the current gear.
+    //! \note Invalid desired gear will not be applied. 
+    //! \return true if the desired gear was valid.
+    //--------------------------------------------------------------------------
+    bool setGear(size_t gear)
+    {
+        if (gear < m_gear_ratios.size())
+        {
+            m_current_gear = gear;
+            return true;
+        }
+        return false;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Set the next gear.
+    //! \note Invalid desired gear will not be applied. 
+    //! \return true if the desired gear was valid.
+    //--------------------------------------------------------------------------
+    bool gearUp()
+    {
+        if (gear + 1u < m_gear_ratios.size())
+        {
+            m_current_gear = gear + 1u;
+            return true;
+        }
+        return false;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Set the previous gear.
+    //! \note Invalid desired gear will not be applied. 
+    //! \return true if the desired gear was valid.
+    //--------------------------------------------------------------------------
+    bool gearDown()
+    {
+        if (gear > 0u)
+        {
+            m_current_gear = gear - 1u;
+            return true;
+        }
+        return false;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief Get the current gear ratio.
+    //--------------------------------------------------------------------------
+    double getGearRatio() const
+    {
+        return gear_ratios[m_current_gear];
+    }
+
+private:
+
+    //! \brief 
+    size_t m_current_gear = 0u;
+    //! \brief Gear ratios for each gears
+    std::vector<double> m_gear_ratios;
+};
+
+// *****************************************************************************
+//! \brief Class to represent the torque converter.
+// *****************************************************************************
+class TorqueConverter
+{
+public:
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //! \param efficiency Efficiency of the torque converter (0-1).
+    //--------------------------------------------------------------------------
+    explicit TorqueConverter(double const efficiency)
+        : m_efficiency(math::constrain(efficiency, 0.0, 1.0))
+    {}
+
+    //--------------------------------------------------------------------------
+    //! \brief Calculate the output torque from the torque converter.
+    //--------------------------------------------------------------------------
+    NewtonMeter calculateOutputTorque(NewtonMeter const engine_torque, double rpm_difference) const
+    {
+        // Simple torque multiplication model: more multiplication at low RPM difference
+        double torque_multiplier = 1.0 + std::min(1.0, 0.5 * (1.0 - rpm_difference));
+        return engine_torque * torque_multiplier * m_efficiency;
+    }
+
+private:
+
+    //! \brief Efficiency of the torque converter (0-1)
+    double m_efficiency;
+};

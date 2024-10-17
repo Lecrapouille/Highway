@@ -20,10 +20,8 @@
 //=====================================================================
 
 #include "Core/Simulator/City/City.hpp"
+#include "Core/Simulator/Vehicle/PhysicModels/RearAxleBicycleKinematic.hpp"
 #include "MyLogger/Logger.hpp"
-#include <stdio.h>
-
-#include "Core/Simulator/Vehicle/PhysicModels/TricycleKinematic.hpp"
 
 #  define COLLISION_COLOR sf::Color(255, 0, 0)
 #  define DEFAULT_CAR_COLOR sf::Color(25, 130, 118)
@@ -60,7 +58,8 @@ Car& City::addCar(const char* model, sf::Vector2<Meter> const& position,
     LOGI("Add car '%s': position (%g m, %g m), heading %g deg, speed %g mps",
          name, position.x, position.y, Degree(heading), speed);
 
-    auto car = createCar<vehicle::TricycleKinematic>(model, name, DEFAULT_CAR_COLOR,
+    // FIXME addCar<T>
+    auto car = createCar<vehicle::RearAxleBicycleKinematic>(model, name, DEFAULT_CAR_COLOR,
         0.0_mps_sq, speed, position, heading, steering);
 
     std::string error = car->isValid();
@@ -88,7 +87,7 @@ Car& City::addEgo(const char* model, sf::Vector2<Meter> const& position,
     {
         LOGW("Ego car already created. Old will be replaced!");
     }
-    auto car = createCar<vehicle::TricycleKinematic>(model, name, DEFAULT_CAR_COLOR,
+    auto car = createCar<vehicle::RearAxleBicycleKinematic>(model, name, DEFAULT_CAR_COLOR,
         0.0_mps_sq, speed, position, heading, steering);
 
     std::string error = car->isValid();

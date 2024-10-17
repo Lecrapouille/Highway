@@ -1,0 +1,29 @@
+{
+  "revision": 1,
+  "type": "powertrain",
+  "powertrains": [
+    {
+        "mark": "generic",
+        "engine": [
+            { "rpm": 1000, "torque": 200 },
+            { "rpm": 2000, "torque": 220 },
+            { "rpm": 3000, "torque": 250 },
+            { "rpm": 4000, "torque": 230 },
+            { "rpm": 5000, "torque": 210 },
+            { "rpm": 6000, "torque": 180 }
+        ],
+        "gear_ratios": {
+            "0": 3.5,
+            "1": 2.8,
+            "2": 2.2,
+            "3": 1.6,
+            "4": 1.2,
+            "5": 0.9,
+        },
+        "brake_N": 5000,
+        "torque_converter": {
+            "efficiency": 1.0
+        },
+    }
+  ]
+}

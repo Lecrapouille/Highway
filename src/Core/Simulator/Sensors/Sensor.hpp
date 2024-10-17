@@ -21,36 +21,61 @@
 
 #pragma once
 
-#  include "Core/Common/SceneGraph.hpp"
-#  include "Core/Simulator/Vehicle/Wheel.hpp"
-#  include "Core/Simulator/Vehicle/BluePrint.hpp"
+#  include "Core/Simulator/Sensors/SensorShape.hpp"
 
-// *****************************************************************************
+// ****************************************************************************
 //! \brief
-// *****************************************************************************
-class WheelShape: public SceneNode
+// ****************************************************************************
+class Sensor
 {
 public:
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    WheelShape(std::string const& name, Wheel const& wheel, wheel::BluePrint const& blueprint);
-
-private: // Inheritance from SceneNode
-
-    //--------------------------------------------------------------------------
-    //! \brief
-    //--------------------------------------------------------------------------
-    virtual void onUpdate() override;
+    Sensor(sensor::BluePrint const& p_blueprint, std::string const& p_name,
+           sf::Color const& p_color)
+        : blueprint(p_blueprint), name(p_name), color(p_color)
+    {}
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    virtual ~Sensor() = default;
 
-private:
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    SensorShape::Ptr shape()
+    {
+        return std::make_unique<SensorShape>(name, blueprint, color);
+    }
 
-    Wheel const& m_wheel;
-    sf::RectangleShape m_shape;
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void update(Second const dt) = 0;
+
+public:
+
+    //! \brief Dimension of the sensor
+    sensor::BluePrint const blueprint;
+    //! \brief Sensor name/type
+    std::string const name;
+    //! \brief Current sensor color.
+    sf::Color color;
+};
+
+// ****************************************************************************
+//! \brief
+// ****************************************************************************
+class Antenna: public Sensor
+{
+public:
+    using Sensor::Sensor;
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void update(Second const) override {}
 };

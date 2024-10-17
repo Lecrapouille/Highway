@@ -28,14 +28,19 @@
 // *****************************************************************************
 //! \brief
 // *****************************************************************************
-class WheelShape: public SceneNode
+class SensorShape: public SceneNode
 {
+public:
+
+    using Ptr = std::unique_ptr<SensorShape>;
+
 public:
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    WheelShape(std::string const& name, Wheel const& wheel, wheel::BluePrint const& blueprint);
+    SensorShape(std::string const& name, sensor::BluePrint const& blueprint,
+                sf::Color const& color);
 
 private: // Inheritance from SceneNode
 
@@ -51,6 +56,6 @@ private: // Inheritance from SceneNode
 
 private:
 
-    Wheel const& m_wheel;
+    sf::Color const& m_color;
     sf::RectangleShape m_shape;
 };

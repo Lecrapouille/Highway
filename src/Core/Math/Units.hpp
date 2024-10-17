@@ -51,6 +51,14 @@ using RadianPerSecond = units::angular_velocity::radians_per_second_t;
 using MeterPerSecondSquared = units::acceleration::meters_per_second_squared_t;
 using MeterPerSecond = units::velocity::meters_per_second_t;
 using Second = units::time::second_t;
+using Newton = units::force::newton_t;
+using NewtonMeter = units::torque::newton_meter_t;
+using Watt = units::power::watt_t;
+using Percent = units::concentration::percent_t;
+
+using Rpm = double;
+
+constexpr MeterPerSecondSquared GRAVITY = 9.80665_mps_sq;
 
 namespace math {
 
