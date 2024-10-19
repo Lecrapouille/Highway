@@ -28,7 +28,8 @@ WheelShape::WheelShape(std::string const& name, Wheel const& wheel, wheel::BlueP
                            float(blueprint.thickness.value())))
 {
     m_shape.setOrigin(m_shape.getSize().x / 2.0f, m_shape.getSize().y / 2.0f);
-    m_shape.setPosition(float(blueprint.offset.x.value()), float(blueprint.offset.y.value()));
+    m_shape.setPosition(float(blueprint.offset.x.value()),
+                        float(blueprint.offset.y.value()));
 
     m_shape.setFillColor(sf::Color::Black);
     m_shape.setOutlineThickness(OUTLINE_THICKNESS);

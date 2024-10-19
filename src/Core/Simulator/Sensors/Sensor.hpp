@@ -33,9 +33,9 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    Sensor(sensor::BluePrint const& p_blueprint, std::string const& p_name,
-           sf::Color const& p_color)
-        : blueprint(p_blueprint), name(p_name), color(p_color)
+    Sensor(std::string const& p_type, std::string const& p_name,
+           sensor::BluePrint const& p_blueprint, sf::Color const& p_color)
+        : blueprint(p_blueprint), type(p_type), name(p_name), color(p_color)
     {}
 
     //--------------------------------------------------------------------------
@@ -60,7 +60,9 @@ public:
 
     //! \brief Dimension of the sensor
     sensor::BluePrint const blueprint;
-    //! \brief Sensor name/type
+    //! \brief Sensor type
+    std::string const type;
+    //! \brief Sensor name
     std::string const name;
     //! \brief Current sensor color.
     sf::Color color;
@@ -72,7 +74,14 @@ public:
 class Antenna: public Sensor
 {
 public:
-    using Sensor::Sensor;
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    Antenna(std::string const& p_name, sensor::BluePrint const& p_blueprint,
+            sf::Color const& p_color)
+        : Sensor("antenna", p_name, p_blueprint, p_color)
+    {}
 
     //--------------------------------------------------------------------------
     //! \brief

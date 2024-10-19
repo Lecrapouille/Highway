@@ -31,6 +31,7 @@
 
 // *****************************************************************************
 //! \brief
+//! TODO bool setVisible(bool v = false);
 // *****************************************************************************
 class SceneNode: public sf::Transformable, public sf::Drawable, private NonCopyable
 {

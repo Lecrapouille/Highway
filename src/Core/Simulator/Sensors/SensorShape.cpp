@@ -31,6 +31,7 @@ SensorShape::SensorShape(std::string const& name, sensor::BluePrint const& bluep
     m_shape.setOrigin(0.0f, m_shape.getSize().y / 2.0f);
     m_shape.setPosition(float(blueprint.offset.x.value()),
                         float(blueprint.offset.y.value()));
+    m_shape.setRotation(float(Degree(blueprint.orientation)));
 
     m_shape.setFillColor(m_color);
     m_shape.setOutlineThickness(OUTLINE_THICKNESS);

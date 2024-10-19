@@ -63,12 +63,38 @@ static void simple_simulation_react_to(Simulator& simulator, size_t event)
 }
 
 //-----------------------------------------------------------------------------
+//! \brief Attach sensor to the ego vehicle and bind sensor to the ECU.
+//! \note the origin position of the car is the middle of the rear axle. Sensors
+//! are placed relatively to the vehicle origin. X-axis is along the vehicle length
+//! directed to the front. the Y-axis is along the vehicle left.
+//-----------------------------------------------------------------------------
+static void attach_sensors(Car& car)
+{
+    // Origin of the vehicle is the middle of the rear axle.
+    // Blueprints for 4 antennas placed perpendicularly on each wheel.
+    // Antenna is kind of tactile sensor like done in cockroach robots.
+    // Note the blueprint is static since vehicle does not copy blueprints
+    // but refer it.
+    const Meter range = 0.5_m; // Single detection up to this distance
+    sf::Vector2 dimension{ range, 0.1_m }; // Along the vehicle
+    const Degree orientation = 90.0_deg; // Perpendicular to the vehicle
+    sf::Vector2 offset{ car.blueprint.wheelbase, car.blueprint.width / 2.0 }; // On each wheels
+    car.addSensor<Antenna>("FL", { dimension, { offset.x,  offset.y },  orientation }, sf::Color::Blue);
+    car.addSensor<Antenna>("FR", { dimension, { offset.x, -offset.y }, -orientation }, sf::Color::Red);
+    car.addSensor<Antenna>("RL", { dimension, { 0.0_m,     offset.y },  orientation }, sf::Color::Cyan);
+    car.addSensor<Antenna>("RR", { dimension, { 0.0_m,    -offset.y }, -orientation }, sf::Color::Green);
+}
+
+//-----------------------------------------------------------------------------
 //! \brief Locally private scenario function. Customize the ego vehicle. In our
 //! current case, we make our vehicle reacts to keyboard by applying reference
 //! speed. Currently the vehicle physic uses the bycicle kinematic model.
 //-----------------------------------------------------------------------------
 static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
 {
+    // Add sensors to the ego car and bind them to the ECU.
+    attach_sensors(ego);
+
     // Make the ego reacts from the keyboard: set ego speed (kinematic).
     ego.addCallback(sf::Keyboard::Up, [&ego]()
     {
@@ -91,6 +117,20 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
     ego.addCallback(sf::Keyboard::Left, [&ego]()
     {
         ego.turnSteeringWheel(10.0_deg);
+    });
+
+    // Make the car reacts from the keyboard: enable the turning indicator.
+    ego.addCallback(sf::Keyboard::PageDown, [&ego]()
+    {
+        //ego.turningIndicator.down();
+        //ego.showSensors([](Sensor const& sensor) { sensor.name[1] == "L"; } ));
+    });
+
+    // Make the car reacts from the keyboard: enable the turning indicator.
+    ego.addCallback(sf::Keyboard::PageUp, [&ego]()
+    {
+        //ego.turningIndicator.up();
+        //ego.showSensors([](Sensor const& sensor) { sensor.name[1] == "R"; } ));
     });
 
     return ego;

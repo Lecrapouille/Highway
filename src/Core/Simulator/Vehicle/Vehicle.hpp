@@ -89,14 +89,15 @@ public:
     //! on the vehicle.
     //-------------------------------------------------------------------------
     template<class SENSOR, typename... Args>
-    SENSOR& addSensor(sensor::BluePrint const& p_blueprint, std::string const& p_name, Args&&... args)
+    SENSOR& addSensor(std::string const& p_name, sensor::BluePrint const& p_blueprint,
+                      sf::Color const& p_color, Args&&... args)
     {
         //LOGI("Attaching sensor '%s' to vehicle '%s'", p_name.c_str(), name.c_str());
 
-        m_sensors.push_back(std::make_unique<SENSOR>(p_blueprint, p_name,
-            std::forward<Args>(args)...));
-        SENSOR& sensor = *m_sensors.back();
-        m_shape.addSensorShape(name, sensor.shape());
+        auto ptr = std::make_unique<SENSOR>(p_name, p_blueprint, p_color, std::forward<Args>(args)...);
+        SENSOR& sensor = *ptr;
+        m_shape.addSensorShape(sensor.shape());
+        m_sensors.push_back(std::move(ptr));
         return sensor;
     }
 
@@ -207,7 +208,7 @@ protected:
     //! \brief The cruise control
     //std::unique_ptr<VehicleControl> m_control = nullptr;
     //! \brief List of vehicle sensors
-    std::vector<std::shared_ptr<Sensor>> m_sensors;
+    std::vector<std::unique_ptr<Sensor>> m_sensors;
     //! \brief steering wheel controlling angle of wheels.
     SteeringWheel m_steering_wheel;
     //! \brief Vehicle's wheels
