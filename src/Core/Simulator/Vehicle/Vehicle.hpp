@@ -90,16 +90,24 @@ public:
     //-------------------------------------------------------------------------
     template<class SENSOR, typename... Args>
     SENSOR& addSensor(std::string const& p_name, sensor::BluePrint const& p_blueprint,
-                      sf::Color const& p_color, Args&&... args)
+                      sf::Color const& p_color, bool p_enabled, Args&&... args)
     {
         //LOGI("Attaching sensor '%s' to vehicle '%s'", p_name.c_str(), name.c_str());
 
-        auto ptr = std::make_unique<SENSOR>(p_name, p_blueprint, p_color, std::forward<Args>(args)...);
+        auto ptr = std::make_unique<SENSOR>(p_name, p_blueprint, p_color,
+            p_enabled, std::forward<Args>(args)...);
         SENSOR& sensor = *ptr;
         m_shape.addSensorShape(sensor.shape());
+        m_shape.visible = p_enabled;
         m_sensors.push_back(std::move(ptr));
         return sensor;
     }
+
+    //-------------------------------------------------------------------------
+    //! \brief Enable/Disable sensors by iterating on them and applying a
+    //! condition function.
+    //-------------------------------------------------------------------------
+    void enableSensor(std::function<bool(Sensor const&)> fun) const;
 
     //-------------------------------------------------------------------------
     //! \brief Register a callback for reacting to SFML press events.

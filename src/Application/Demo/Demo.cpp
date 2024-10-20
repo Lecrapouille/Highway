@@ -79,10 +79,10 @@ static void attach_sensors(Car& car)
     sf::Vector2 dimension{ range, 0.1_m }; // Along the vehicle
     const Degree orientation = 90.0_deg; // Perpendicular to the vehicle
     sf::Vector2 offset{ car.blueprint.wheelbase, car.blueprint.width / 2.0 }; // On each wheels
-    car.addSensor<Antenna>("FL", { dimension, { offset.x,  offset.y },  orientation }, sf::Color::Blue);
-    car.addSensor<Antenna>("FR", { dimension, { offset.x, -offset.y }, -orientation }, sf::Color::Red);
-    car.addSensor<Antenna>("RL", { dimension, { 0.0_m,     offset.y },  orientation }, sf::Color::Cyan);
-    car.addSensor<Antenna>("RR", { dimension, { 0.0_m,    -offset.y }, -orientation }, sf::Color::Green);
+    car.addSensor<Antenna>("FL", { dimension, { offset.x,  offset.y },  orientation }, sf::Color::Blue,  false);
+    car.addSensor<Antenna>("FR", { dimension, { offset.x, -offset.y }, -orientation }, sf::Color::Red,   false);
+    car.addSensor<Antenna>("RL", { dimension, { 0.0_m,     offset.y },  orientation }, sf::Color::Cyan,  false);
+    car.addSensor<Antenna>("RR", { dimension, { 0.0_m,    -offset.y }, -orientation }, sf::Color::Green, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -123,14 +123,20 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
     ego.addCallback(sf::Keyboard::PageDown, [&ego]()
     {
         //ego.turningIndicator.down();
-        //ego.showSensors([](Sensor const& sensor) { sensor.name[1] == "L"; } ));
+        ego.enableSensor([](Sensor const& sensor)
+        {
+            return (sensor.name.size() >= 2u) && (sensor.name[1] == 'L');
+        });
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
     ego.addCallback(sf::Keyboard::PageUp, [&ego]()
     {
         //ego.turningIndicator.up();
-        //ego.showSensors([](Sensor const& sensor) { sensor.name[1] == "R"; } ));
+        ego.enableSensor([](Sensor const& sensor)
+        {
+            return (sensor.name.size() >= 2u) && (sensor.name[1] == 'R');
+        });
     });
 
     return ego;

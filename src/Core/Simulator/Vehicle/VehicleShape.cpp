@@ -29,7 +29,7 @@
 
 //------------------------------------------------------------------------------
 VehicleShape::VehicleShape(Vehicle const& vehicle)
-    : SceneNode("shape"), blueprint(vehicle.blueprint), m_vehicle(vehicle),
+    : SceneNode("vehicle"), blueprint(vehicle.blueprint), m_vehicle(vehicle),
       m_wheels_shapes(createChild<SceneNode>("wheels")),
       m_turning_indicator_shapes(createChild<SceneNode>("turning indicators")),
       m_light_shapes(createChild<SceneNode>("lights")),
@@ -79,6 +79,7 @@ void VehicleShape::addSensorShape(SensorShape::Ptr shape)
 //------------------------------------------------------------------------------
 void VehicleShape::onUpdate()
 {
+    // Apply directly vehicle states
     m_obb.setPosition(float(m_vehicle.position().x.value()),
                       float(m_vehicle.position().y.value()));
     m_obb.setRotation(float(Degree(m_vehicle.heading()).value()));

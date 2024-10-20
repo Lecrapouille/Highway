@@ -47,7 +47,7 @@ private: // Inheritance from SceneNode
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override;
 
 private:
 

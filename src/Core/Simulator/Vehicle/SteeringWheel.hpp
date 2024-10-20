@@ -41,7 +41,7 @@ public:
     //-------------------------------------------------------------------------
     //! \brief Turn the steering wheel with realistic limits.
     //-------------------------------------------------------------------------
-    void turn(Radian const delta_angle)
+    Radian turn(Radian const delta_angle)
     {
         const Radian max = m_blueprint.max_steering_angle * m_blueprint.steering_ratio;
 
@@ -51,6 +51,8 @@ public:
 
         if (m_steering_angle < -max)
             m_steering_angle = -max;
+
+        return m_steering_angle;
     }
 
     //-------------------------------------------------------------------------

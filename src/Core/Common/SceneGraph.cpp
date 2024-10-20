@@ -20,6 +20,7 @@
 //=====================================================================
 
 #include "Core/Common/SceneGraph.hpp"
+#include <iostream>
 
 //------------------------------------------------------------------------------
 void SceneNode::attachChild(SceneNode::Ptr child)
@@ -52,7 +53,7 @@ SceneNode* SceneNode::findChild(std::string const& name)
 void SceneNode::update()
 {
     onUpdate();
-    for (auto& child: m_children)
+    for (auto const& child: m_children)
     {
         child->update();
     }
@@ -65,7 +66,10 @@ void SceneNode::draw(sf::RenderTarget& target, sf::RenderStates states) const
     states.transform *= getTransform();
 
     // Draw node and children with changed transform
-    onDraw(target, states);
+    if (visible)
+    {
+        onDraw(target, states);
+    }
     for (auto const& child: m_children)
     {
         child->draw(target, states);

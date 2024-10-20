@@ -56,10 +56,10 @@ bool Vehicle::reactTo(size_t const key)
 //------------------------------------------------------------------------------
 void Vehicle::turnSteeringWheel(Radian const delta_angle)
 {
-    m_steering_wheel.turn(delta_angle);
-    Radian wheel_angle = m_steering_wheel.getWheelAngle();
+    // Bicycle front wheel
+    Radian wheel_angle = m_steering_wheel.turn(delta_angle);
 
-    // Calculate Ackermann angles
+    // Calculate Ackermann angles for each wheels
     auto inner_radius = blueprint.wheelbase / units::math::tan(wheel_angle);
     auto outer_radius = inner_radius + blueprint.width;
     m_wheels[vehicle::BluePrint::FL].steering =
@@ -140,16 +140,16 @@ void Vehicle::vehicleDynamics(Second const dt)
 //------------------------------------------------------------------------------
 void Vehicle::update(Second const dt)
 {
-#if 0
     // Update sensors. Observer pattern: feed ECUs with sensor data.
     // Note that a sensor can be used by several ECUs.
-    for (auto& sensor: m_sensors)
+    for (auto const& sensor: m_sensors)
     {
         assert(sensor != nullptr && "nullptr sensor");
         sensor->update(dt);
-        sensor->notifyObservers();
+        //sensor->notifyObservers();
     }
 
+#if 0
     // Update Electronic Control Units. They will apply control to the car.
     // TBD: ecu->update(m_control, dt); m_control is not necessary since ECU
     // knows the car and therefore m_control
@@ -187,4 +187,16 @@ void Vehicle::update(Second const dt)
         m_trailer->update(dt);
     }
 #endif
+}
+
+//-------------------------------------------------------------------------
+//! \brief Enable/Disable sensors by iterating on them and applying a
+//! condition function.
+//-------------------------------------------------------------------------
+void Vehicle::enableSensor(std::function<bool(Sensor const&)> fun) const
+{
+    for (auto& it: m_sensors)
+    {
+        it->enable = fun(*it);
+    }
 }

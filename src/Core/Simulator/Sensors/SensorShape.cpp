@@ -20,11 +20,12 @@
 //=====================================================================
 
 #include "Core/Simulator/Sensors/SensorShape.hpp"
+#include "Core/Simulator/Sensors/Sensor.hpp"
 
 //------------------------------------------------------------------------------
-SensorShape::SensorShape(std::string const& name, sensor::BluePrint const& blueprint,
+SensorShape::SensorShape(Sensor const& sensor, sensor::BluePrint const& blueprint,
                          sf::Color const& color)
-    : SceneNode(name), m_color(color),
+    : SceneNode(sensor.name), m_sensor(sensor), m_color(color),
       m_shape(sf::Vector2f(float(blueprint.dimension.x.value()),
                            float(blueprint.dimension.y.value())))
 {
@@ -41,10 +42,11 @@ SensorShape::SensorShape(std::string const& name, sensor::BluePrint const& bluep
 //------------------------------------------------------------------------------
 void SensorShape::onUpdate()
 {
+    visible = m_sensor.enable;
 }
 
 //------------------------------------------------------------------------------
-void SensorShape::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void SensorShape::onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const
 {
     target.draw(m_shape, states);
 }

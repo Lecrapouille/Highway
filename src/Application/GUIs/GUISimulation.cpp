@@ -260,9 +260,9 @@ void GUISimulation::drawSimulation()
 #endif
 
     // Draw vehicles
-    for (auto const& it: city.cars())
+    for (auto const& car: city.cars())
     {
-        m_renderer.draw(it->shape());
+        m_renderer.draw(car->shape());
     }
 
 #if 0

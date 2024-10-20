@@ -30,8 +30,10 @@
 #  define OUTLINE_THICKNESS 0.01f
 
 // *****************************************************************************
-//! \brief
-//! TODO bool setVisible(bool v = false);
+//! \brief Hierarchy of objects in which children are transformed relative to
+//! their parent. All you have to do is pass the combined transform from parent
+//! to children when you draw them, all the way until you reach the final
+//! drawable entities (sprites, text, shapes, vertex arrays or your own drawables).
 // *****************************************************************************
 class SceneNode: public sf::Transformable, public sf::Drawable, private NonCopyable
 {
@@ -42,14 +44,14 @@ public:
 public:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Dummy constructor. Just set the name of the node.
     //--------------------------------------------------------------------------
     explicit SceneNode(std::string const& name)
         : m_name(name)
     {}
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Dummy constructor. Just set the name of the node.
     //--------------------------------------------------------------------------
     explicit SceneNode(const char* name)
         : m_name(name)
@@ -61,12 +63,14 @@ public:
     ~SceneNode() = default;
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Add a new node from an already created node.
+    //! \note You have to use std::move().
     //--------------------------------------------------------------------------
     void attachChild(SceneNode::Ptr child);
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Create a new node with its name and optional arguments for its
+    //! constructor.
     //--------------------------------------------------------------------------
     template<typename T, typename... Args>
     T& createChild(std::string const& name, Args&&... args)
@@ -83,12 +87,13 @@ public:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Search recursively a by its name.
     //--------------------------------------------------------------------------
     SceneNode* findChild(std::string const& name);
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Recursively update all node. Each node has its method onUpdate()
+    //! called.
     //--------------------------------------------------------------------------
     void update();
 
@@ -110,14 +115,15 @@ public:
 private: // Inheritance from sf::Drawable
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Recursively draw all nodes.
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 private:
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Called by update(). By default do nothing. Inherit to update your
+    //! entity in this method.
     //--------------------------------------------------------------------------
     virtual void onUpdate()
     {
@@ -125,12 +131,18 @@ private:
     }
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Called by draw(). By default draw nothing. Inherit to draw your
+    //! entity in this method.
     //--------------------------------------------------------------------------
     virtual void onDraw(sf::RenderTarget&, sf::RenderStates const&) const
     {
         // Do nothing by default
     }
+
+public:
+
+    //! \brief Skip the drawing of the node (but keep drawing its children).
+    bool visible = true;
 
 private:
 

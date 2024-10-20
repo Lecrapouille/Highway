@@ -22,8 +22,9 @@
 #pragma once
 
 #  include "Core/Common/SceneGraph.hpp"
-#  include "Core/Simulator/Vehicle/Wheel.hpp"
 #  include "Core/Simulator/Vehicle/BluePrint.hpp"
+
+class Sensor;
 
 // *****************************************************************************
 //! \brief
@@ -39,7 +40,7 @@ public:
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    SensorShape(std::string const& name, sensor::BluePrint const& blueprint,
+    SensorShape(Sensor const& sensor, sensor::BluePrint const& blueprint,
                 sf::Color const& color);
 
 private: // Inheritance from SceneNode
@@ -52,10 +53,11 @@ private: // Inheritance from SceneNode
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override;
 
 private:
 
+    Sensor const& m_sensor;
     sf::Color const& m_color;
     sf::RectangleShape m_shape;
 };

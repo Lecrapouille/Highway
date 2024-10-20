@@ -39,11 +39,12 @@ WheelShape::WheelShape(std::string const& name, Wheel const& wheel, wheel::BlueP
 //------------------------------------------------------------------------------
 void WheelShape::onUpdate()
 {
+    // Apply directly vehicle states
     m_shape.setRotation(float(Degree(m_wheel.steering)));
 }
 
 //------------------------------------------------------------------------------
-void WheelShape::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void WheelShape::onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const
 {
     target.draw(m_shape, states);
 }

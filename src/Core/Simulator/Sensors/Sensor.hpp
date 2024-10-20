@@ -34,8 +34,10 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     Sensor(std::string const& p_type, std::string const& p_name,
-           sensor::BluePrint const& p_blueprint, sf::Color const& p_color)
-        : blueprint(p_blueprint), type(p_type), name(p_name), color(p_color)
+           sensor::BluePrint const& p_blueprint, sf::Color const& p_color,
+           bool p_enabled)
+        : blueprint(p_blueprint), type(p_type), name(p_name), color(p_color),
+          enable(p_enabled)
     {}
 
     //--------------------------------------------------------------------------
@@ -48,24 +50,36 @@ public:
     //--------------------------------------------------------------------------
     SensorShape::Ptr shape()
     {
-        return std::make_unique<SensorShape>(name, blueprint, color);
+        return std::make_unique<SensorShape>(*this, blueprint, color);
     }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void update(Second const dt) = 0;
+    void update(Second const dt)
+    {
+        if (!enable)
+            return ;
+        onUpdate(dt);
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    virtual void onUpdate(Second const dt) = 0;
 
 public:
 
-    //! \brief Dimension of the sensor
+    //! \brief Dimension of the sensor.
     sensor::BluePrint const blueprint;
-    //! \brief Sensor type
+    //! \brief Sensor type.
     std::string const type;
-    //! \brief Sensor name
+    //! \brief Sensor name.
     std::string const name;
     //! \brief Current sensor color.
     sf::Color color;
+    //! \brief Is the sensor running ?
+    bool enable = true;
 };
 
 // ****************************************************************************
@@ -79,12 +93,15 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     Antenna(std::string const& p_name, sensor::BluePrint const& p_blueprint,
-            sf::Color const& p_color)
-        : Sensor("antenna", p_name, p_blueprint, p_color)
+            sf::Color const& p_color, bool p_enabled)
+        : Sensor("antenna", p_name, p_blueprint, p_color, p_enabled)
     {}
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void update(Second const) override {}
+    virtual void onUpdate(Second const) override
+    {
+        std::cout << "Antenna Sensor onUpdate: " << name << ": " << enable << std::endl;
+    }
 };
