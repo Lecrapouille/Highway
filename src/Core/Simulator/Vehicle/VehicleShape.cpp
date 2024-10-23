@@ -19,8 +19,10 @@
 // along with Highway.  If not, see <http://www.gnu.org/licenses/>.
 //=====================================================================
 
+#include "Core/Simulator/Vehicle/ECUs/BodyControlModule.hpp"
 #include "Core/Simulator/Vehicle/VehicleShape.hpp"
 #include "Core/Simulator/Vehicle/WheelShape.hpp"
+#include "Core/Simulator/Vehicle/LightShape.hpp"
 #include "Core/Simulator/Vehicle/Vehicle.hpp"
 #include "Application/Renderer/Drawable.hpp"
 #include "Core/Math/Collide.hpp"
@@ -31,159 +33,72 @@
 VehicleShape::VehicleShape(Vehicle const& vehicle)
     : SceneNode("vehicle"), blueprint(vehicle.blueprint), m_vehicle(vehicle),
       m_wheels_shapes(createChild<SceneNode>("wheels")),
-      m_turning_indicator_shapes(createChild<SceneNode>("turning indicators")),
       m_light_shapes(createChild<SceneNode>("lights")),
       m_sensor_shapes(createChild<SceneNode>("sensors"))
 {
-    static const std::array<std::string, vehicle::BluePrint::Where::MAX> s_names = {
-        "RR", "RL", "FL", "FR"
-    };
-
-    // Origin on the middle of the rear wheel axle
-    m_obb.setSize(sf::Vector2f(float(m_vehicle.blueprint.length.value()),
-                               float(m_vehicle.blueprint.width.value())));
-    m_obb.setOrigin(sf::Vector2f(float(m_vehicle.blueprint.back_overhang.value()),
-                                 m_obb.getSize().y / 2.0f));
-
-    // Create wheel shapes as scene graph from the blueprint
-    size_t i = m_vehicle.blueprint.wheels.size();
-    while (i--)
+    // Scene graph: set the origin of the vehicle placed on the middle of
+    // its rear wheel axle. FIXME: should be setOrigin(...)
+    m_shape.setOrigin(
     {
-        m_wheels_shapes.createChild<WheelShape>(
-            s_names.at(i), m_vehicle.wheels()[i], m_vehicle.blueprint.wheels[i]);
-    }
+        float(m_vehicle.blueprint.back_overhang.value()),
+        float(m_vehicle.blueprint.width.value()) / 2.0f
+    });
 
-#if 0
-    // Create turning indicator shapes as scene graph from the blueprint
-    auto& turning_indicator_node = createChild<RectShape>("turning indicators");
-    for (auto const& it: p_blueprint.turning_indicators)
+    // Oriented bounding box of the vehicle.
+    m_shape.setSize(
     {
-        turning_indicator_node.createChild<>(""); // FR FL ...
-    }
+        float(m_vehicle.blueprint.length.value()),
+        float(m_vehicle.blueprint.width.value())
+    });
+    m_shape.setFillColor(vehicle.color);
+    m_shape.setOutlineThickness(OUTLINE_THICKNESS);
+    m_shape.setOutlineColor(sf::Color::Black);
 
-    // Create light shapes as scene graph from the blueprint
-    auto& lights = createChild<RectShape>("lights");
-    for (auto const& it: p_blueprint.lights)
-    {
-        lights.createChild<>(""); // FR FL ...
-    }
-#endif
-}
-
-//------------------------------------------------------------------------------
-void VehicleShape::addSensorShape(SensorShape::Ptr shape)
-{
-    m_sensor_shapes.attachChild(std::move(shape));
+    // Create wheel shapes as scene graph from the blueprint.
+    auto const wheels = m_vehicle.wheels();
+    m_wheels_shapes.createChild<WheelShape>("RR",
+        wheels[vehicle::BluePrint::Where::RR],
+        m_vehicle.blueprint.wheels[vehicle::BluePrint::Where::RR]);
+    m_wheels_shapes.createChild<WheelShape>("RL",
+        wheels[vehicle::BluePrint::Where::RL],
+        m_vehicle.blueprint.wheels[vehicle::BluePrint::Where::RL]);
+    m_wheels_shapes.createChild<WheelShape>("FR",
+        wheels[vehicle::BluePrint::Where::FR],
+        m_vehicle.blueprint.wheels[vehicle::BluePrint::Where::FR]);
+    m_wheels_shapes.createChild<WheelShape>("FL",
+        wheels[vehicle::BluePrint::Where::FL],
+        m_vehicle.blueprint.wheels[vehicle::BluePrint::Where::FL]);
 }
 
 //------------------------------------------------------------------------------
 void VehicleShape::onUpdate()
 {
-    // Apply directly vehicle states
-    m_obb.setPosition(float(m_vehicle.position().x.value()),
-                      float(m_vehicle.position().y.value()));
-    m_obb.setRotation(float(Degree(m_vehicle.heading()).value()));
+    setPosition(float(m_vehicle.position().x.value()),
+                float(m_vehicle.position().y.value()));
+    setRotation(float(Degree(m_vehicle.heading()).value()));
 }
 
 //------------------------------------------------------------------------------
 void VehicleShape::onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const
 {
-    // Draw the car body
-    sf::RectangleShape body = obb(); // By copy !
-    body.setFillColor(/*collided() ? COLLISION_COLOR :*/ sf::Color::Green/*color*/);
-    body.setOutlineThickness(OUTLINE_THICKNESS);
-    body.setOutlineColor(sf::Color::Blue);
-    target.draw(body, states);
+    // Draw the car body.
+    target.draw(m_shape, states);
 
-    // Draw the position of the car
+    // Draw the position of the car.
     target.draw(Circle(m_vehicle.position(), 0.01_m, sf::Color::Black, 8u));
 
-#if 0
-    // Draw the car wheels
-    size_t i = car.wheels().size();
-    while (i--)
-    {
-        sf::RectangleShape wheel = car.obb_wheel(i);
-        wheel.setFillColor(sf::Color::Black);
-        wheel.setOutlineThickness(OUTLINE_THICKNESS);
-        wheel.setOutlineColor(sf::Color::Yellow);
-        target.draw(wheel, states);
-    }
+    // Other shapes are draw automatically when iterating on the scene graph.
+}
 
-    // Draw the car sensors
-    for (auto const& it: car.sensors())
-    {
-        if (!it->renderable)
-            continue ;
-        target.draw(it->shape.obb(), states);
+//------------------------------------------------------------------------------
+void VehicleShape::addSensorShape(SensorShape::Ptr shape)
+{
+    m_sensor_shapes.getOrCreateDummy(shape->owner().type).attachChild(std::move(shape));
+}
 
-        // FIXME Radar: ugly !!!!!!!
-        Radar* r = dynamic_cast<Radar*>(it.get());
-        if (r != nullptr)
-        {
-            target.draw(r->coverageArea(), states); // FIXME buggy the arc does not turn
-        }
-    }
-
-    // Draw Turning indicators
-    bool left_light, right_light;
-    car.turningIndicator.getLights(left_light, right_light);
-    i = car.blueprint.turning_indicators.size();
-    while (i--)
-    {
-        sf::RectangleShape shape = car.shape().turning_indicator(i);
-        const bool r = (right_light) && ((i == CarBluePrint::Where::RR) || (i == CarBluePrint::Where::FR));
-        const bool l = (left_light) && ((i == CarBluePrint::Where::RL) || (i == CarBluePrint::Where::FL));
-        if (r || l)
-        {
-            shape.setFillColor(sf::Color::Yellow);
-        }
-        else
-        {
-            shape.setFillColor(sf::Color::Black);
-        }
-        target.draw(shape, states);
-    }
-
-    // Draw Lights
-    bool light = true;
-    i = car.blueprint.lights.size();
-    while (i--)
-    {
-        sf::RectangleShape shape = car.shape().light(i);
-        const bool front = light && ((i == CarBluePrint::Where::FL) || (i == CarBluePrint::Where::FR));
-        const bool rear = light && ((i == CarBluePrint::Where::RL) || (i == CarBluePrint::Where::RR));
-        if (front)
-        {
-            shape.setFillColor(sf::Color::Yellow);
-        }
-        else
-        {
-            shape.setFillColor(sf::Color::Black);
-        }
-        if (rear) // TODO brake pressed (use listener ?)
-        {
-            shape.setFillColor(sf::Color::Red);
-        }
-        else
-        {
-            shape.setFillColor(sf::Color::Black);
-        }
-        target.draw(shape, states);
-    }
-
-    // TODO Trailers https://github.com/Lecrapouille/Highway/issues/16
-
-    // Debug Trajectory https://github.com/Lecrapouille/Highway/issues/15
-    // FIXME find better solution. Shall not know AutoParkECU but ECU and maybe ECU::draw
-    if (car.isEgo() && car.hasECU<AutoParkECU>())
-    {
-        AutoParkECU const& ecu = car.getECU<AutoParkECU>();
-        std::cout << ecu.info << std::endl;
-        if (ecu.hasTrajectory())
-        {
-            ecu.trajectory().draw(target, states);
-        }
-    }
-#endif
+//------------------------------------------------------------------------------
+void VehicleShape::addLightShape(std::string const& type, std::string const& name,
+    lights::BluePrint const& bp, sf::Color color, bool const& bulb_state)
+{
+    m_light_shapes.getOrCreateDummy(type).createChild<LightShape>(name, bp, bulb_state, color);
 }

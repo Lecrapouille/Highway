@@ -20,14 +20,52 @@
 //=====================================================================
 
 #include "Core/Simulator/Vehicle/Vehicle.hpp"
+#include "Core/Simulator/Vehicle/ECUs/BodyControlModule.hpp"
 #include "MyLogger/Logger.hpp"
 
 //------------------------------------------------------------------------------
 Vehicle::Vehicle(vehicle::BluePrint const& p_blueprint, const char* p_name, sf::Color const& p_color)
-    : blueprint(p_blueprint), name(p_name), color(p_color), m_steering_wheel(blueprint),
-    m_shape(*this)
+    : blueprint(p_blueprint), name(p_name), color(p_color), m_steering_wheel(blueprint), m_shape(*this)
 {
     //m_control = std::make_unique<VehicleControl>();
+
+    // Add ECUs
+    // BCM: control indicator bulbs, beam bulbs, and brake bulbs ...
+    BodyControlModule const& BCM = addECU<BodyControlModule>("BCM", indicator_stalk, m_pedal_brake, m_gearbox);
+
+    // Turning indicators: one on each corners.
+    m_shape.addLightShape("turning", "RR", blueprint.turning_indicators[vehicle::BluePrint::Where::RR],
+        sf::Color::Yellow, BCM.isRightIndicatorBulbOn());
+    m_shape.addLightShape("turning", "RL", blueprint.turning_indicators[vehicle::BluePrint::Where::RL],
+        sf::Color::Yellow, BCM.isLeftIndicatorBulbOn());
+    m_shape.addLightShape("turning", "FR", blueprint.turning_indicators[vehicle::BluePrint::Where::FR],
+        sf::Color::Yellow, BCM.isRightIndicatorBulbOn());
+    m_shape.addLightShape("turning", "FL", blueprint.turning_indicators[vehicle::BluePrint::Where::FL],
+        sf::Color::Yellow, BCM.isLeftIndicatorBulbOn());
+
+    // (Head) lights
+    // FIXME: factorize by just changing the color instead of creating several nodes at the same position
+    m_shape.addLightShape("high beam", "FL", blueprint.lights[vehicle::BluePrint::Where::FL],
+        sf::Color::Yellow, BCM.isHighBeamBulbOn());
+    m_shape.addLightShape("high beam", "FR", blueprint.lights[vehicle::BluePrint::Where::FR],
+        sf::Color::Yellow, BCM.isHighBeamBulbOn());
+    m_shape.addLightShape("low beam", "FL", blueprint.lights[vehicle::BluePrint::Where::FL],
+        sf::Color(230,230,190,255), BCM.isLowBeamBulbOn());
+    m_shape.addLightShape("low beam", "FR", blueprint.lights[vehicle::BluePrint::Where::FR],
+        sf::Color(230,230,190,255), BCM.isLowBeamBulbOn());
+    m_shape.addLightShape("rear beam", "RL", blueprint.lights[vehicle::BluePrint::Where::RL],
+        sf::Color(240,90,130,255), BCM.isRearLightBulbOn());
+    m_shape.addLightShape("rear beam", "RR", blueprint.lights[vehicle::BluePrint::Where::RR],
+        sf::Color(240,90,130,255), BCM.isRearLightBulbOn());
+    m_shape.addLightShape("brake beam", "RL", blueprint.lights[vehicle::BluePrint::Where::RL],
+        sf::Color::Red, BCM.isBrakeLightBulbOn());
+    m_shape.addLightShape("brake beam", "RR", blueprint.lights[vehicle::BluePrint::Where::RR],
+        sf::Color::Red, BCM.isBrakeLightBulbOn());
+    // TODO not well positioned
+    m_shape.addLightShape("reverse beam", "RL", blueprint.lights[vehicle::BluePrint::Where::RL],
+        sf::Color::White, BCM.isReverseLightBulbOn());
+    m_shape.addLightShape("reverse beam", "RR", blueprint.lights[vehicle::BluePrint::Where::RR],
+        sf::Color::White, BCM.isReverseLightBulbOn());
 }
 
 //------------------------------------------------------------------------------
@@ -39,17 +77,19 @@ void Vehicle::init(MeterPerSecondSquared const acceleration, MeterPerSecond cons
     m_physics->init(acceleration, speed, position, heading);
     // TODO m_control->init(0.0f, speed, position, heading);
     //this->update_wheels(speed, steering);
+    // Init scene graph with orientation and position of the vehicle.
+    m_shape.update();
 }
 
 //------------------------------------------------------------------------------
 bool Vehicle::reactTo(size_t const key)
 {
-    LOGI("Vehicle '%s' reacts to key %zu", name.c_str(), key);
     if (auto it = m_callbacks.find(key); it != m_callbacks.end())
     {
         it->second();
         return true;
     }
+
     return false;
 }
 
@@ -149,51 +189,32 @@ void Vehicle::update(Second const dt)
         //sensor->notifyObservers();
     }
 
-#if 0
     // Update Electronic Control Units. They will apply control to the car.
     // TBD: ecu->update(m_control, dt); m_control is not necessary since ECU
     // knows the car and therefore m_control
-    for (auto& ecu: m_ecus)
+    for (auto const& [ecu_name, ecu]: m_ecus)
     {
-        assert(ecu != nullptr && "nullptr ECU");
         ecu->update(dt);
     }
 
     // Vehicle control and references
-    m_control->update(dt);
-#endif
-
-    // vehicle momentum
-    m_physics->update(dt);
-
-    // Update wheel positions
-    //size_t i = m_wheels.size();
-    //while (i--)
-    //{
-    //    m_wheels[i].position = position()
-    //        + math::heading(blueprint.wheels[i].offset, heading());
-    //}
+    // m_control->update(dt);
 
     // Wheel momentum
     //update_wheels(m_physics->speed(), m_control->get_steering());
 
-    // Update orientation of the vehicle shape
-    m_shape.update(/*position(), heading()*/);
+    // vehicle momentum
+    m_physics->update(dt);
 
-#if 0
-    // Update the tracked trailer if attached
-    if (m_trailer != nullptr)
-    {
-        m_trailer->update(dt);
-    }
-#endif
+    // Update orientation of the vehicle shape
+    m_shape.update();
 }
 
 //-------------------------------------------------------------------------
 //! \brief Enable/Disable sensors by iterating on them and applying a
 //! condition function.
 //-------------------------------------------------------------------------
-void Vehicle::enableSensor(std::function<bool(Sensor const&)> fun) const
+void Vehicle::enableSensor(std::function<bool(Sensor const&)> const& fun) const
 {
     for (auto& it: m_sensors)
     {

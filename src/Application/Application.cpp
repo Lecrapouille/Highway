@@ -102,8 +102,10 @@ void Application::loop(Application::GUI& starting_gui, uint8_t const rate)
 void Application::loop(uint8_t const rate)
 {
     sf::Clock clock;
-    sf::Time timeSinceLastUpdate = sf::Time::Zero;
-    const sf::Time time_per_frame = sf::seconds(1.0f / float(rate));
+    sf::Clock fps_time;
+    sf::Clock delta_time;
+    sf::Time accumulator = sf::Time::Zero;
+    const sf::Time ups = sf::seconds(1.0f / float(rate));
 
     while (m_renderer.isOpen())
     {
@@ -112,17 +114,12 @@ void Application::loop(uint8_t const rate)
             return ;
 
         // Process events at fixed time steps
-        sf::Time dt = clock.restart();
-        timeSinceLastUpdate += dt;
-        while (timeSinceLastUpdate > time_per_frame)
+        while (accumulator > ups)
         {
-            timeSinceLastUpdate -= time_per_frame;
+            accumulator -= ups;
             gui->onHandleInput();
-            gui->onUpdate(Second(time_per_frame.asSeconds()));
+            gui->onUpdate(Second(delta_time.restart().asSeconds()));
         }
-
-        // FPS
-        updateStatistics(dt);
 
         // Rendering
         m_renderer.clear(gui->background_color);
@@ -143,6 +140,10 @@ void Application::loop(uint8_t const rate)
                 m_renderer.close();
             }
         }
+
+        accumulator += clock.restart();
+        // FPS
+        updateStatistics(fps_time.restart());
     }
 }
 
@@ -160,15 +161,15 @@ bool Application::screenshot(std::string const& screenshot_path) const
 // -----------------------------------------------------------------------------
 void Application::updateStatistics(sf::Time dt)
 {
-	m_statistics.update_time += dt;
-	m_statistics.num_frames += 1;
-	if (m_statistics.update_time >= sf::seconds(1.0f))
-	{
-		m_statistics.fps = m_statistics.num_frames;
+    m_statistics.update_time += dt;
+    m_statistics.num_frames += 1;
+    if (m_statistics.update_time >= sf::seconds(1.0f))
+    {
+        m_statistics.fps = m_statistics.num_frames;
 
-		m_statistics.update_time -= sf::seconds(1.0f);
-		m_statistics.num_frames = 0;
-	}
+        m_statistics.update_time -= sf::seconds(1.0f);
+        m_statistics.num_frames = 0;
+    }
 }
 
 // -----------------------------------------------------------------------------

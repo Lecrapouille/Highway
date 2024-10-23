@@ -47,6 +47,8 @@ namespace lights {
 // *************************************************************************
 struct BluePrint
 {
+    //! \brief height/width of the shape
+    sf::Vector2<Meter> dimension;
     //! \brief Relative position from the car shape position (middle rear axle)
     sf::Vector2<Meter> offset;
 };
@@ -60,7 +62,7 @@ namespace sensor {
 // *************************************************************************
 struct BluePrint
 {
-    //! \brief
+    //! \brief height/width of the shape
     sf::Vector2<Meter> dimension;
     //! \brief Relative position from the car shape position (middle rear axle)
     sf::Vector2<Meter> offset;

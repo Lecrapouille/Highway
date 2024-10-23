@@ -98,13 +98,13 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
     // Make the ego reacts from the keyboard: set ego speed (kinematic).
     ego.addCallback(sf::Keyboard::Up, [&ego]()
     {
-        //ego.refSpeed(1.0_mps);
+        ego.applyPedals(1.0, 0.0);
     });
 
     // Make the ego reacts from the keyboard: make the ego stopped (kinematic).
     ego.addCallback(sf::Keyboard::Down, [&ego]()
     {
-        //ego.refSpeed(0.0_mps);
+        ego.applyPedals(0.0, 1.0);
     });
 
     // Make the ego reacts from the keyboard: make the ego turns (kinematic).
@@ -120,9 +120,9 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
-    ego.addCallback(sf::Keyboard::PageDown, [&ego]()
+    ego.addCallback(sf::Keyboard::PageUp, [&ego]()
     {
-        //ego.turningIndicator.down();
+        ego.indicator_stalk.setTurnIndicatorLeft(),
         ego.enableSensor([](Sensor const& sensor)
         {
             return (sensor.name.size() >= 2u) && (sensor.name[1] == 'L');
@@ -130,15 +130,33 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
     });
 
     // Make the car reacts from the keyboard: enable the turning indicator.
-    ego.addCallback(sf::Keyboard::PageUp, [&ego]()
+    ego.addCallback(sf::Keyboard::PageDown, [&ego]()
     {
-        //ego.turningIndicator.up();
+        ego.indicator_stalk.setTurnIndicatorRight();
         ego.enableSensor([](Sensor const& sensor)
         {
             return (sensor.name.size() >= 2u) && (sensor.name[1] == 'R');
         });
     });
 
+    // Head lights
+    ego.addCallback(sf::Keyboard::L, [&ego]()
+    {
+        switch (ego.indicator_stalk.getBeamState())
+        {
+            case IndicatorStalk::HeadlightState::LIGHTS_OFF:
+                ego.indicator_stalk.setLowBeamOn();
+                break;
+            case IndicatorStalk::HeadlightState::LOW_BEAM:
+                ego.indicator_stalk.setHighBeamOn();
+                break;  
+            case IndicatorStalk::HeadlightState::HIGH_BEAM:
+                ego.indicator_stalk.setLightsOff();
+                break;
+        }
+    });
+
+    ego.shape().printHierarchy();
     return ego;
 }
 
@@ -149,7 +167,7 @@ static Car& customize_ego(Simulator& simulator, City const& city, Car& ego)
 //-----------------------------------------------------------------------------
 static Car& simple_simulation_create_city(Simulator& simulator, City& city)
 {
-    Car& ego = city.addEgo("Mini.Cooper", { 0.0_m, 0.0_m }, 0.0_deg, 0.0_mps, 0.0_deg);
+    Car& ego = city.addEgo("Mini.Cooper", { 100.0_m, 50.0_m }, 0.0_deg, 0.0_mps, 0.0_deg);
     return customize_ego(simulator, city, ego);
 
 #if 0

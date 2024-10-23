@@ -29,10 +29,9 @@ SensorShape::SensorShape(Sensor const& sensor, sensor::BluePrint const& blueprin
       m_shape(sf::Vector2f(float(blueprint.dimension.x.value()),
                            float(blueprint.dimension.y.value())))
 {
-    m_shape.setOrigin(0.0f, m_shape.getSize().y / 2.0f);
-    m_shape.setPosition(float(blueprint.offset.x.value()),
-                        float(blueprint.offset.y.value()));
-    m_shape.setRotation(float(Degree(blueprint.orientation)));
+    setOrigin(0.0f, m_shape.getSize().y / 2.0f);
+    setPosition(float(blueprint.offset.x.value()), float(blueprint.offset.y.value()));
+    setRotation(float(Degree(blueprint.orientation)));
 
     m_shape.setFillColor(m_color);
     m_shape.setOutlineThickness(OUTLINE_THICKNESS);

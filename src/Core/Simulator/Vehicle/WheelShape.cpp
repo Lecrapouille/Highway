@@ -27,9 +27,8 @@ WheelShape::WheelShape(std::string const& name, Wheel const& wheel, wheel::BlueP
       m_shape(sf::Vector2f(float(blueprint.radius.value() * 2.0),
                            float(blueprint.thickness.value())))
 {
-    m_shape.setOrigin(m_shape.getSize().x / 2.0f, m_shape.getSize().y / 2.0f);
-    m_shape.setPosition(float(blueprint.offset.x.value()),
-                        float(blueprint.offset.y.value()));
+    setOrigin(m_shape.getSize().x / 2.0f, m_shape.getSize().y / 2.0f);
+    setPosition(float(blueprint.offset.x.value()), float(blueprint.offset.y.value()));
 
     m_shape.setFillColor(sf::Color::Black);
     m_shape.setOutlineThickness(OUTLINE_THICKNESS);
@@ -40,7 +39,7 @@ WheelShape::WheelShape(std::string const& name, Wheel const& wheel, wheel::BlueP
 void WheelShape::onUpdate()
 {
     // Apply directly vehicle states
-    m_shape.setRotation(float(Degree(m_wheel.steering)));
+    setRotation(float(Degree(m_wheel.steering)));
 }
 
 //------------------------------------------------------------------------------

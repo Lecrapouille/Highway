@@ -52,12 +52,18 @@ public:
     //--------------------------------------------------------------------------
     //! \brief const getter: return the oriented bounding box (OBB) of the body.
     //--------------------------------------------------------------------------
-    inline sf::RectangleShape const& obb() const { return m_obb; }
+    inline sf::RectangleShape const& obb() const { return m_shape; }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
     void addSensorShape(SensorShape::Ptr shape);
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    void addLightShape(std::string const& type, std::string const& name,
+        lights::BluePrint const& bp, sf::Color color, bool const& bulb_state);
 
 private: // Inheritance from SceneNode
 
@@ -82,11 +88,9 @@ private:
     //! \brief Const reference to the owner.
     Vehicle const& m_vehicle;
     //! \brief Oriented bounding box for attitude and collision
-    sf::RectangleShape m_obb;
+    sf::RectangleShape m_shape;
     //! \brief Wheel shapes
     SceneNode& m_wheels_shapes;
-    //! \brief Turning indicator shapes
-    SceneNode& m_turning_indicator_shapes;
     //! \brief Light shapes
     SceneNode& m_light_shapes;
     //! \brief Sensor shapes

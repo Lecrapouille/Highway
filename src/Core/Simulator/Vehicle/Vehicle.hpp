@@ -23,9 +23,12 @@
 
 #  include "Core/Simulator/Vehicle/Wheel.hpp"
 //#  include "Core/Simulator/Vehicle/PowerTrain.hpp"
+#  include "Core/Simulator/Vehicle/ECUs/IndicatorStalk.hpp"
 #  include "Core/Simulator/Vehicle/SteeringWheel.hpp"
 #  include "Core/Simulator/Vehicle/PhysicModel.hpp"
 #  include "Core/Simulator/Sensors/Sensor.hpp"
+#  include "Core/Simulator/Vehicle/ECUs/ECU.hpp"
+
 #  include <SFML/Graphics/Color.hpp>
 
 #  include <functional>
@@ -33,6 +36,7 @@
 
 // ****************************************************************************
 //! \brief
+// TODO collision => callback
 // ****************************************************************************
 class Vehicle
 {
@@ -98,7 +102,6 @@ public:
             p_enabled, std::forward<Args>(args)...);
         SENSOR& sensor = *ptr;
         m_shape.addSensorShape(sensor.shape());
-        m_shape.visible = p_enabled;
         m_sensors.push_back(std::move(ptr));
         return sensor;
     }
@@ -107,7 +110,7 @@ public:
     //! \brief Enable/Disable sensors by iterating on them and applying a
     //! condition function.
     //-------------------------------------------------------------------------
-    void enableSensor(std::function<bool(Sensor const&)> fun) const;
+    void enableSensor(std::function<bool(Sensor const&)> const& fun) const;
 
     //-------------------------------------------------------------------------
     //! \brief Register a callback for reacting to SFML press events.
@@ -199,6 +202,41 @@ public:
         return m_wheels;
     }
 
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    template <typename T, typename... Args>
+    T& addECU(const std::string& p_name, Args&&... p_args) 
+    {
+        auto ecu = std::make_unique<T>(std::forward<Args>(p_args)...);
+        T& ref = *ecu;
+        m_ecus[p_name] = std::move(ecu);
+        return ref;
+    }
+
+    //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    template <typename T>
+    T& getECU(std::string const& p_name)
+    {
+        static_assert(std::is_base_of<ECU, T>::value, "T must be derived from ECU");
+
+        auto it = m_ecus.find(p_name);
+        if (it == m_ecus.end())
+        {
+            throw std::runtime_error("ECU not found: " + p_name);
+        }
+
+        auto* ecu = dynamic_cast<T*>(it->second.get());
+        if (!ecu)
+        {
+            throw std::runtime_error("ECU " + p_name + " is not of expected type.");
+        }
+
+        return *ecu;
+    }
+
 public:
 
     //! \brief Dimension of the vehicle
@@ -208,6 +246,8 @@ public:
     //! \brief Current car color. Public: to allow to change it for distinguish
     //! car between them or for showing collisions ...
     sf::Color color;
+    //! \brief Input for the BCM.
+    IndicatorStalk indicator_stalk;
 
 protected:
 
@@ -224,11 +264,14 @@ protected:
     //! \brief
     //Engine m_engine;
     //Gearbox m_gearbox;
+    size_t m_gearbox = 1;
     //TorqueConverter m_torque_converter;
     //! \brief Acceleration pedal (0 to 1).
     double m_pedal_throttle = 0.0;
     //! \brief Brake pedal (0 to 1).
     double m_pedal_brake = 0.0;
+    //! \brief List of Electronic Control Units
+    std::map<std::string, std::unique_ptr<ECU>> m_ecus;
     //! \brief List of reactions to do when events occurred
     std::map<size_t, Callback> m_callbacks;
     //! \brief The shape of the vehicle, dimension, wheel positions.

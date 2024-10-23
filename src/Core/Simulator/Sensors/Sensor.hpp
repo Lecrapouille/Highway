@@ -101,7 +101,5 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     virtual void onUpdate(Second const) override
-    {
-        std::cout << "Antenna Sensor onUpdate: " << name << ": " << enable << std::endl;
-    }
+    {}
 };

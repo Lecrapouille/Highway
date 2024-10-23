@@ -24,45 +24,53 @@
 #  include "Core/Common/SceneGraph.hpp"
 #  include "Core/Simulator/Vehicle/BluePrint.hpp"
 
-class Sensor;
-
 // *****************************************************************************
 //! \brief
 // *****************************************************************************
-class SensorShape: public SceneNode
+class LightShape: public SceneNode
 {
 public:
 
-    using Ptr = std::unique_ptr<SensorShape>;
-
-public:
-
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    SensorShape(Sensor const& sensor, sensor::BluePrint const& blueprint,
-                sf::Color const& color);
+    LightShape(std::string const& name, lights::BluePrint const& blueprint,
+               bool const& enabled, sf::Color const& color)
+        : SceneNode(name), m_enable(enabled), m_color(color),
+          m_shape(sf::Vector2f(float(blueprint.dimension.x.value()),
+                               float(blueprint.dimension.y.value())))
+    {
+        setOrigin(m_shape.getSize().x / 2.0f, m_shape.getSize().y / 2.0f);
+        setPosition(float(blueprint.offset.x.value()), float(blueprint.offset.y.value()));
 
-    //--------------------------------------------------------------------------
-    //! \brief
-    //--------------------------------------------------------------------------
-    Sensor const& owner() const { return m_sensor; }
+        m_shape.setFillColor(m_color);
+        m_shape.setOutlineThickness(OUTLINE_THICKNESS);
+        m_shape.setOutlineColor(sf::Color(165, 42, 42));
+    }
 
 private: // Inheritance from SceneNode
 
     //--------------------------------------------------------------------------
-    //! \brief
+    //! \brief Update the visibility of the shape to the renderer.
     //--------------------------------------------------------------------------
-    virtual void onUpdate() override;
+    virtual void onUpdate() override
+    {
+        //bool left_light, right_light;
+    //m_turning_indicator.getLights(left_light, right_light); // TODO getLightStates
+        visible = m_enable;
+    }
 
     //--------------------------------------------------------------------------
     //! \brief
     //--------------------------------------------------------------------------
-    virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override;
+    virtual void onDraw(sf::RenderTarget& target, sf::RenderStates const& states) const override
+    {
+        target.draw(m_shape, states);
+    }
 
 private:
 
-    Sensor const& m_sensor;
-    sf::Color const& m_color;
+    bool const& m_enable;
+    sf::Color m_color;
     sf::RectangleShape m_shape;
 };

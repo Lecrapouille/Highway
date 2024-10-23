@@ -87,6 +87,11 @@ public:
     }
 
     //--------------------------------------------------------------------------
+    //! \brief
+    //--------------------------------------------------------------------------
+    SceneNode& getOrCreateDummy(std::string const& name);
+
+    //--------------------------------------------------------------------------
     //! \brief Search recursively a by its name.
     //--------------------------------------------------------------------------
     SceneNode* findChild(std::string const& name);
@@ -111,6 +116,11 @@ public:
     //! \brief
     //--------------------------------------------------------------------------
     std::string const& name() const { return m_name; }
+
+    //--------------------------------------------------------------------------
+    //! \brief Display the hierarchy with all information.
+    //--------------------------------------------------------------------------
+    void printHierarchy() const { std::string indent; printNodes(indent, true); }
 
 private: // Inheritance from sf::Drawable
 
@@ -139,6 +149,10 @@ private:
         // Do nothing by default
     }
 
+private:
+
+    void printNodes(std::string indent, bool isLast) const;
+
 public:
 
     //! \brief Skip the drawing of the node (but keep drawing its children).
@@ -149,5 +163,4 @@ private:
     std::string m_name;
     SceneNode* m_parent = nullptr;
     std::vector<SceneNode::Ptr> m_children;
-    sf::Transform m_transform;
 };

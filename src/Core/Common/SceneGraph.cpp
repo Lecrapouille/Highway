@@ -30,6 +30,19 @@ void SceneNode::attachChild(SceneNode::Ptr child)
 }
 
 //------------------------------------------------------------------------------
+SceneNode& SceneNode::getOrCreateDummy(std::string const& name)
+{
+    for (auto const& it: m_children)
+    {
+        if (it->m_name == name)
+            return *it;
+    }
+
+    attachChild(std::make_unique<SceneNode>(name));
+    return *m_children.back();
+}
+
+//------------------------------------------------------------------------------
 SceneNode* SceneNode::findChild(std::string const& name)
 {
     if (name == m_name)
@@ -93,4 +106,30 @@ sf::Transform SceneNode::getWorldTransform() const
     }
 
     return transform;
+}
+
+//------------------------------------------------------------------------------
+void SceneNode::printNodes(std::string indent, bool is_last) const
+{
+    if (is_last)
+    {
+        std::cout << indent << "└─ ";
+        indent += "    ";
+    }
+    else
+    {
+        std::cout << indent << "├─ ";
+        indent += "│   ";
+    }
+
+    std::cout << (visible ? "\033[1;32m" : "\033[1;31m") << m_name << "\033[0m" << std::endl;
+    std::cout << indent << "├ Origin: (" << getOrigin().x << ", " << getOrigin().y << ")" << std::endl;
+    std::cout << indent << "├ Position: (" << getPosition().x << ", " << getPosition().y << ")" << std::endl;
+    std::cout << indent << "├ Rotation: " << getRotation() << " deg" << std::endl;
+    std::cout << indent << "└ Children: " << m_children.size() << std::endl;
+
+    for (size_t i = 0; i < m_children.size(); ++i)
+    {
+        m_children[i]->printNodes(indent, (i == m_children.size() - 1u));
+    }
 }

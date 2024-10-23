@@ -19,14 +19,15 @@ https://codepen.io/rlandim/pen/Egyvey
 
 https://asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
 
-
+Verifier que:
 Inertial frame (x,y horizontal, z anti-directional to the gravitation)
  ^ Y
  |
 (+)----> X
  Z
 
- Vehicle frame Xv vers l'avant, Yv vers la gauche, Zv vers le haut
+Verifier que:
+Vehicle frame Xv vers l'avant, Yv vers la gauche, Zv vers le haut
 
 PhysicModels
 
@@ -34,3 +35,9 @@ Mettre BicicleKinematic avec slide angle \beta en passant lr, lf en param
 Faire heriter RearBicicleKinematic en mettant lr = 0 et lf = L => slide angle \beta = 0
 Faire heriter FrontBicicleKinematic en mettant lr = L et lf = 0 => slide angle \beta = wheel angle
 https://www.youtube.com/watch?v=HqNdBiej23I&list=PLW3FM5Kyc2_4PGkumkAHNXzWtgHhaYe1d&index=4
+Il manque slide side
+
+Ajouter signal/slot capteur vers ECU
+Ajouter BB => onCollide callback + couleur
+Remettre powertrain
+Clignonant: blinker

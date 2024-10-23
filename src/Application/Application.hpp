@@ -311,12 +311,14 @@ public:
     //! managing its draw and IO events. When the GUI is closed it will be drop
     //! from the stack.
     //! \param[inout] starting_gui the initial GUI to start the application with.
-    //! \param[in] rate fixed time step. By fault set to 60 Hertz.
+    //! \param[in] rate fixed time step for doing computations. This does not
+    //! impact the rendering frame rate.
+    //! The default value is 120 Hertz.
     //! \note this method will call Application::GUI's private pure virtual
     //! methods.
     //--------------------------------------------------------------------------
-    void loop(Application::GUI& starting_gui, uint8_t rate = 60u);
-    void loop(uint8_t rate = 60u);
+    void loop(Application::GUI& starting_gui, uint8_t rate = 120u);
+    void loop(uint8_t rate = 120u);
 
     //--------------------------------------------------------------------------
     //! \brief Return the SFML renderer needed to paint SFML shapes
